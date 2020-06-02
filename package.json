@@ -1,0 +1,29 @@
+{
+  "name": "anysensor2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "dev": "nodemon app.js",
+    "prod": "forever app.js"
+  },
+  "author": "Alex Barbu",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-handlebars": "^4.0.4",
+    "express-session": "^1.17.1",
+    "forever": "^2.0.0",
+    "handlebars": "^4.7.6",
+    "handlebars-intl": "^1.1.2",
+    "hbs": "^4.1.1",
+    "jsonwebtoken": "^8.5.1",
+    "mysql": "^2.18.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.3"
+  }
+}

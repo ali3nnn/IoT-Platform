@@ -1,0 +1,27 @@
+<div id="mySidenav" class="sidenav sidenav-closed text-selection-disable-for-all">
+    <div class="sidenav-wrapper">
+        <div class="brand">
+            <a class="navbar-brand" href="/">
+                <img src="/images/logo.png" class='img-circle' width="50" height="50" alt="">
+                <b><span>AnySensor</span></b>
+            </a>
+        </div>
+        {{#if user_role_is_superadmin }}
+        <div class="admin-items">
+            <a href="/users"><i class="fas fa-users"></i><span>Users Overview</span></a>
+        </div>
+        {{/if}}
+
+        <div class="basic-items">
+            <a href="/dashboard"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
+            <a href="/map"><i class="fas fa-globe-europe"></i><span>Map</span></a>
+        </div>
+
+        <div class="settings-items">
+            {{#if username  }}
+            <button class='btn btn-outline-danger' onclick="location.href='/logout';"><i
+                    class="fas fa-sign-out-alt"></i><span>Log Out</span></button>
+            {{/if}}
+        </div>
+    </div>
+</div>

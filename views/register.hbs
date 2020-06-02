@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    {{> head}}
+</head>
+
+<body>
+
+    {{> navbar-general}}
+
+    <div class="wrapper fadeInDown">
+        <div id="formContent">
+            <!-- Tabs Titles -->
+
+            <!-- Icon -->
+            <div class="fadeIn first">
+                <img src="/images/logo.png" id="icon" alt="User Icon" />
+            </div>
+
+            {{!-- <h1>Register Page</h1> --}}
+
+            <!-- Register Form -->
+            <form class="login-container" action="/register" method="POST" autocomplete="off">
+                <input class="charInput" type="text" name="name" value="" placeholder="Your name" class="fadeIn second">
+                <input class="charInput" type="text" name="username" value="" placeholder="Set a username"
+                    class="fadeIn third">
+                <input class="charInput" type="email" name="email" value="" placeholder="Your email address"
+                    class="fadeIn third" autocomplete="off">
+                <input class="charInput" type="password" name="password" value="" placeholder="Choose a password"
+                    class="fadeIn third">
+                <ul class='passwordRules'>
+                    <li>At least one uppercase letter</li>
+                    <li>At least one lowercase letter</li>
+                    <li>At least one digit</li>
+                    <li>At least 8 characters</li>
+                </ul>
+                <input class="charInput" type="password" name="passwordConfirm" value=""
+                    placeholder="Confirm the password" class="fadeIn third">
+                {{!-- <div class='lower-buttons'> --}}
+                <input type="submit" name="register" value="Register" class="fadeIn fourth">
+                    {{!-- <input type="button" name="login" value="Log In" class="fadeIn fourth"
+                        onclick="location.href='/login';"> --}}
+                {{!-- </div> --}}
+            </form>
+
+        </div>
+        <div class="alert alert-warning m-3" role="alert">
+            Do you have an account ? Go to <a href="/login">login</a> page.
+        </div>
+        {{#if alert  }}
+            <h5 class='alert alert-danger m-0 mb-5'>{{alert}}</h5>
+        {{/if}}
+
+        {{#if success  }}
+            <h5 class='alert alert-success m-0 mb-5'>{{success}}</h5>
+        {{/if}}
+    </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.3.1.js"
+        integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+
+    <script src="/js/scripts.js"></script>
+
+</body>
+
+</html>

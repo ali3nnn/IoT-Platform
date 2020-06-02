@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    {{> head}}
+</head>
+
+<body class="map-page">
+
+    <!-- Main Sidebar Container -->
+    {{> aside}}
+
+    <!-- Add all page content inside this div if you want the side nav to push page content to the right (not used if you only want the sidenav to sit on top of the page -->
+    <div id="main">
+
+        <div class="main-overlay hidden-overlay"></div>
+
+        {{!-- Main Navbar --}}
+        {{> navbar-dashboard}}
+
+        {{!-- Zones List --}}
+        {{> mapzones}}
+
+        {{!-- Map --}}
+        <div class="container wrapper">
+            {{> ro}}
+        </div>
+        
+    </div>
+
+    {{!-- <h1>Hi, {{ username }}</h1>
+    <input type="button" name="logout" value="Log Out" class="fadeIn first" onclick="location.href='/logout';"> --}}
+
+    {{> scripts}}
+
+</body>
+
+</html>

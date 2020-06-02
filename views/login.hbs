@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    {{> head}}
+</head>
+
+<body>
+
+    {{> navbar-general}}
+
+    <div class="wrapper fadeInDown">
+        
+        <div id="formContent">
+            <!-- Tabs Titles -->
+
+            <!-- Icon -->
+            <div class="fadeIn first">
+                <img src="/images/logo.png" id="icon" alt="User Icon" />
+            </div>
+
+            {{!-- <h1>Login Page</h1> --}}
+
+            <!-- Login Form -->
+            <form class="login-container" action="/login" method="POST" autocomplete="off">
+                <input class="charInput" type="text" name="username" value="" placeholder="Username" id="login"
+                    class="fadeIn second">
+                <input class="charInput" type="password" name="password" value="" placeholder="Password" id="password"
+                    class="fadeIn third">
+                <br>
+                <input type="checkbox" id="remember" name="remember" value="1">
+                <label for="remember"> Remember me for 7 days</label><br>
+                {{!-- <div class='lower-buttons'> --}}
+                <input type="submit" name="login" value="Log In" class="fadeIn fourth">
+                    {{!-- <input type="button" name="register" value="Register" class="fadeIn fourth"
+                        onclick="location.href='/register';"> --}}
+                {{!-- </div> --}}
+            </form>
+        </div>
+
+        <div class="alert alert-warning mt-3 mb-0" role="alert">
+            Don't you have an account? Go to <a href="/register">register</a> page.
+        </div>
+        {{#if alert }}
+            <div class="alert alert-danger mt-3 mb-0" role="alert">
+                {{alert}}
+            </div>
+        {{/if}}
+
+        {{#if success  }}
+            <div class="alert alert-success mt-3 mb-0" role="alert">
+                {{success}}
+            </div>
+        {{/if}}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.js"
+        integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+
+</body>
+
+</html>
