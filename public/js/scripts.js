@@ -184,7 +184,7 @@ try {
 
     body.addEventListener("click", function () {
         if (nav.classList.contains("click-open")) {
-            $("#main").css({ "margin-left": "50px" })
+            // $("#main").css({ "margin-left": "50px" })
             nav.classList.remove("click-open")
             nav.classList.remove("sidenav-opened")
             overlay.classList.add("hidden-overlay")
@@ -505,120 +505,5 @@ function chart_lineboundaries(selector) {
 
 }
 
-
-// MAP PAGE
-// ========================================
-// Map Zones Fetch
-const getZones = async () => {
-    const response = await fetch("http://anysensor.dasstec.ro/api/get-zones")
-    return response.json()
-}
-
-const getZonesAsync = async () => {
-    const result = await getZones()
-    return result
-}
-
-// County Colors
-const countyEnabled = "rgb(52, 58, 64)"
-const countyDisabled = "rgb(52, 58, 64, 0.5)"
-const countyHover = "rgb(73, 104, 136)"
-
-// Zone List Fetched Append
-$("#zones-list").ready(function () {
-    (async () => {
-        let json = await getZonesAsync()
-
-        // console.log(json.result)
-        const length = json.result.length
-        let county_list = []
-        for (var item = 0; item < length; item++) {
-            county_list.push(json.result[item].zone)
-        }
-
-        // Map Change
-        let countyElements = document.querySelectorAll(".romania-svg svg > path");
-
-        for (var item = 0; item < countyElements.length; item++) {
-            // Get county name - string format
-            let county = countyElements[item].getAttribute("name")
-            // Replace diacritics
-            county = county.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-            // Check which county is in zone list
-            if (county_list.includes(county)) {
-                // console.log("county:",county)
-                // Background darker
-                countyElements[item].setAttribute("fill", countyEnabled)
-            } else {
-                // Backgorund lighter
-                countyElements[item].setAttribute("fill", countyDisabled)
-            }
-        }
-
-        // HTML Zone Append
-        $('#zones-list .zone-item-loading').remove()
-
-        if (length == 0) {
-
-            const htmlRes = `<div class="zone-item">
-                                <a href="#"><i class="fas fa-lock"></i><span>No zone for you</span></a>
-                            </div>`
-            $('#zones-list').append(htmlRes);
-
-        } else {
-
-            for (var zone = 0; zone < length; zone++) {
-                const htmlRes = `<div class="zone-item">
-                    <a href="#go-to-dashboard-for-this-zone"><i class="fas fa-map-marker-alt"></i><span>${json.result[zone].zone}</span></a>
-                </div>`
-                $('#zones-list').append(htmlRes);
-            }
-
-            hoverZoneItem();
-
-        }
-
-    })()
-});
-// SVG MAP
-$(".romania-svg").ready(function () {
-
-    try {
-        $(".romania-svg svg > path").attr("stroke-width", "1")
-
-        // Change background of county when hover over it
-        let oldCountyColor
-        $(".romania-svg svg > path").hover(function (event) {
-            oldCountyColor = $(this).attr('fill')
-            $(this).attr("fill", countyHover)
-        }, function () {
-            $(this).attr("fill", oldCountyColor)
-        });
-
-    } catch (e) {
-        console.warn("This page does not contain the svg map")
-    }
-
-});
-
-// Change background of county when hover over zone list
-function hoverZoneItem() {
-    let oldCountyColor
-    let mapCounty
-    let countyName
-    $(".zone-item a").hover(function (event) {
-        countyName = event.currentTarget.text
-        mapCounty = $("[name=" + countyName + "]")
-        // console.log("mapCounty:",mapCounty)
-        oldCountyColor = mapCounty.attr('fill')
-        mapCounty.attr("fill", countyHover)
-        // console.log(countyName,mapCounty)
-    }, function () {
-        mapCounty.attr("fill", oldCountyColor)
-    });
-}
-
-// ========================================
-// END MAP PAGE
 
 

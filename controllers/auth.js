@@ -72,7 +72,7 @@ const authRegister = (req,res,next) => {
         let hashedPassword = await bcrypt.hash(password, 10)
 
         //register the user into db
-        db.query("INSERT INTO users SET ?",{name: name, username: username, email: email, password: hashedPassword, user_role: 'basic'}, (err) => {
+        db.query("INSERT INTO users SET ?",{name: name, username: username, email: email, password: hashedPassword, user_role: 'basic', sensorId: 'no sensor'}, (err) => {
             if (err) console.log("Problem with insert ", err)
             else next()
         })
@@ -97,7 +97,7 @@ const authLogin = async (req,res,next) => {
         })
         else {
             // check user and pass for login
-            db.query("SELECT id, username, password, user_role FROM users WHERE Username = ?", [username], async (err, result)=>{
+            db.query("SELECT id, username, password, user_role, sensorId FROM users WHERE Username = ?", [username], async (err, result)=>{
 
                 if(err) console.log("There is a problem")
                 if(result.length) {
@@ -127,6 +127,16 @@ const authLogin = async (req,res,next) => {
                         sess.id_user = result[0].id
                         sess.username = result[0].username
                         sess.user_role = result[0].user_role
+
+                        console.log(result[0].sensorId, result[0].sensorId == 'no sensor')
+
+                        if (result[0].sensorId != 'no sensor') 
+                            if (result[0].sensorId.includes(',')) 
+                                sess.sensorId = result[0].sensorId.split(',')
+                            else sess.sensorId = ''
+                        else sess.sensorId = ''
+
+                        console.log("This user has access to sensorId:",sess.sensorId)
 
                         console.log("Login:",sess.username,sess.user_role)
 
@@ -195,12 +205,14 @@ const cookieChecker = async (req,res,next) => {
     // console.log("URL:",req.originalUrl)
 
     if (req.signedCookies.username && !sess.dont_check_cookie) 
-        db.query("SELECT id, username, user_role FROM users WHERE username = ?", [req.signedCookies.username], (err, result)=>{
+        db.query("SELECT id, username, user_role, sensorId FROM users WHERE username = ?", [req.signedCookies.username], (err, result)=>{
             if(result) {
                 if(result[0].username) {
                     sess.id_user = result[0].id
                     sess.username = result[0].username
                     sess.user_role = result[0].user_role
+                    sess.sensorId = result[0].sensorId.split(',')
+                    // console.log("User",sess.username,"has logged with access to sensorId:",sess.sensorId)
                     if(result[0].user_role === 'superadmin') sess.super_admin = 1
                     else sess.super_admin = 0
                 }

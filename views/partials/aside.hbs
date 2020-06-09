@@ -3,7 +3,7 @@
         <div class="brand">
             <a class="navbar-brand" href="/">
                 <img src="/images/logo.png" class='img-circle' width="50" height="50" alt="">
-                <b><span>AnySensor</span></b>
+                <span>Hi, <b>{{username}}!</b></span>
             </a>
         </div>
         {{#if user_role_is_superadmin }}
@@ -13,8 +13,8 @@
         {{/if}}
 
         <div class="basic-items">
-            <a href="/dashboard"><i class="fas fa-chart-line"></i><span>Dashboard</span></a>
-            <a href="/map"><i class="fas fa-globe-europe"></i><span>Map</span></a>
+            {{!-- <a href="/dashboard"><i class="fas fa-chart-line"></i><span>Dashboard</span></a> --}}
+            <a href="/map"><i class="fas fa-globe-europe"></i><span>Map</span></a> 
         </div>
 
         <div class="settings-items">
