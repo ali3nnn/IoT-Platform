@@ -16,25 +16,24 @@
         <div class="main-overlay hidden-overlay"></div>
 
         {{!-- Main Navbar --}}
-        {{> navbar-dashboard}}
+        {{> navbar-general}}
 
         {{!-- Zones List --}}
         {{> mapzones}}
+
+
 
         {{!-- Map --}}
         <div class="container wrapper">
             {{> ro}}
         </div>
-        
-    </div>
 
-    {{!-- <h1>Hi, {{ username }}</h1>
-    <input type="button" name="logout" value="Log Out" class="fadeIn first" onclick="location.href='/logout';"> --}}
+    </div>
 
     {{> scripts}}
 
     <script src="/js/map.js"></script>
-
+    
 </body>
 
 </html>

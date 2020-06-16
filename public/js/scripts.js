@@ -128,70 +128,143 @@ $(document).ready(function () {
 
     }, false);
 
+    try {
+        var childs = $(".small-box-container").children().length;
+        $(".small-box-container").addClass("children-" + String(childs))
+    }
+    finally {
+
+    }
+
 });
 
 
 // sidebar navigation
-
 try {
 
     const toggleButtons = document.querySelectorAll(".toggleSidenav")
+    const openButton = document.querySelector(".open-button");
     const overlay = document.querySelector(".main-overlay")
+    const asideLinks = document.querySelectorAll(".sidenav-wrapper a")
 
-    const nav = document.getElementById("mySidenav")
+    const sidenav = document.getElementById("mySidenav")
+    const mainbody = document.getElementById("main")
+
+    const body = document.getElementById('main');
+    const except = document.getElementById('mySidenav');
+
+    var flagOpenMenu = false
+    var flagCloseMenu = false
 
     const widthOpen = "250px"
     const widthClosed = "50px"
 
-    document.querySelector(".open-button").addEventListener('click', function (e) {
+    // Check if mobile to wrap sidenav or not
 
-        if (!nav.classList.contains("sidenav-opened")) {
-            nav.classList.add("sidenav-opened");
+    // Run at first load
+    $(window).on('load',function(){
+        if(window.innerWidth>991) {
+            if (!sidenav.classList.contains("sidenav-opened")) {
+                openButton.click();
+            }
+        } 
+    })
+
+    // Run when resize and onload
+    $(window).resize(function () {
+        
+        if (window.innerWidth > 991) {
+            console.log(">",window.innerWidth)
+            // if sidenav is closes
+            if (!sidenav.classList.contains("sidenav-opened")) {
+                openButton.click();
+            }
+        } else {
+            console.log("<",window.innerWidth)
+            // if sidebar is closed
+            if (!sidenav.classList.contains("sidenav-opened")) {
+
+            }
+            // if sidebar is opened
+            else {
+                overlay.click();
+
+            }
+        }
+    }).resize();
+    // End Check if mobile to wrap sidenav or not
+
+    // if (window.innerWidth <= 991) {
+    openButton.addEventListener('click', function (e) {
+
+        if (!sidenav.classList.contains("sidenav-opened")) {
+            sidenav.classList.add("sidenav-opened");
             overlay.classList.remove("hidden-overlay")
-            // $("#main").css({ "margin-left": "250px" })
+            if (mainbody.getBoundingClientRect().width > 500) {
+                mainbody.classList.add("pl-250")
+                mainbody.classList.remove("pl-50")
+            }
         }
 
-        nav.classList.remove("sidenav-closed")
+        sidenav.classList.remove("sidenav-closed")
         overlay.classList.remove("hidden-overlay")
-        nav.classList.toggle("click-open")
+        // mainbody.classList.remove("pl-250")
+        // mainbody.classList.add("pl-50")
+        sidenav.classList.toggle("click-open")
+
         // $("#main").css({"margin-left": "50px"})
 
-        for (var i = 0; i < toggleButtons.length; i++) toggleButtons[i].classList.toggle("hidden-button")
+        for (var i = 0; i < toggleButtons.length; i++)
+            toggleButtons[i].classList.toggle("hidden-button")
     })
 
-    $("#mySidenav").hover(function () {
-        // console.log("trying to hover in")
-        if (!nav.classList.contains("click-open")) {
-            // $("#main").css({ "margin-left": "250px" })
-            nav.classList.add("sidenav-opened")
-            overlay.classList.remove("hidden-overlay")
-            nav.classList.remove("sidenav-closed")
-            for (var i = 0; i < toggleButtons.length; i++) toggleButtons[i].classList.toggle("hidden-button")
-        }
-    }, function () {
-        // console.log("trying to hover out")
-        if (!nav.classList.contains("click-open")) {
-            // $("#main").css({ "margin-left": "50px" })
-            nav.classList.remove("sidenav-opened")
-            overlay.classList.add("hidden-overlay")
-            nav.classList.add("sidenav-closed")
-            for (var i = 0; i < toggleButtons.length; i++) toggleButtons[i].classList.toggle("hidden-button")
-        }
-    })
-
-    var body = document.getElementById('main');
-    var except = document.getElementById('mySidenav');
+    if(window.innerWidth<=991)
+        $("#mySidenav").hover(function () {
+            // console.log("trying to hover in")
+            if (!sidenav.classList.contains("click-open")) {
+                // $("#main").css({ "margin-left": "250px" })
+                sidenav.classList.add("sidenav-opened")
+                if (mainbody.getBoundingClientRect().width > 500) {
+                    mainbody.classList.add("pl-250")
+                    mainbody.classList.remove("pl-50")
+                }
+                overlay.classList.remove("hidden-overlay")
+                sidenav.classList.remove("sidenav-closed")
+                for (var i = 0; i < toggleButtons.length; i++)
+                    toggleButtons[i].classList.toggle("hidden-button")
+            }
+        }, function () {
+            // console.log("trying to hover out")
+            if (!sidenav.classList.contains("click-open")) {
+                // $("#main").css({ "margin-left": "50px" })
+                sidenav.classList.remove("sidenav-opened")
+                if (mainbody.getBoundingClientRect().width > 500) {
+                    mainbody.classList.remove("pl-250")
+                    mainbody.classList.add("pl-50")
+                }
+                overlay.classList.add("hidden-overlay")
+                sidenav.classList.add("sidenav-closed")
+                for (var i = 0; i < toggleButtons.length; i++)
+                    toggleButtons[i].classList.toggle("hidden-button")
+            }
+        })
 
     body.addEventListener("click", function () {
-        if (nav.classList.contains("click-open")) {
-            // $("#main").css({ "margin-left": "50px" })
-            nav.classList.remove("click-open")
-            nav.classList.remove("sidenav-opened")
-            overlay.classList.add("hidden-overlay")
-            nav.classList.add("sidenav-closed")
-            for (var i = 0; i < toggleButtons.length; i++) toggleButtons[i].classList.toggle("hidden-button")
-        }
-    }, false);
+        if(window.innerWidth<=991)
+            if (sidenav.classList.contains("click-open")) {
+                sidenav.classList.remove("click-open")
+                sidenav.classList.remove("sidenav-opened")
+                if (mainbody.getBoundingClientRect().width > 500) {
+                    mainbody.classList.remove("pl-250")
+                    mainbody.classList.add("pl-50")
+                }
+                overlay.classList.add("hidden-overlay")
+                sidenav.classList.add("sidenav-closed")
+                for (var i = 0; i < toggleButtons.length; i++)
+                    toggleButtons[i].classList.toggle("hidden-button")
+
+            }
+    });
 
     except.addEventListener("click", function (ev) {
         // console.log("click on sidebar");
@@ -202,6 +275,16 @@ try {
         // console.log("click on button");
         ev.stopPropagation(); //this is important! If removed, you'll get both alerts
     }, false);
+    // }
+
+
+
+
+
+
+
+
+
 } catch (e) {
     console.warn("It looks like there is no sidebar navigation")
 }
@@ -505,5 +588,34 @@ function chart_lineboundaries(selector) {
 
 }
 
+function animationInNotification() {
+    setTimeout(50, $(".messages").animate({
+        right: "0px",
+        opacity: "1",
+        visibility: "visible"
+    }))
+
+}
+
+
+// navigator.usb.getDevices()
+// .then(device => {
+//   console.log(device.productName);      // "Arduino Micro"
+//   console.log(device.manufacturerName); // "Arduino LLC"
+// })
+// .catch(error => { console.log(error); });
+
+
+// if (!('usb' in navigator)) throw new Error("Browser does not support WebUSB");
+
+// navigator.usb.getDevices()
+//   .then(devices => {
+//     const report = "<p>Total devices: " + devices.length + "</p><ul>" + devices.map(d => {
+//       return "<li>Product name: " + device.productName + ", serial number " + device.serialNumber + "</li>";
+//     }).join('\n') + "</ul>";
+//     console.log("report",report)
+//     DemoUtils.reportDemoResult(true);
+//   })
+//   .catch(e => DemoUtils.reportDemoResult(false, {resultDetail: e.toString()}));
 
 

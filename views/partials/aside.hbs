@@ -8,13 +8,23 @@
         </div>
         {{#if user_role_is_superadmin }}
         <div class="admin-items">
-            <a href="/users"><i class="fas fa-users"></i><span>Users Overview</span></a>
+            <a href="/users"><i class="fas fa-users-cog"></i><span>Users Overview</span></a>
+        </div>
+        <div class="admin-items">
+            <a href="/add-sensor"><i class="fas fa-plus-circle"></i><span>Add new sensors</span></a>
         </div>
         {{/if}}
 
         <div class="basic-items">
-            {{!-- <a href="/dashboard"><i class="fas fa-chart-line"></i><span>Dashboard</span></a> --}}
-            <a href="/map"><i class="fas fa-globe-europe"></i><span>Map</span></a> 
+            <a class="" href="/map"><i class="fas fa-globe-europe"></i><span>Map</span></a>
+        </div>
+
+        <div class="basic-items">
+            <a href="/manage-sensors"><i class="fas fa-cogs"></i><span>Manage Sensors</span><span class="badge badge-danger right">6</span></a>
+        </div>
+
+        <div class="basic-items">
+            <a href="/set-new-device"><i class="fas fa-laptop-code"></i><span>Set new device</span></a>
         </div>
 
         <div class="settings-items">

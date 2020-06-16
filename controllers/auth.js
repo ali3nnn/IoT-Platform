@@ -18,6 +18,13 @@ const { parsed, error } = dotenv.config({ debug: true })
 // console.dir(process.env)
 
 //config db info
+config_db = {
+    host: process.env.DATABASE_HOST,
+    user: process.env.DATABASE_USER,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE
+}
+
 const db = mysql.createConnection({
     host: process.env.DATABASE_HOST,
     user: process.env.DATABASE_USER,
@@ -25,162 +32,238 @@ const db = mysql.createConnection({
     database: process.env.DATABASE
 })
 
-function allTrue(obj)  {
+// class Database {
+//     constructor(config) {
+//         this.connection = mysql.createConnection(config);
+//     }
+//     query(sql, args) {
+//         return new Promise((resolve, reject) => {
+//             this.connection.query(sql, args, (err, rows) => {
+//                 if (err)
+//                     return reject(err);
+//                 resolve(rows);
+//             });
+//         });
+//     }
+//     close() {
+//         return new Promise((resolve, reject) => {
+//             this.connection.end(err => {
+//                 if (err)
+//                     return reject(err);
+//                 resolve();
+//             });
+//         });
+//     }
+// }
+
+// Database.execute = function (config, callback) {
+//     const database = new Database(config);
+//     return callback(database).then(
+//         result => database.close().then(() => result),
+//         err => database.close().then(() => { throw err; })
+//     );
+// };
+
+function allTrue(obj) {
     for (var o in obj)
-        if(!obj[o]) return false;
+        if (!obj[o]) return false;
     return true;
 }
 
 // console.log("ENV:", process.env.DATABASE_PASSWORD)
 
 //auth controller register
-const authRegister = (req,res,next) => {
-    
-    const {name, username, email, password, passwordConfirm} = req.body
+const authRegister = (req, res, next) => {
 
-    const allField = allTrue({name, username, email, password, passwordConfirm})
+    const { name, username, email, password, passwordConfirm } = req.body
+
+    // password do not match
+    if (password != passwordConfirm) return res.render('register', {
+        alert: "Passwords do not match!"
+    })
+
+    // all fields required
+    const allField = allTrue({ name, username, email, password, passwordConfirm })
 
     if (!allField) return res.render('register', {
         alert: 'All fields are required!'
-    }) 
+    })
 
-    // check duplicate username
-    db.query("SELECT username FROM users WHERE Username = ?", [username], (err, result)=>{
+    // Database.execute(config_db,
+    //     // check duplicate username - new way
+    //     database => database.query("SELECT username FROM users WHERE Username = '"+username+"' ")
+    //     .then(result => {
+    //         res.render('register', {
+    //             alert: 'That username is in use'
+    //         })
+    //     })
+    //     //check duplicate email - new way
+    //     .then(result => {
+    //         return database.query("SELECT email FROM users WHERE Email = '"+email+"' ")
+    //     })
+    //     .then(result => {
+    //         res.render('register', {
+    //             alert: 'That email is in use!'
+    //         })
+    //     }).then((result) => {
+    //         // Register if mail isn't duplicate
+
+    //         // encrypt the pasword
+    //         let hashedPassword = bcrypt.hash(password, 10)
+
+    //         console.log("New user registration")
+    //         console.log(name, username, email, password, '\r\n')
+
+    //         //register the user into db
+    //         return database.query("INSERT INTO users (name, username, email, password, user_role) VALUES ('"+name+"', '"+username+"', '"+email+"', '"+hashedPassword+"', 'basic')")
+
+    //     })
+    //     .then(result => {
+    //         next()
+    //     })
+    // )
+
+    // check duplicate username - old way
+    db.query("SELECT username FROM users WHERE Username = ?", [username], (err, result) => {
         // console.log("result:",result)
-        if(err) console.log("There is a problem ",err)
-        else if(result.length) return res.render('register', {
+        if (err) console.log("There is a problem ", err)
+        else if (result.length) return res.render('register', {
             alert: 'That username is in use'
         })
     })
 
-    //check duplicate email
-    db.query("SELECT email FROM users WHERE Email = ?", [email], async (err, result)=>{
-        
-        if(err) console.log("There is a problem")
+    //check duplicate email - old way
+    db.query("SELECT email FROM users WHERE Email = ?", [email], async (err, result) => {
 
+        if (err) console.log("There is a problem")
         else if (result.length) return res.render('register', {
             alert: 'That email is in use!'
         })
-
         else if (password != passwordConfirm) return res.render('register', {
             alert: "Passwords do not match!"
         })
 
-        // Register
+        // Register if mail isn't duplicate
 
         // encrypt the pasword
         let hashedPassword = await bcrypt.hash(password, 10)
 
         //register the user into db
-        db.query("INSERT INTO users SET ?",{name: name, username: username, email: email, password: hashedPassword, user_role: 'basic', sensorId: 'no sensor'}, (err) => {
+        db.query("INSERT INTO users SET ?", { name: name, username: username, email: email, password: hashedPassword, user_role: 'basic' }, (err) => {
             if (err) console.log("Problem with insert ", err)
-            else next()
+            else {
+                console.log("New user registration")
+                console.log(name, username, email, password, '\r\n')
+                next()
+            }
         })
 
     })
-    
+
     // res.send("form submitted")
 }
 
 //auth controller login
-const authLogin = async (req,res,next) => {
+const authLogin = async (req, res, next) => {
     // console.log("REQ.BODY:",req.body)
     try {
-        const {username, password, remember} = req.body
+        // take the data from form body
+        const { username, password, remember } = req.body
 
         //start the session for future login
         sess = req.session
 
-        // check if username
-        if(!username || !password) return res.status(400).render('login', {
-            message: 'You forgot to type an username or password'
+        // check if username exist
+        if (!username || !password) return res.status(400).render('login', {
+            message: 'You forgot to type username or password'
         })
         else {
-            // check user and pass for login
-            db.query("SELECT id, username, password, user_role, sensorId FROM users WHERE Username = ?", [username], async (err, result)=>{
 
-                if(err) console.log("There is a problem")
-                if(result.length) {
+            // check user the is trying to login
+            console.log("Login try:", username, '\r\n')
+            var sql_query = "SELECT id, username, password, user_role FROM users WHERE username = '" + username + "'"
+            db.query(sql_query, async (err, result) => {
+
+                if (err)
+                    console.log("There is a problem")
+
+                if (result.length) {
+                    // check password
                     let passwordComparator = await bcrypt.compare(password, result[0].password)
                     if (result[0].username != username || !passwordComparator) return res.render('login', {
-                        alert: 'You mistyped the password! (check caps lock)'
+                        alert: 'Username or password is wrong'
                     })
                     else {
 
-                        // Set Cookie
+                        // Set Cookie if checked
                         if (remember == '1') {
-
-                            console.log("Signed cookie write:",result[0].username)
-
+                            console.log("Write cookie for user:", result[0].username)
                             const cookieOptions = {
                                 expires: new Date(
-                                    Date.now() + process.env.JWT_COOKIE_EXPIRES * 24*60*60*1000
+                                    Date.now() + process.env.JWT_COOKIE_EXPIRES * 24 * 60 * 60 * 1000
                                 ),
                                 httpOnly: true,
                                 signed: true
                             }
-
                             res.cookie('username', result[0].username, cookieOptions)
-
                         }
-                        
+
+                        // set other sess variables
                         sess.id_user = result[0].id
                         sess.username = result[0].username
                         sess.user_role = result[0].user_role
+                        sess.super_admin = ((result[0].user_role == 'superadmin') ? 1 : 0)
+                        sess.check_cookies = 0 // 1 - check cookie; 0 - don't check cookie
 
-                        console.log(result[0].sensorId, result[0].sensorId == 'no sensor')
+                        console.log("Logged in")
+                        console.log("Username:", sess.username, "Role:", sess.user_role)
 
-                        if (result[0].sensorId != 'no sensor') 
-                            if (result[0].sensorId.includes(',')) 
-                                sess.sensorId = result[0].sensorId.split(',')
-                            else sess.sensorId = ''
-                        else sess.sensorId = ''
+                        // check sensor access for this user
+                        var sql_query = "SELECT sensors.sensorId FROM users, sensors WHERE users.username = '" + username + "' AND sensors.userId = users.id"
+                        db.query(sql_query, async (err, result) => {
+                            if (err)
+                                console.log("There is a problem")
+                            else if (result.length) {
+                                let sensorAccess = Array()
+                                for (var i = 0; i < result.length; i++)
+                                    if (result[i].sensorId)
+                                        sensorAccess.push(result[i].sensorId)
+                                sess.sensorAccess = (sensorAccess.length ? sensorAccess : ((username == 'superadmin') ? -1 : 0));
+                            } else {
+                                sess.sensorAccess = ((username == 'superadmin') ? -1 : 0);
+                            }
+                            console.log("Sensors:", sess.sensorAccess)
+                            next()
+                        })
 
-                        console.log("This user has access to sensorId:",sess.sensorId)
-
-                        console.log("Login:",sess.username,sess.user_role)
-
-                        if(result[0].user_role === 'superadmin') {
-                            // console.log("check super admin:",result[0].user_role)
-                            sess.super_admin = 1
-                        }
-                        else {
-                            // console.log("check super admin:",result[0].user_role)
-                            sess.super_admin = 0
-                        }
-                        // console.log("superadmin:",sess.super_admin)
-                            
-
-                        // res.status(200).redirect('/dashboard')
-
-                        next()
-                        
                     }
                 } else {
-                    res.render("login",{
-                        alert: "Username `"+username+"` is not registered!"
+                    res.render("login", {
+                        alert: "Username `" + username + "` is not registered!"
                     })
                 }
             })
+
+
         }
     } catch (err) {
-        console.log("Error:",err)
+        console.log("Error:", err)
     }
 }
 
-const authDashboard = (req,res,next) => {
+const authDashboard = (req, res, next) => {
     // check if user is logged
     sess = req.session;
 
-    if(sess.username) {
+    if (sess.username) {
         next()
-    } 
+    }
     else res.render("login", {
         alert: "You are not logged in"
     })
 }
 
-const authSuperAdmin = (req,res,next) => {
+const authSuperAdmin = (req, res, next) => {
     // get session variable
     sess = req.session;
 
@@ -191,44 +274,68 @@ const authSuperAdmin = (req,res,next) => {
     else {
         // console.log("this user is NOT superadmin")
         res.render('login', {
-            alert: "Login with you superadmin account!"
+            alert: "Login with your superadmin account!"
         })
     }
 }
 
-const cookieChecker = async (req,res,next) => {
+const cookieChecker = async (req, res, next) => {
     // get session variable
     sess = req.session;
 
     // check cookie
+    let username_cookie = req.signedCookies.username
     // console.log("Signed cookie read:",req.signedCookies.username)
     // console.log("URL:",req.originalUrl)
 
-    if (req.signedCookies.username && !sess.dont_check_cookie) 
-        db.query("SELECT id, username, user_role, sensorId FROM users WHERE username = ?", [req.signedCookies.username], (err, result)=>{
-            if(result) {
-                if(result[0].username) {
-                    sess.id_user = result[0].id
-                    sess.username = result[0].username
-                    sess.user_role = result[0].user_role
-                    sess.sensorId = result[0].sensorId.split(',')
-                    // console.log("User",sess.username,"has logged with access to sensorId:",sess.sensorId)
-                    if(result[0].user_role === 'superadmin') sess.super_admin = 1
-                    else sess.super_admin = 0
-                }
-                // console.log("sess:",sess)
-                next() //go forward with username retrieved from cookie
+    // if user has already logged in don't check cookies anymore
+    if (sess.username) next()
+
+    // if user not logged in check cookie
+    else if (username_cookie) {
+        let sql_query = "SELECT id, username, password, user_role FROM users WHERE username = '" + username_cookie + "'"
+        db.query(sql_query, (err, result) => {
+            if (result) {
+                // if (result[0].username) {
+                sess.id_user = result[0].id
+                sess.username = result[0].username
+                sess.user_role = result[0].user_role
+                sess.super_admin = ((result[0].user_role == 'superadmin') ? 1 : 0)
+                // }
+
+                // check sensor access for this user
+                var sql_query = "SELECT sensors.sensorId FROM users, sensors WHERE users.username = '" + sess.username + "' AND sensors.userId = users.id"
+                db.query(sql_query, async (err, result) => {
+                    if (err)
+                        console.log("There is a problem")
+                    else if (result.length) {
+                        let sensorAccess = Array()
+                        for (var i = 0; i < result.length; i++)
+                            if (result[i].sensorId)
+                                sensorAccess.push(result[i].sensorId)
+                        sess.sensorAccess = (sensorAccess.length ? sensorAccess : ((sess.username == 'superadmin') ? -1 : 0));
+                    } else {
+                        sess.sensorAccess = ((sess.username == 'superadmin') ? -1 : 0);
+                    }
+                    console.log("Login based on cookie")
+                    console.log("Username:", sess.username, "Role:", sess.user_role)
+                    console.log("Sensors:", sess.sensorAccess, '\r\n')
+                    next() //go forward with username retrieved from cookie
+                })
+
             } else {
                 next() //go forward without username even is there is a cookie
             }
         })
+    }
+
     else {
         // console.log("no cookie found | sess:",sess)
         next() //go forward without cookie retrieved
     }
-        
-    
-    
+
+
+
 }
 
 
