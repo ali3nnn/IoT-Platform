@@ -14,6 +14,15 @@ const countyHover = "rgb(73, 104, 136)"
 // Zone List Append
 $("#zones-list").ready(function () {
 
+    // Append Loading Spinner Until Zone List Is Fetched
+    const loadingItem = `<div class="zone-item zone-item-loading">
+                            <a href="#" class='spinner'>
+                                <span>Loading...</span>
+                            </a>
+                        </div>`
+
+    $('#zones-list').append(loadingItem);
+
     // County Fetch
     const getZones = async () => {
         const response = await fetch("https://anysensor.dasstec.ro/api/get-zones")
@@ -25,8 +34,11 @@ $("#zones-list").ready(function () {
         try {
             var json = await getZones()
         } catch {
-            var json = {result: []}
+            var json = {
+                result: []
+            }
         }
+
         // console.log("County fetched:", json.result)
 
         let length = json.result.length
@@ -67,10 +79,23 @@ $("#zones-list").ready(function () {
             $('#zones-list').append(htmlRes);
         } else {
             for (var zone = 0; zone < length; zone++) {
-                const htmlRes = `<div class="zone-item">
-                    <a href="/map/${json.result[zone].county}" county="${json.result[zone].county}" class="county-item"><i class="fas fa-map-marker-alt"></i><span>${json.result[zone].sensorName}</span></a>
-                </div>`
+
+                var htmlRes = `<div class="zone-item">
+                                    <a href="/map/${json.result[zone].county}" county="${json.result[zone].county}" class="county-item"><i class="fas fa-map-marker-alt"></i><span>${json.result[zone].sensorName}</span></a>
+                                </div>`
+
+                // insert a css class to zone selected if any
+                if (window.location.href.indexOf(json.result[zone].county) > -1) {
+                    htmlRes = `<div class="zone-item zone-item-selected">
+                        <a href="/map/${json.result[zone].county}" county="${json.result[zone].county}" class="county-item"><i class="fas fa-map-marker-alt"></i><span>${json.result[zone].sensorName}</span></a>
+                    </div>`
+                } 
+
                 $('#zones-list').append(htmlRes);
+
+                // Add unqiue class to body based on sensorName selected
+                const bodyClass = `${json.result[zone].sensorName}-dashboard`
+                $("body").addClass(bodyClass)
             }
             $("body").addClass("zone-item-loaded")
 

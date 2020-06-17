@@ -19,20 +19,45 @@
         {{> navbar-general}}
 
         {{!-- Zones List --}}
-        {{> mapzones}}
+        {{!-- {{> mapzones}} --}}
 
-
-
-        {{!-- Map --}}
+        {{!-- Romanian Map SVG --}}
         <div class="container wrapper">
             {{> ro}}
         </div>
+
+        {{!-- Map --}}
+        {{!-- <div class="container wrapper"> --}}
+            {{!-- <div id="map" class="map"></div> --}}
+        {{!-- </div> --}}
 
     </div>
 
     {{> scripts}}
 
-    <script src="/js/map.js"></script>
+    {{!-- <style>
+      .map {
+        height: 100vh;
+        width: 100%;
+      }
+    </style>
+
+    <script type="text/javascript">
+      var map = new ol.Map({
+        target: 'map',
+        layers: [
+          new ol.layer.Tile({
+            source: new ol.source.OSM()
+          })
+        ],
+        view: new ol.View({
+          center: ol.proj.fromLonLat([37.41, 8.82]),
+          zoom: 4
+        })
+      });
+    </script> --}}
+
+    {{!-- <script src="/js/map.js"></script> --}}
     
 </body>
 

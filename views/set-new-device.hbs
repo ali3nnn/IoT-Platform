@@ -5,7 +5,7 @@
     {{> head}}
 </head>
 
-<body class="map-page">
+<body class="map-page" onload="animationInNotification();">
 
     <!-- Main Sidebar Container -->
     {{> aside}}
@@ -36,13 +36,7 @@
             </div> 
         </div>
 
-        {{#if message }}
-        <div class="messages hideMe">
-            <div class="alert alert-success mt-3 mb-0" role="alert">
-                {{message}}
-            </div>
-        </div>
-        {{/if}}
+        {{> notification}}
 
     </div>
 

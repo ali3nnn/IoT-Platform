@@ -68,14 +68,7 @@
 
         <div class="card-container"></div>
 
-        {{#if message }}
-        <div class="messages hideMe">
-            <div class="alert alert-success mt-3 mb-0" role="alert">
-                <background></background>
-                {{message}}
-            </div>
-        </div>
-        {{/if}}
+        {{> notification}}
 
         <script>
 

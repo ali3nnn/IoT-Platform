@@ -9,6 +9,13 @@ var passwordLowerCase = document.querySelector('.login-container .passwordRules 
 var passwordDigit = document.querySelector('.login-container .passwordRules li:nth-child(3)');
 var password8Char = document.querySelector('.login-container .passwordRules li:nth-child(4)');
 
+// Time Helper Debug
+function timeDebug(str) {
+    let date = new Date()
+    date = date.getMilliseconds()
+    console.log(str, date)
+}
+
 //hide the rules
 if (passwordRules)
     passwordRules.classList.add('hideRules');
@@ -74,8 +81,7 @@ if (passwordField)
         if (allTrue(passwordCheck)) {
             registerButton.value = "Register"
             registerButton.disabled = false
-        }
-        else {
+        } else {
             registerButton.value = "Try a stronger password"
             registerButton.disabled = true
         }
@@ -131,8 +137,7 @@ $(document).ready(function () {
     try {
         var childs = $(".small-box-container").children().length;
         $(".small-box-container").addClass("children-" + String(childs))
-    }
-    finally {
+    } finally {
 
     }
 
@@ -162,25 +167,48 @@ try {
     // Check if mobile to wrap sidenav or not
 
     // Run at first load
-    $(window).on('load',function(){
-        if(window.innerWidth>991) {
+    $(window).on('load', function () {
+
+        let addBodyClass = function () {
+            // var date = new Date();
+            // var date = date.getTime()
+            // console.log(date,(date-date_1)/1000)
+            $("body").addClass("window-loaded")
+        }
+
+        if (window.innerWidth > 991) {
             if (!sidenav.classList.contains("sidenav-opened")) {
-                openButton.click();
+                // openButton.click()
+                // var date_1;
+
+                let openButtonClick = function (callback) {
+                    // date_1 = new Date();
+                    // date_1 = date_1.getTime()
+                    // console.log(date_1)
+                    openButton.click();
+                    setTimeout(function () {
+                        callback()
+                    }, 150)
+                }
+                openButtonClick(addBodyClass)
             }
-        } 
+        } else {
+            addBodyClass()
+        }
+
     })
 
     // Run when resize and onload
     $(window).resize(function () {
-        
+
         if (window.innerWidth > 991) {
-            console.log(">",window.innerWidth)
+            // console.log(">",window.innerWidth)
             // if sidenav is closes
             if (!sidenav.classList.contains("sidenav-opened")) {
-                openButton.click();
+                openButton.click()
             }
         } else {
-            console.log("<",window.innerWidth)
+            // console.log("<",window.innerWidth)
             // if sidebar is closed
             if (!sidenav.classList.contains("sidenav-opened")) {
 
@@ -191,11 +219,29 @@ try {
 
             }
         }
-    }).resize();
+    });
     // End Check if mobile to wrap sidenav or not
 
+    function openedFinal() {
+        setTimeout(function () {
+            sidenav.classList.add("sidenav-opened-final");
+            sidenav.classList.remove("sidenav-closed-final");
+        }, 200)
+    }
+
+    function closedFinal() {
+        setTimeout(function () {
+            sidenav.classList.remove("sidenav-opened-final");
+            sidenav.classList.add("sidenav-closed-final");
+        }, 200)
+    }
+
     // if (window.innerWidth <= 991) {
-    openButton.addEventListener('click', function (e) {
+    openButton.addEventListener('click', function () {
+
+        let date = new Date()
+        date = date.getMilliseconds()
+        console.log("opened click:", date)
 
         if (!sidenav.classList.contains("sidenav-opened")) {
             sidenav.classList.add("sidenav-opened");
@@ -216,10 +262,13 @@ try {
 
         for (var i = 0; i < toggleButtons.length; i++)
             toggleButtons[i].classList.toggle("hidden-button")
+
+        openedFinal.bind()();
     })
 
-    if(window.innerWidth<=991)
+    if (window.innerWidth <= 991)
         $("#mySidenav").hover(function () {
+
             // console.log("trying to hover in")
             if (!sidenav.classList.contains("click-open")) {
                 // $("#main").css({ "margin-left": "250px" })
@@ -233,6 +282,7 @@ try {
                 for (var i = 0; i < toggleButtons.length; i++)
                     toggleButtons[i].classList.toggle("hidden-button")
             }
+            openedFinal.bind()();
         }, function () {
             // console.log("trying to hover out")
             if (!sidenav.classList.contains("click-open")) {
@@ -247,10 +297,11 @@ try {
                 for (var i = 0; i < toggleButtons.length; i++)
                     toggleButtons[i].classList.toggle("hidden-button")
             }
+            closedFinal.bind()();
         })
 
     body.addEventListener("click", function () {
-        if(window.innerWidth<=991)
+        if (window.innerWidth <= 991)
             if (sidenav.classList.contains("click-open")) {
                 sidenav.classList.remove("click-open")
                 sidenav.classList.remove("sidenav-opened")
@@ -262,7 +313,7 @@ try {
                 sidenav.classList.add("sidenav-closed")
                 for (var i = 0; i < toggleButtons.length; i++)
                     toggleButtons[i].classList.toggle("hidden-button")
-
+                closedFinal.bind()();
             }
     });
 
@@ -290,7 +341,9 @@ try {
 }
 
 // Chart.JS
-{/* <script> */ }
+{
+    /* <script> */
+}
 // chartIt('temperature_1')
 
 function chartIt(selector) {
@@ -406,11 +459,11 @@ function chart_TimeSeries(selector, data) {
                         var i, ilen, val, tick, currMajor, lastMajor;
 
                         val = moment(ticks[0].value);
-                        if ((majorUnit === 'minute' && val.second() === 0)
-                            || (majorUnit === 'hour' && val.minute() === 0)
-                            || (majorUnit === 'day' && val.hour() === 9)
-                            || (majorUnit === 'month' && val.date() <= 3 && val.isoWeekday() === 1)
-                            || (majorUnit === 'year' && val.month() === 0)) {
+                        if ((majorUnit === 'minute' && val.second() === 0) ||
+                            (majorUnit === 'hour' && val.minute() === 0) ||
+                            (majorUnit === 'day' && val.hour() === 9) ||
+                            (majorUnit === 'month' && val.date() <= 3 && val.isoWeekday() === 1) ||
+                            (majorUnit === 'year' && val.month() === 0)) {
                             firstTick.major = true;
                         } else {
                             firstTick.major = false;
@@ -594,7 +647,6 @@ function animationInNotification() {
         opacity: "1",
         visibility: "visible"
     }))
-
 }
 
 
@@ -617,5 +669,3 @@ function animationInNotification() {
 //     DemoUtils.reportDemoResult(true);
 //   })
 //   .catch(e => DemoUtils.reportDemoResult(false, {resultDetail: e.toString()}));
-
-

@@ -57,7 +57,7 @@ function influxWriter(measurement, sensorId, value, database = 'anysensor_dummy'
 
 // Influx Query - PROMISE
 function influxReader(measurement, where = false) {
-    return new Promise((resolve,reject)=>{
+    return new Promise((resolve,myreject)=>{
         if (!where) query =  `select * from ` + measurement + ``
         else query = `select * from ` + measurement + ` WHERE ` + where
         console.log(query)
@@ -81,8 +81,8 @@ let resultInfluxDb = influxReader('temperature', `sensorId='AX19K'`).then((resul
 // Security Stuff
 // ==================================
 app.disable('x-powered-by')
-app.use(helmet()) // Security Package of Middlewares
-app.set('trust proxy', 1) // trust first proxy
+app.use(helmet())
+app.set('trust proxy', 1)
 // ==================================
 // End Security Stuff
 
@@ -288,7 +288,7 @@ app.post('/login', authLogin, (req, res) => {
 app.get('/logout', function (req, res) {
     req.session.destroy(function (err) {
         if (err) console.log(err);
-        else res.redirect('/');
+        else res.redirect('/login');
     });
 });
 
@@ -459,6 +459,7 @@ app.get('/api/get-data/:county', (req, res) => {
 
     // get params
     // const queryObject = url.parse(req.url,true).query;
+    // console.log(queryObject);
     // console.log(queryObject);
 
     // console.log(sess.username)
@@ -649,7 +650,8 @@ app.get('/set-new-device', authDashboard, (req, res) => {
         sensorId: sess.sensorId,
         user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0
     }
-    req.session.message = ' '
+    req.session.message = ''
+    console.log(data)
     res.render('set-new-device', data)
 })
 //=========================================

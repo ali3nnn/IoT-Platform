@@ -1,2 +1,15 @@
 <script src="/js/scripts.js"></script>
 
+{{!-- Insert map.js if mapzones partial is detected in template --}}
+<script>
+    $("#zone-list").ready(function () {
+        const item = $(this)
+        if (item.length) {
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = '/js/map.js';
+
+            document.getElementsByTagName('head')[0].appendChild(script);
+        }
+    })
+</script>
