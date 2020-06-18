@@ -164,6 +164,21 @@ try {
     const widthOpen = "250px"
     const widthClosed = "50px"
 
+    function openedFinal() {
+        setTimeout(function () {
+            sidenav.classList.add("sidenav-opened-final");
+            sidenav.classList.remove("sidenav-closed-final");
+        }, 150)
+    }
+
+    function closedFinal() {
+        // setTimeout(function () {
+        sidenav.classList.remove("sidenav-opened-final");
+        sidenav.classList.add("sidenav-closed-final");
+        // }, 200)
+    }
+
+
     // Check if mobile to wrap sidenav or not
 
     // Run at first load
@@ -193,6 +208,7 @@ try {
                 openButtonClick(addBodyClass)
             }
         } else {
+            closedFinal.bind()();
             addBodyClass()
         }
 
@@ -221,20 +237,6 @@ try {
         }
     });
     // End Check if mobile to wrap sidenav or not
-
-    function openedFinal() {
-        setTimeout(function () {
-            sidenav.classList.add("sidenav-opened-final");
-            sidenav.classList.remove("sidenav-closed-final");
-        }, 200)
-    }
-
-    function closedFinal() {
-        setTimeout(function () {
-            sidenav.classList.remove("sidenav-opened-final");
-            sidenav.classList.add("sidenav-closed-final");
-        }, 200)
-    }
 
     // if (window.innerWidth <= 991) {
     openButton.addEventListener('click', function () {
@@ -286,6 +288,7 @@ try {
         }, function () {
             // console.log("trying to hover out")
             if (!sidenav.classList.contains("click-open")) {
+                closedFinal();
                 // $("#main").css({ "margin-left": "50px" })
                 sidenav.classList.remove("sidenav-opened")
                 if (mainbody.getBoundingClientRect().width > 500) {
@@ -297,12 +300,12 @@ try {
                 for (var i = 0; i < toggleButtons.length; i++)
                     toggleButtons[i].classList.toggle("hidden-button")
             }
-            closedFinal.bind()();
         })
 
     body.addEventListener("click", function () {
         if (window.innerWidth <= 991)
             if (sidenav.classList.contains("click-open")) {
+                closedFinal();
                 sidenav.classList.remove("click-open")
                 sidenav.classList.remove("sidenav-opened")
                 if (mainbody.getBoundingClientRect().width > 500) {
@@ -313,7 +316,6 @@ try {
                 sidenav.classList.add("sidenav-closed")
                 for (var i = 0; i < toggleButtons.length; i++)
                     toggleButtons[i].classList.toggle("hidden-button")
-                closedFinal.bind()();
             }
     });
 
