@@ -22,20 +22,20 @@
         {{!-- {{> mapzones}} --}}
 
         {{!-- Romanian Map SVG --}}
-        <div class="container wrapper">
+        {{!-- <div class="container wrapper">
             {{> ro}}
-        </div>
+        </div> --}}
 
         {{!-- Map --}}
         {{!-- <div class="container wrapper"> --}}
-            {{!-- <div id="map" class="map"></div> --}}
+            <div id="map" class="map"></div>
         {{!-- </div> --}}
 
     </div>
 
     {{> scripts}}
 
-    {{!-- <style>
+    <style>
       .map {
         height: 100vh;
         width: 100%;
@@ -43,6 +43,7 @@
     </style>
 
     <script type="text/javascript">
+    
       var map = new ol.Map({
         target: 'map',
         layers: [
@@ -51,14 +52,15 @@
           })
         ],
         view: new ol.View({
-          center: ol.proj.fromLonLat([37.41, 8.82]),
-          zoom: 4
+          center: ol.proj.fromLonLat([26.08,44.45]),
+          zoom: 14
         })
       });
-    </script> --}}
+
+    </script>
 
     {{!-- <script src="/js/map.js"></script> --}}
-    
+  
 </body>
 
 </html>

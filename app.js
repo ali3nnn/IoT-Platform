@@ -24,36 +24,36 @@ const mysql = require('mysql');
 // Connect to InfluxDB and set the SCHEMA
 const influx = new Influx.InfluxDB({
     host: 'localhost',
-    database: 'anysensor_dummy',
-    schema: [
-        {
-            measurement: 'temperature',
-            tags: ['sensorId'],
-            fields: {
-                value: Influx.FieldType.FLOAT,
-            }
-        }
-    ]
+    database: 'platform',
+    // schema: [
+    //     {
+    //         measurement: 'sensors',
+    //         tags: ['sensorId'],
+    //         fields: {
+    //             value: Influx.FieldType.FLOAT,
+    //         }
+    //     }
+    // ]
 })
 
-// Influx Write - ASYNC
-function influxWriter(measurement, sensorId, value, database = 'anysensor_dummy', precision = 's') {
-    influx.writePoints([
-        {
-            measurement,
-            tags: {
-                sensorId,
-            },
-            fields: { value }
-        }
-    ], {
-        database,
-        precision,
-    })
-        .catch(error => {
-            console.error(`Error saving data to InfluxDB! ${err.stack}`)
-        });
-}
+// // Influx Write - ASYNC
+// function influxWriter(measurement, sensorId, value, database = 'anysensor_dummy', precision = 's') {
+//     influx.writePoints([
+//         {
+//             measurement,
+//             tags: {
+//                 sensorId,
+//             },
+//             fields: { value }
+//         }
+//     ], {
+//         database,
+//         precision,
+//     })
+//         .catch(error => {
+//             console.error(`Error saving data to InfluxDB! ${err.stack}`)
+//         });
+// }
 
 // Influx Query - PROMISE
 function influxReader(measurement, where = false) {
@@ -68,12 +68,6 @@ function influxReader(measurement, where = false) {
 }
 
 // influxWriter('temperature', 'AX19K', 100)
-let resultInfluxDb = influxReader('temperature', `sensorId='AX19K'`).then((result) => {
-    const time = result[0].time._nanoISO;
-    const value = result[0].value
-    const sensorId = result[0].sensorId
-    console.log(time, value, sensorId,'\r\n')
-})
 
 // ==================================
 // End Influx Connection
@@ -483,51 +477,80 @@ app.get('/api/get-data/:county', (req, res) => {
         console.log("County requested:", req.params.county);
 
         let sendFlag = false
-        for (let i = 0; i < influxData.length; i++) {
 
-            let influxCounty = influxData[i].county
-            let countyQueried = req.params.county
-            let sensorAccess = sess.sensorAccess
-            let influxSensor = influxData[i].sensorId
+        let resultInfluxDb = influxReader('sensors', `city='bucuresti' ORDER BY time DESC LIMIT 1`).then((result) => {
+            // const time = result[0].time._nanoISO
+            // const value = result[0].value
+            // const sensorId = result[0].sensorId
+            // console.log(time, value, sensorId,'\r\n')
+        
+            // console.log(result[0])
 
-            // console.log("influxCounty", influxCounty)
-
-            // console.log("sensorAccess:",sensorAccess)
-
-            // Get data for sensorsId assignated to county requested (req.params.county)
-            // console.log("test",sensorAccess, influxSensor)
-            // if (sendFlag == false) {
-            if (sensorAccess != -1) {
-                if (influxCounty == countyQueried && sensorAccess.includes(influxSensor)) {
-                    data.push(influxData[i])
-                    console.log("Data sent:", influxData[i])
-                    sendFlag = true;
-                } else if (influxCounty != countyQueried) {
-                    // console.log(influxCounty,"county is not queried",countyQueried)
-                }
-            } else if (sensorAccess == 0) {
-                // this user has no access
-                res.send("You dont have access to any sensor!")
-            } else if (sensorAccess == -1) {
-                if (influxCounty == countyQueried) {
-                    data.push(influxData[i])
-                    console.log("Data sent:", influxData[i])
-                    sendFlag = true;
-                } else if (influxCounty != countyQueried) {
-                    // console.log(influxCounty, "county is not queried", countyQueried)
-                }
+            for(var i=0; i<result.length; i++) {
+                sendFlag = true
+                data.push(result[i])
             }
-            // }
-        }
 
-        console.log("")
+            return data
 
-        if (sendFlag)
+
+        }).then((result)=>{
             res.status(200).send(data)
-        else {
-            data.push({ error: "user doesn't have this county registered" })
-            res.status(404).send(data)
-        }
+        }).catch((e) => {
+            res.status(404).send("error")
+        })
+
+        // Dummy Data
+        // for (let i = 0; i < influxData.length; i++) {
+
+        //     let influxCounty = influxData[i].county
+        //     let countyQueried = req.params.county
+        //     let sensorAccess = sess.sensorAccess
+        //     let influxSensor = influxData[i].sensorId
+
+        //     // console.log("influxCounty", influxCounty)
+
+        //     // console.log("sensorAccess:",sensorAccess)
+
+        //     // Get data for sensorsId assignated to county requested (req.params.county)
+        //     // console.log("test",sensorAccess, influxSensor)
+        //     // if (sendFlag == false) {
+        //     if (sensorAccess != -1) {
+        //         if (influxCounty == countyQueried && sensorAccess.includes(influxSensor)) {
+        //             data.push(influxData[i])
+        //             console.log("Data sent:", influxData[i])
+        //             sendFlag = true;
+        //         } else if (influxCounty != countyQueried) {
+        //             // console.log(influxCounty,"county is not queried",countyQueried)
+        //         }
+        //     } else if (sensorAccess == 0) {
+        //         // this user has no access
+        //         res.send("You dont have access to any sensor!")
+        //     } else if (sensorAccess == -1) {
+        //         if (influxCounty == countyQueried) {
+        //             data.push(influxData[i])
+        //             console.log("Data sent:", influxData[i])
+        //             sendFlag = true;
+        //         } else if (influxCounty != countyQueried) {
+        //             // console.log(influxCounty, "county is not queried", countyQueried)
+        //         }
+        //     }
+        //     // }
+        // }
+
+
+
+        // console.log("")
+        // console.log(sendFlag)
+        // if (sendFlag) {
+        //     console.log(data)
+        //     res.status(200).send(data)
+        // }
+            
+        // else {
+        //     data.push({ error: "user doesn't have this county registered" })
+        //     res.status(404).send(data)
+        // }
 
     } else {
         data.push({ error: "you are not logged in" })
