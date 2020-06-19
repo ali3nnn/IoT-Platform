@@ -20,7 +20,7 @@
 
         {{!-- County Data Fetch --}}
 
-        {{!-- <h1>County: <span class='county-name'>{{county}}</span></h1> --}}
+        {{!-- <h1>County: <span class='county-name'></span></h1> --}}
 
         <div class="small-box-container">
             {{!-- <div class="row"> --}}
@@ -28,13 +28,12 @@
             <div class="small-box bg-info county-detail box-shadow-5">
                 <div class="inner">
                     <h3>{{county}}</h3>
-
                     <p>County</p>
                 </div>
                 <div class="icon">
                     <i class="fas fa-map-marker-alt"></i>
                 </div>
-                <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                {{!-- <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a> --}}
             </div>
             {{!-- </div> --}}
 
@@ -54,7 +53,7 @@
 
             {{!-- <div class="col-lg-3 col-6"> --}}
             {{!-- <div class="small-box bg-info box-shadow-5"> --}}
-                {{!-- <div class="inner">
+            {{!-- <div class="inner">
                     <h3>150</h3>
 
                     <p>New Orders</p>
@@ -63,8 +62,8 @@
                     <i class="ion ion-bag"></i>
                 </div>
                 <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a> --}}
-                {{!-- </div> --}}
-           {{!-- </div> --}}
+            {{!-- </div> --}}
+            {{!-- </div> --}}
 
             {{!-- <div class="col-lg-3 col-6"> --}}
             {{!-- <div class="small-box bg-info box-shadow-5">
@@ -89,17 +88,32 @@
     <script>
 
         let countyName = $(".county-detail h3").html()
+        
         let json = ''
 
-        setInterval(function () {
-            const getData = async () => {
-                const response = await fetch("https://anysensor.dasstec.ro/api/get-data/" + countyName)
-                return response.json()
-            }
+        function addSmallBox(label, value, fontAwesome=false) {
+            $(".small-box-container").append(`<div class="small-box bg-info county-detail box-shadow-5">
+                                                    <div class="inner">
+                                                        <h3>`+value+`</h3>
+                                                        <p>`+label+`</p>
+                                                    </div>
+                                                </div>`)
 
-            (async () => {
-                json = await getData();
-                $(".card-container").html(`<article class="card">
+            if(fontAwesome) {
+                $(".small-box-container .small-box").append(`<div class="icon"><i class="`+fontAwesome+`"></i></div>`)
+            }
+        }
+
+        const getData = async () => {
+            const response = await fetch("https://anysensor.dasstec.ro/api/get-data/" + countyName)
+            return response.json()
+        }
+
+        (async () => {
+            json = await getData();
+        })().then(() => {
+
+            $(".card-container").html(`<article class="card">
 
                                     <div class="card-header">
                                         <h3 class="card-title">
@@ -121,52 +135,59 @@
                                     <div class="card-body">
                                         <div class="tab-content p-0">
                                             <div class="chart tab-pane active" id="graph1" style="position: relative; height: 300px;">
-
                                                 <canvas id="temperature_1"></canvas>
                                             </div>
                                             <div class="chart tab-pane" id="graph2" style="position: relative; height: 300px;">
-                                                <canvas id="temperature_1"></canvas>
+                                                <canvas id="temperature_2"></canvas>
                                             </div>
                                         </div>
                                     </div>
                                     
                                 </article>`);
-                    
 
-            })().then(() => {
+            if (json[0].error) {
+                $("#graph1").html(json[0].message)
+
+                // County name append
+                // addSmallBox('county',api_data[0].county,fontAwesome='fas fa-map-marker-alt')
+
+            } else {
+
+                const api_data = json.slice(1, json.length)
 
                 let ylabels = []
                 let xlabels = []
-                for (var i = 0; i < json.length; i++) {
-                    xlabels.push(json[i].type)
-                    $(".county-detail h3").html(json[i].county)
-                    ylabels.push("Current value: " + json[i].type+"\r\n"+"Time: "+json[i].time)
+
+                // County name append
+                // addSmallBox('county',api_data[0].county,fontAwesome='fas fa-map-marker-alt')
+
+                // Sensors data append
+
+
+                for (var i = 0; i < api_data.length; i++) {
+                    xlabels.push(parseInt(api_data[i].value))
+                    //ylabels.push("Current value: " + parseFloat(api_data[i].value) + "\r\n" + "Time: " + api_data[i].time)
+                    ylabels.push(i)
+                    const date = new Date(api_data[i].time)
+                    const day = date.getDate()
+                    const month = date.getMonth()
+                    const hour = date.getHours()
+                    console.log(day, month, hour, date)
                 }
 
+                // console.log(xlabels, ylabels)
+
                 var ctx = document.getElementById("temperature_1").getContext("2d");
+
                 var myNewChart = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: ylabels,
                         datasets: [{
-                            label: 'Average Temperature',
+                            label: 'Temperature value',
                             data: xlabels,
-                            backgroundColor: [
-                                'rgba(255, 99, 132, 0.2)',
-                                'rgba(54, 162, 235, 0.2)',
-                                'rgba(255, 206, 86, 0.2)',
-                                'rgba(75, 192, 192, 0.2)',
-                                'rgba(153, 102, 255, 0.2)',
-                                'rgba(255, 159, 64, 0.2)'
-                            ],
-                            borderColor: [
-                                'rgba(255, 99, 132, 1)',
-                                'rgba(54, 162, 235, 1)',
-                                'rgba(255, 206, 86, 1)',
-                                'rgba(75, 192, 192, 1)',
-                                'rgba(153, 102, 255, 1)',
-                                'rgba(255, 159, 64, 1)'
-                            ],
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
                             borderWidth: 1
                         }]
                     },
@@ -175,9 +196,9 @@
                     }
 
                 });
+            }
 
-            })
-        }, 1000)
+        })
     </script>
 
     {{> scripts}}

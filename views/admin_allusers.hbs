@@ -18,7 +18,7 @@
         {{> navbar-general}}
 
         <!-- Alerts -->
-        <div class="container alerts-container">
+        {{!-- <div class="container alerts-container">
 
             {{#if alert }}
             <div class="alert alert-danger mt-3 mb-0" role="alert">
@@ -32,7 +32,7 @@
             </div>
             {{/if}}
 
-        </div>
+        </div> --}}
 
         <!-- DB Results -->
 
@@ -107,8 +107,14 @@
         </div>
         {{!-- container wrapper end --}}
 
+
+        {{else}}
+
+            {{!-- test --}}
+
         {{/if}}
 
+        {{> notification}}
 
     </div>
     {{!-- #main Div End --}}

@@ -32,7 +32,7 @@ if (passwordField)
     //show the rules when typing and check strongness
     passwordField.addEventListener('input', function (e) {
         e.preventDefault();
-        console.log("string:", this.value)
+        // console.log("string:", this.value)
         passwordCheck = {
             lowercase: false,
             uppercase: false,
@@ -76,7 +76,7 @@ if (passwordField)
             return true;
         }
 
-        console.log(allTrue(passwordCheck))
+        // console.log(allTrue(passwordCheck))
 
         if (allTrue(passwordCheck)) {
             registerButton.value = "Register"
@@ -95,12 +95,12 @@ if (passwordField)
 for (let i = 0; i < otherPasswordFields.length; i++) {
     otherPasswordFields[i].addEventListener('click', function (e) {
         e.preventDefault();
-        console.log('click in another input');
+        // console.log('click in another input');
         passwordRules.classList.add('hideRules');
     });
     otherPasswordFields[i].addEventListener('input', function (e) {
         e.preventDefault();
-        console.log('input in another field');
+        // console.log('input in another field');
         passwordRules.classList.add('hideRules');
     });
 }
@@ -243,7 +243,7 @@ try {
 
         let date = new Date()
         date = date.getMilliseconds()
-        console.log("opened click:", date)
+        // console.log("opened click:", date)
 
         if (!sidenav.classList.contains("sidenav-opened")) {
             sidenav.classList.add("sidenav-opened");
@@ -329,14 +329,6 @@ try {
         ev.stopPropagation(); //this is important! If removed, you'll get both alerts
     }, false);
     // }
-
-
-
-
-
-
-
-
 
 } catch (e) {
     console.warn("It looks like there is no sidebar navigation")
@@ -642,6 +634,9 @@ function chart_lineboundaries(selector) {
     });
 
 }
+
+// Comment the following line if you don't want notification to be on all pages
+animationInNotification()
 
 function animationInNotification() {
     setTimeout(50, $(".messages").animate({

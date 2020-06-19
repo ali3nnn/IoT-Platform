@@ -60,7 +60,7 @@ function influxReader(measurement, where = false) {
     return new Promise((resolve,myreject)=>{
         if (!where) query =  `select * from ` + measurement + ``
         else query = `select * from ` + measurement + ` WHERE ` + where
-        console.log(query)
+        // console.log(query)
         influx.query(query)
             .then(result => {return resolve(result)})
             .catch(error => {return reject({error})});
@@ -289,26 +289,62 @@ app.get('/logout', function (req, res) {
 // SUPERADMIN reuqest
 //=========================================
 app.get('/users', authDashboard, authSuperAdmin, showAllUsers, function (req, res) {
-    try {
-        db.query("SELECT id, name, username, email, user_role, reg_date, sensorId FROM users", (err, result) => {
 
-            for (var item in result) {
-                result[item].reg_date = result[item].reg_date.toString().split('GMT')[0]
+    var sql = "SELECT id, name, username, email, user_role, reg_date FROM users"
+    var data = {}
+    database.query(sql)
+        .then(rows => {
+            data.flag = rows.length
+            data.user = sess.username
+            data.result = rows
+            return data
+        })
+        .then((data) => {
+            
+            for (var item in data.result) {
+                data.result[item].reg_date = data.result[item].reg_date.toString().split('GMT')[0]
             }
 
-            res.render("admin_allusers", {
+            const dataRender = {
                 username: sess.username,
                 user_role: sess.user_role,
                 user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0,
-                db_results: result,
+                db_results: data.result,
                 role_basic: req.body.role == 'basic' ? true : false,
                 role_superadmin: req.body.role == 'superadmin' ? true : false,
-            })
+                message: "Notification test message"
+            }
 
-        })
-    } catch (err) {
-        console.log("db query users error:", err)
-    }
+            // console.log(dataRender)
+
+            res.render("admin_allusers", dataRender)
+        });
+
+    // try {
+    //     db.query("SELECT id, name, username, email, user_role, reg_date FROM users", (err, result) => {
+
+    //         for (var item in result) {
+    //             result[item].reg_date = result[item].reg_date.toString().split('GMT')[0]
+    //         }
+
+    //         const data = {
+    //             username: sess.username,
+    //             user_role: sess.user_role,
+    //             user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0,
+    //             db_results: result,
+    //             role_basic: req.body.role == 'basic' ? true : false,
+    //             role_superadmin: req.body.role == 'superadmin' ? true : false,
+    //             message: "Notification test message"
+    //         }
+
+    //         // console.log(data)
+
+    //         res.render("admin_allusers", data)
+
+    //     })
+    // } catch (err) {
+    //     console.log("db query users error:", err)
+    // }
 
 });
 
@@ -318,7 +354,7 @@ app.post('/update', async (req, res) => {
     //UPDATE into db
     if (!req.body.password.length) {
         // console.log("Query:", req.body)
-        db.query("UPDATE users SET Name='" + req.body.name + "', Username='" + req.body.username + "', Email='" + req.body.email + "', User_role='" + req.body.role + "', sensorId='" + req.body.sensorId + "' WHERE Id='" + req.body.id + "'", (err, result) => {
+        db.query("UPDATE users SET Name='" + req.body.name + "', Username='" + req.body.username + "', Email='" + req.body.email + "', User_role='" + req.body.role + "' WHERE Id='" + req.body.id + "'", (err, result) => {
             if (err) console.error(err)
             else {
                 res.render("admin_allusers",
@@ -338,7 +374,7 @@ app.post('/update', async (req, res) => {
         console.log("password changed")
         let hashedPassword = await bcrypt.hash(req.body.password, 10)
         console.log(hashedPassword)
-        db.query("UPDATE users SET Name='" + req.body.name + "', Username='" + req.body.username + "', Email='" + req.body.email + "', User_role='" + req.body.role + "', sensorId='" + req.body.sensorId + "', Password='" + hashedPassword + "' WHERE Id='" + req.body.id + "'", (err, result) => {
+        db.query("UPDATE users SET Name='" + req.body.name + "', Username='" + req.body.username + "', Email='" + req.body.email + "', User_role='" + req.body.role + "', Password='" + hashedPassword + "' WHERE Id='" + req.body.id + "'", (err, result) => {
             if (err) console.error(err)
             else {
                 res.render("admin_allusers",
@@ -458,15 +494,6 @@ app.get('/api/get-data/:county', (req, res) => {
 
     // console.log(sess.username)
 
-    // Influx dummy
-    var influxData = [
-        { county: 'Iasi', sensorId: 11, time: 1, value: 123 },
-        { county: 'Dambovita', sensorId: 10, time: 2, value: 43 },
-        { county: 'Dambovita', sensorId: 1, time: 3, value: 24 },
-        { county: 'Constanta', sensorId: 5, time: 4, value: 14 },
-        { county: 'Timis', sensorId: 8, time: 5, value: 15 }
-    ]
-
     let data = []
 
     // Who ask for the data
@@ -478,7 +505,7 @@ app.get('/api/get-data/:county', (req, res) => {
 
         let sendFlag = false
 
-        let resultInfluxDb = influxReader('sensors', `city='bucuresti' ORDER BY time DESC LIMIT 1`).then((result) => {
+        let resultInfluxDb = influxReader('sensors', `city='`+req.params.county+`' ORDER BY time DESC LIMIT 2`).then((result) => {
             // const time = result[0].time._nanoISO
             // const value = result[0].value
             // const sensorId = result[0].sensorId
@@ -486,57 +513,24 @@ app.get('/api/get-data/:county', (req, res) => {
         
             // console.log(result[0])
 
-            for(var i=0; i<result.length; i++) {
-                sendFlag = true
-                data.push(result[i])
+            if(result.length) {
+                data.push({ error: false, message: "Requested county has been found" })
+            } else {
+                data.push({ error: true, message: "Requested county is not found" })
             }
 
+            for(var i=0; i<result.length; i++) {
+                data.push(result[i])
+            }
+                
             return data
 
 
         }).then((result)=>{
             res.status(200).send(data)
         }).catch((e) => {
-            res.status(404).send("error")
+            res.status(404).send("Scraping from influx failed")
         })
-
-        // Dummy Data
-        // for (let i = 0; i < influxData.length; i++) {
-
-        //     let influxCounty = influxData[i].county
-        //     let countyQueried = req.params.county
-        //     let sensorAccess = sess.sensorAccess
-        //     let influxSensor = influxData[i].sensorId
-
-        //     // console.log("influxCounty", influxCounty)
-
-        //     // console.log("sensorAccess:",sensorAccess)
-
-        //     // Get data for sensorsId assignated to county requested (req.params.county)
-        //     // console.log("test",sensorAccess, influxSensor)
-        //     // if (sendFlag == false) {
-        //     if (sensorAccess != -1) {
-        //         if (influxCounty == countyQueried && sensorAccess.includes(influxSensor)) {
-        //             data.push(influxData[i])
-        //             console.log("Data sent:", influxData[i])
-        //             sendFlag = true;
-        //         } else if (influxCounty != countyQueried) {
-        //             // console.log(influxCounty,"county is not queried",countyQueried)
-        //         }
-        //     } else if (sensorAccess == 0) {
-        //         // this user has no access
-        //         res.send("You dont have access to any sensor!")
-        //     } else if (sensorAccess == -1) {
-        //         if (influxCounty == countyQueried) {
-        //             data.push(influxData[i])
-        //             console.log("Data sent:", influxData[i])
-        //             sendFlag = true;
-        //         } else if (influxCounty != countyQueried) {
-        //             // console.log(influxCounty, "county is not queried", countyQueried)
-        //         }
-        //     }
-        //     // }
-        // }
 
 
 

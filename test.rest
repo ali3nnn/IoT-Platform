@@ -1,3 +1,0 @@
-GET /map HTTP/1.1
-Host: anysensor.dasstec.ro
-Feature-policy: usb '*'
