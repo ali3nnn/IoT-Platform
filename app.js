@@ -56,14 +56,18 @@ const influx = new Influx.InfluxDB({
 // }
 
 // Influx Query - PROMISE
-function influxReader(measurement, where = false) {
-    return new Promise((resolve,myreject)=>{
-        if (!where) query =  `select * from ` + measurement + ``
-        else query = `select * from ` + measurement + ` WHERE ` + where
+function influxReader(query) {
+    return new Promise((resolve, myreject) => {
         // console.log(query)
         influx.query(query)
-            .then(result => {return resolve(result)})
-            .catch(error => {return reject({error})});
+            .then(result => {
+                return resolve(result)
+            })
+            .catch(error => {
+                return reject({
+                    error
+                })
+            });
     })
 }
 
@@ -103,8 +107,16 @@ Handlebars.registerHelper('eq', function () {
 
 // Middleware
 // ==================================
-const { authRegister, authLogin, authDashboard, authSuperAdmin, cookieChecker } = require('./controllers/auth')
-const { showAllUsers } = require('./controllers/all_users')
+const {
+    authRegister,
+    authLogin,
+    authDashboard,
+    authSuperAdmin,
+    cookieChecker
+} = require('./controllers/auth')
+const {
+    showAllUsers
+} = require('./controllers/all_users')
 // ==================================
 // End Middleware
 
@@ -170,7 +182,9 @@ app.use(session({
     saveUninitialized: false
 }));
 //parse url encoded (as sent by html forms)
-app.use(express.urlencoded({ extended: false }))
+app.use(express.urlencoded({
+    extended: false
+}))
 //parse json bodies (as sent by api)
 app.use(express.json())
 //initialize cookie parser
@@ -180,7 +194,9 @@ const public_dir = path.join(__dirname, './public')
 // set the directory for css/js/img files
 app.use(express.static(public_dir))
 // Dotenv Path
-dotenv.config({ path: './.env' })
+dotenv.config({
+    path: './.env'
+})
 // ==================================
 // End Configuration
 
@@ -223,7 +239,7 @@ var sess
 // ==============================================
 
 app.get('/', (req, res) => {
-    
+
     // Homepage is disabled and it redirect to /map
     res.redirect('/map');
 
@@ -300,7 +316,7 @@ app.get('/users', authDashboard, authSuperAdmin, showAllUsers, function (req, re
             return data
         })
         .then((data) => {
-            
+
             for (var item in data.result) {
                 data.result[item].reg_date = data.result[item].reg_date.toString().split('GMT')[0]
             }
@@ -357,34 +373,28 @@ app.post('/update', async (req, res) => {
         db.query("UPDATE users SET Name='" + req.body.name + "', Username='" + req.body.username + "', Email='" + req.body.email + "', User_role='" + req.body.role + "' WHERE Id='" + req.body.id + "'", (err, result) => {
             if (err) console.error(err)
             else {
-                res.render("admin_allusers",
-                    {
-                        username: sess.username,
-                        user_role: sess.user_role,
-                        user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0,
-                        success: "Database has been updated"
-                    }
-                )
+                res.render("admin_allusers", {
+                    username: sess.username,
+                    user_role: sess.user_role,
+                    user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0,
+                    success: "Database has been updated"
+                })
                 // setTimeout(res.redirect("/users"), 1000);
             }
         })
-    }
-
-    else {
+    } else {
         console.log("password changed")
         let hashedPassword = await bcrypt.hash(req.body.password, 10)
         console.log(hashedPassword)
         db.query("UPDATE users SET Name='" + req.body.name + "', Username='" + req.body.username + "', Email='" + req.body.email + "', User_role='" + req.body.role + "', Password='" + hashedPassword + "' WHERE Id='" + req.body.id + "'", (err, result) => {
             if (err) console.error(err)
             else {
-                res.render("admin_allusers",
-                    {
-                        username: sess.username,
-                        user_role: sess.user_role,
-                        user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0,
-                        success: "Database has been updated"
-                    }
-                )
+                res.render("admin_allusers", {
+                    username: sess.username,
+                    user_role: sess.user_role,
+                    user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0,
+                    success: "Database has been updated"
+                })
                 // setTimeout(res.redirect("/users"), 1000);
             }
         })
@@ -417,8 +427,7 @@ app.get('/api/get-zones', function (req, res) {
                 result: []
             };
             res.status(204).send(data);
-        }
-        else if (sensorIdList == -1) {
+        } else if (sensorIdList == -1) {
             console.log("This user has acces to ALL sensors")
             try {
                 db.query("SELECT * FROM sensors", (err, result) => {
@@ -430,7 +439,9 @@ app.get('/api/get-zones', function (req, res) {
                         res.status(200).send(data);
                     } else {
                         var data = {
-                            result: [{ error: 'database error' }]
+                            result: [{
+                                error: 'database error'
+                            }]
                         };
                         res.status(204).send(data);
                     }
@@ -439,8 +450,7 @@ app.get('/api/get-zones', function (req, res) {
             } catch (err) {
                 console.warn("db query zones error:", err)
             }
-        }
-        else {
+        } else {
             console.log("This user has acces to sensorId:", sensorIdList)
             try {
                 var sql_query = "SELECT * FROM sensors WHERE sensorId IN (?)"
@@ -454,7 +464,9 @@ app.get('/api/get-zones', function (req, res) {
                         res.status(200).send(data);
                     } else {
                         var data = {
-                            result: [{ error: 'database error' }]
+                            result: [{
+                                error: 'database error'
+                            }]
                         };
                         res.status(204).send(data);
                     }
@@ -501,32 +513,48 @@ app.get('/api/get-data/:county', (req, res) => {
         console.log('/api/get-data/' + req.params.county)
         console.log("User:", sess.username);
         console.log("Access to sensorId:", sess.sensorAccess);
+        req.params.county = req.params.county.toLowerCase();
         console.log("County requested:", req.params.county);
 
         let sendFlag = false
 
-        let resultInfluxDb = influxReader('sensors', `city='`+req.params.county+`' ORDER BY time DESC LIMIT 2`).then((result) => {
+        // Get the date for influx query
+        var today = new Date();
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+        var yyyy = today.getFullYear();
+        today = yyyy+'-'+mm+'-'+dd+'T00:00:00Z';
+
+        let resultInfluxDb = influxReader(`select mean(value) as value from sensors where id='test-client' and time>='`+today+`' and time<now() GROUP BY time(1h) ORDER BY time DESC`).then((result) => {
             // const time = result[0].time._nanoISO
             // const value = result[0].value
             // const sensorId = result[0].sensorId
             // console.log(time, value, sensorId,'\r\n')
-        
-            // console.log(result[0])
 
-            if(result.length) {
-                data.push({ error: false, message: "Requested county has been found" })
+            // console.log(result)
+
+            if (result.length) {
+                data.push({
+                    error: false,
+                    message: "Requested county has been found",
+                    county: req.params.county
+                })
             } else {
-                data.push({ error: true, message: "Requested county is not found" })
+                data.push({
+                    error: true,
+                    message: "Requested county is not found",
+                    county: req.params.county
+                })
             }
 
-            for(var i=0; i<result.length; i++) {
+            for (var i = 0; i < result.length; i++) {
                 data.push(result[i])
             }
-                
+
             return data
 
 
-        }).then((result)=>{
+        }).then((result) => {
             res.status(200).send(data)
         }).catch((e) => {
             res.status(404).send("Scraping from influx failed")
@@ -540,14 +568,16 @@ app.get('/api/get-data/:county', (req, res) => {
         //     console.log(data)
         //     res.status(200).send(data)
         // }
-            
+
         // else {
         //     data.push({ error: "user doesn't have this county registered" })
         //     res.status(404).send(data)
         // }
 
     } else {
-        data.push({ error: "you are not logged in" })
+        data.push({
+            error: "you are not logged in"
+        })
         res.status(403).send(data)
     }
 
@@ -555,13 +585,12 @@ app.get('/api/get-data/:county', (req, res) => {
 })
 
 app.get('/map/:county', (req, res) => {
-    sess = req.session
 
+    sess = req.session
     sess.county = req.params.county
 
-
     console.log("/map/" + sess.county)
-    console.log("User:", sess.username, '\r\n')
+    console.log("User:", sess.username)
 
     if (sess.username)
         res.status(200).render('dashboard', {
