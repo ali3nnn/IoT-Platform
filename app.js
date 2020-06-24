@@ -645,7 +645,7 @@ app.get('/api/get-data/:county', (req, res) => {
         req.params.county = req.params.county.toLowerCase()
         console.log('/api/get-data/' + req.params.county)
         console.log("User:", sess.username);
-        console.log("Access to sensorId:", sess.sensorAccess);
+        // console.log("Access to sensorId:", sess.sensorAccess);
 
         let sendFlag = false
 
@@ -754,7 +754,7 @@ app.get('/api/get-data/:county/:sensorQuery', (req, res) => {
         req.params.sensorQuery = req.params.sensorQuery.toLowerCase()
         console.log('/api/get-data/' + req.params.county + '/' + req.params.sensorQuery)
         console.log("User:", sess.username);
-        console.log("Access to sensorId:", sess.sensorAccess);
+        // console.log("Access to sensorId:", sess.sensorAccess);
         // console.log(req.params)
 
         // Get the date for influx query - this day 0 to currentHour

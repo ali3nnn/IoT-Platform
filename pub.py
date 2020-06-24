@@ -69,6 +69,15 @@ def injectIntoInflux():
     value=float(random.uniform(0, 1)*50)
     print('sensor17','alexbarbu2','type2',value)
     write_influx('Romania','constanta','constanta','constanta','test-zone','sensor17','alexbarbu2','type2',value)
+    value=float(random.uniform(0, 1)*50)
+    print('sensor18','alexbarbu2','type1',value)
+    write_influx('Romania','constanta','constanta','constanta','test-zone','sensor18','alexbarbu2','type1',value)
+    value=float(random.uniform(0, 1)*50)
+    print('sensor19','alexbarbu2','type3',value)
+    write_influx('Romania','constanta','constanta','constanta','test-zone','sensor19','alexbarbu2','type3',value)
+    value=float(random.uniform(0, 1)*50)
+    print('sensor22','alexbarbu2','type4',value)
+    write_influx('Romania','constanta','constanta','constanta','test-zone','sensor22','alexbarbu2','type4',value)
     
     print()
     
@@ -76,8 +85,9 @@ while True:
   localtime = time.localtime()
   result = time.strftime("%I:%M:%S %p", localtime)
   print(result)
-  injectIntoInflux()
-  time.sleep(60)
+  if(result[6:8] == '00'):
+    injectIntoInflux()
+  time.sleep(1)
 
 # client = mqtt.Client("test-sub")
 # client.on_connect = on_connect

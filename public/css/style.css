@@ -138,7 +138,7 @@ h2 {
 
 /* Loader */
 
-.loader {
+.loader-anysensor {
   /* border: 16px solid #f3f3f3; */
   /* Light grey */
   /* border-top: 16px solid #3498db; */
@@ -3810,3 +3810,52 @@ div#gauge {
     visibility: hidden;
   }
 }
+
+/* Chart */
+
+/* Current Value */
+
+/* Default */
+.gauge-container {
+  width: 100%;
+  height: auto;
+  display: block;
+  float: left;
+  padding: 10px;
+  overflow: hidden;
+}
+/* Extra */
+
+.gauge-container > .gauge > .dial {
+  stroke: #343a3f;
+  fill: "#343a3f";
+  /* stroke-dasharray: 31 1; */
+  stroke-width: 2px;
+}
+.gauge-container > .gauge > .value {
+  stroke: #FF6DAF;
+  /* stroke-dasharray: 30 1; */
+  stroke-width: 9px;
+}
+.gauge-container > .gauge  .value-text {
+  fill: #343a3f;
+  font-size: 0.7em;
+  color: #343a3f
+}
+
+/* .gauge-container.two {
+  height: auto;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.gauge-container.two > .gauge > .value {
+  stroke: #334455;
+  stroke-width: 10;
+}
+.gauge-container.two > .gauge > .dial {
+  stroke-dasharray: none;
+  stroke-width: 10;
+}
+.gauge-container.two > .gauge > .value {
+} */
+
+/* Graph */

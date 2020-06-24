@@ -31,14 +31,14 @@ function currentValueAdd(element, liveData) {
         // Remove Loading Item
         $('.' + element + '-currentValue-spinner').remove()
         // Add Live Data
-        $("." + element + "-currentValue").html(liveData)
+        // $("." + element + "-currentValue").append(liveData)
         // debug
         // console.log("Real value update "+element+":",liveData)
     } else {
         // Remove Loading Item
         $('.' + element + '-currentValue-spinner').remove()
         // Add Live Data
-        $("." + element + "-currentValue").html(`<p class='no-data-from-sensor' >No data from sensor with id <b>` + element + `</b></p>`)
+        // $("." + element + "-currentValue").append(`<p class='no-data-from-sensor' >No data from sensor with id <b>` + element + `</b></p>`)
     }
 }
 
@@ -104,19 +104,20 @@ function defaultSensorView(sensorId, sensorType) {
 
     // select an icon
     if (sensorType == 'type1') {
-        // var icon = `<i class="fas fa-temperature-high mr-1"></i>`
-        var icon = sensorType + `_icon`
+        var icon = `<i class="fas fa-temperature-high mr-1"></i>`
+        // var icon = sensorType + `_icon`
     } else if (sensorType == 'type2') {
-        // var icon = `<i class="fas fa-temperature-high mr-1"></i>`
-        var icon = sensorType + `_icon`
+        var icon = `<i class="far fa-lightbulb"></i>`
+        // var icon = sensorType + `_icon`
     } else if (sensorType == 'type3') {
-        // var icon = `<i class="fas fa-temperature-high mr-1"></i>`
-        var icon = sensorType + `_icon`
+        var icon = `<i class="fas fa-bolt"></i>`
+        // var icon = sensorType + `_icon`
     } else if (sensorType == 'type4') {
-        // var icon = `<i class="fas fa-temperature-high mr-1"></i>`
-        var icon = sensorType + `_icon`
+        var icon = `<i class="fas fa-adjust"></i>`
+        // var icon = sensorType + `_icon`
     } else {
-        var icon = sensorType + `_icon`
+        var icon = `<i class="fas fa-temperature-high mr-1"></i>`
+        // var icon = sensorType + `_icon`
     }
 
     // current value gauge component
@@ -126,12 +127,12 @@ function defaultSensorView(sensorId, sensorType) {
         <h3 class="card-title">
             ` + icon + `
             Current Value
-            ` + sensorId + `
         </h3>
     </div>
 
     <div class="card-body">
         <div class="` + sensorId + `-currentValue">
+            <div id="` + sensorId + `-gauge" class="gauge-container two"></div>
             <a href="#" class='spinner ` + sensorId + `-currentValue-spinner'>
                 <span>Loading...</span>
             </a>
@@ -146,8 +147,8 @@ function defaultSensorView(sensorId, sensorType) {
         <div class="card-header">
             <h3 class="card-title">
                 ` + icon + `
-                Timeline Graph
-                ` + sensorId + `
+                Timeline Graph |
+                <b>` + sensorId + `</b>
             </h3>
     
             <div class="card-tools">
@@ -175,6 +176,142 @@ function defaultSensorView(sensorId, sensorType) {
     return currentValueView + graphView
 }
 
+function currentValueGauge(element) {
+    console.log(element)
+    // JS 
+    var chart = JSC.chart(element, {
+        debug: true,
+        type: 'gauge ',
+        legend_visible: false,
+        chartArea_boxVisible: false,
+        xAxis: {
+            /*Used to position marker on top of axis line.*/
+            scale: {
+                range: [0, 1],
+                invert: true
+            }
+        },
+        palette: {
+            pointValue: '%yValue',
+            ranges: [{
+                    value: 350,
+                    color: '#FF5353'
+                },
+                {
+                    value: 400,
+                    color: '#FFD221'
+                },
+                {
+                    value: 700,
+                    color: '#77E6B4'
+                },
+                {
+                    value: [800, 850],
+                    color: '#21D683'
+                }
+            ]
+        },
+        yAxis: {
+            defaultTick: {
+                padding: 13,
+                enabled: false
+            },
+            customTicks: [400, 700, 800],
+            line: {
+                width: 15,
+                breaks_gap: 0.03,
+                color: 'smartPalette'
+            },
+            scale: {
+                range: [350, 850]
+            }
+        },
+        defaultSeries: {
+            opacity: 1,
+            shape: {
+                label: {
+                    align: 'center',
+                    verticalAlign: 'middle'
+                }
+            }
+        },
+        series: [{
+            type: 'marker',
+            name: 'Score',
+            shape_label: {
+                text: "720<br/> <span style='fontSize: 35'>Great!</span>",
+                style: {
+                    fontSize: 48
+                }
+            },
+            defaultPoint: {
+                tooltip: '%yValue',
+                marker: {
+                    outline: {
+                        width: 10,
+                        color: 'currentColor'
+                    },
+                    fill: 'white',
+                    type: 'circle',
+                    visible: true,
+                    size: 30
+                }
+            },
+            points: [
+                [1, 620]
+            ]
+        }]
+    });
+}
+
+function currentValueSvgGauge(element, currentValue = 0) {
+    var gauge = Gauge(
+        document.getElementById(element), {
+            min: -20,
+            max: 70,
+            dialStartAngle: 180,
+            dialEndAngle: 0,
+            value: currentValue,
+            label: function(value) {
+                return (Math.round(value * 10) / 10);
+              },
+            viewBox: "0 0 100 57",
+            // valueDialClass: "valueDial",
+            // valueClass: "valueText",
+            // dialClass: "dial",
+            // gaugeClass: "gauge",
+            showValue: true,
+            color: function (value) {
+                if (value < 20) {
+                    return "#5ee432";
+                } else if (value < 40) {
+                    return "#fffa50";
+                } else if (value < 60) {
+                    return "#f7aa38";
+                } else if (value == 0) {
+                    return "gray";
+                } else {
+                    return "#ef4655";
+                }
+            }
+        }
+    );
+    // console.log(currentValue, element +" .value-text")
+    // $("#" + element + " .value-text").html(currentValue)
+    return gauge
+}
+
+function updateValueSvgGauge(element, gauge, value) {
+    gauge.setValueAnimated(value, 1);
+    // console.log(element)
+    // if(element=='sensor22-gauge') {
+    // console.log("1", element, value)
+    // $("#" + element + " .value-text").html(value)
+    // console.log("2", element, $("#" + element + " .value-text").html())
+    // }
+
+}
+
 const getData = async () => {
     const response = await fetch("https://anysensor.dasstec.ro/api/get-data/" + countyName)
     return response.json()
@@ -185,7 +322,7 @@ const getSensorData = async (sensor) => {
     return response.json()
 }
 
-
+var gaugeList = []
 let test = (async () => {
     json = await getData();
 })().then(() => {
@@ -238,6 +375,7 @@ let test = (async () => {
 
         for (var i = 0; i < sensorCounter; i++) {
             $(".card-container").append(defaultSensorView(api_data.sensorIdList[i].sensorId, api_data.sensorIdList[i].sensorType));
+            // currentValueSvgGauge(api_data.sensorIdList[i].sensorId + '-gauge')
             // console.log("Component created:", api_data.sensorIdList[i].sensorId, api_data.sensorIdList[i].sensorType)
         }
 
@@ -256,7 +394,7 @@ let test = (async () => {
 
                 for (var i = 0; i < result[0].sensorReadings; i++) {
                     ylabels.push(parseFloat(result[0].sensorAverage[i].sensorValue).toFixed(2))
-                    var hour = parseInt(result[0].sensorAverage[i].sensorTime.split("T")[1].split(":")[0]) + 1
+                    var hour = parseInt(result[0].sensorAverage[i].sensorTime.split("T")[1].split(":")[0]) + 2
                     xlabels.push(hour < 10 ? "0" + String(hour) : String(hour))
                 }
 
@@ -269,6 +407,7 @@ let test = (async () => {
                 chartList.push([sensorIdToLookFor, plotData(String(sensorIdToLookFor), ylabels_reversed, xlabels_reversed, label)])
                 // console.log(sensorIdToLookFor, liveData)
                 currentValueAdd(sensorIdToLookFor, liveData);
+                gaugeList.push([sensorIdToLookFor, currentValueSvgGauge(sensorIdToLookFor + '-gauge', liveData)])
 
             })()
 
@@ -368,7 +507,7 @@ function updateData(chartList) {
 
                     for (var i = 0; i < result[0].sensorReadings; i++) {
                         ylabels.push(parseFloat(result[0].sensorAverage[i].sensorValue).toFixed(2))
-                        var hour = parseInt(result[0].sensorAverage[i].sensorTime.split("T")[1].split(":")[0]) + 1
+                        var hour = parseInt(result[0].sensorAverage[i].sensorTime.split("T")[1].split(":")[0]) + 2
                         xlabels.push(hour < 10 ? "0" + String(hour) : String(hour))
                     }
 
@@ -381,6 +520,18 @@ function updateData(chartList) {
                     var liveData = parseFloat(result[0].sensorLive).toFixed(2)
 
                     currentValueAdd(sensorIdToLookFor, liveData)
+
+                    // Loop through gauge list and when a gauge id match the sensorIdToLookFor
+                    // Do the update
+                    gaugeList.forEach((element) => {
+                        if (sensorIdToLookFor == element[0]) {
+                            // console.log(element[0], liveData)
+                            updateValueSvgGauge(element[0] + '-gauge', element[1], liveData)
+                        }
+                    })
+
+
+                    // currentValueSvgGauge(sensorIdToLookFor + '-gauge', liveData)
 
                     let chartIndex = 0
                     chartList.forEach((chart) => {
@@ -414,7 +565,7 @@ let run = async () => {
 
     while (1) {
         updateData(await test);
-        await delay(10000);
+        await delay(60*1000);
     }
 }
 

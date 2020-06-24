@@ -23,6 +23,7 @@
     "helmet": "^3.22.1",
     "influx": "^5.5.2",
     "install": "^0.13.0",
+    "jscharting": "^2.9.0-9",
     "jsonwebtoken": "^8.5.1",
     "mysql": "^2.18.1",
     "ol": "^6.3.1",
