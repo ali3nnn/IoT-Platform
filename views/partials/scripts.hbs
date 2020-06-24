@@ -1,8 +1,26 @@
 <script src="/js/scripts.js"></script>
 
+{{!-- Insert dashboard-page add script --}}
+<script>
+    //$(".dashboard-page").ready(function () {
+    if ($(".dashboard-page").length) {
+        console.log("dashboard.js added")
+        const item = $(this)
+        if (item.length) {
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = '/js/dashboard.js';
+
+            document.getElementsByTagName('head')[0].appendChild(script);
+        }
+    }
+    //})
+</script>
+
 {{!-- Insert map.js if mapzones partial is detected in template --}}
 <script>
-    $("#zone-list").ready(function () {
+    if ($("#zones-list").length) {
+        console.log("map.js added")
         const item = $(this)
         if (item.length) {
             var script = document.createElement('script');
@@ -11,5 +29,5 @@
 
             document.getElementsByTagName('head')[0].appendChild(script);
         }
-    })
+    }
 </script>
