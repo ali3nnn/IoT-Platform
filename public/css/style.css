@@ -1422,6 +1422,10 @@ form.update-container>input[type=submit] {
 
 /* overlay */
 
+.no-scroll {
+  overflow-y: hidden !important;
+}
+
 .hidden-overlay {
   visibility: hidden !important;
   opacity: 0 !important;
@@ -1447,6 +1451,13 @@ form.update-container>input[type=submit] {
     opacity: 0;
     visibility: hidden;
   }
+}
+
+.main-overlay.force-show-overlay {
+  opacity:1 !important;
+  visibility: visible !important;
+  z-index: 3;
+  background: #000000e3;
 }
 
 .disable-href {
@@ -1574,9 +1585,9 @@ img.img-circle {
   margin-bottom: 0px;
 }
 
-.logout-btn > button {
-    margin: 5px auto;
-    display: block;
+.logout-btn>button {
+  margin: 5px auto;
+  display: block;
 }
 
 /* .settings-items > .basic-items:last-of-type {
@@ -3052,13 +3063,13 @@ img.img-circle {
 }
 
 .tab-content {
-    position: relative;
-    /* top: -1px; */
-    display: block;
-    height: calc(100% - 40px);
+  position: relative;
+  /* top: -1px; */
+  display: block;
+  height: calc(100% - 40px);
 }
 
-.card.height-control .tab-content > div {
+.card.height-control .tab-content>div {
   max-height: 300px;
 }
 
@@ -3426,7 +3437,6 @@ html.maximized-card {
   grid-gap: 1rem;
 }
 
-
 @media only screen and (max-width: 600px) {
   .card-container {
     grid-template-columns: 1fr;
@@ -3569,23 +3579,51 @@ div#gauge {
 }
 
 /* Calendar Timeline Temperature */
-#graph-calendar {
+
+
+
+.graph-calendar {
+  /* display:none; */
   opacity: 0;
   visibility: hidden;
-  z-index:-9999;
+  z-index: 3;
   background: #c5c5c5;
   position: absolute;
   top: 0px;
   padding: 0.5rem;
   right: 0px;
   border-radius: 5px;
-  height: 500px;
+  bottom: 0;
+  left: 0;
+  margin: 100px;
+  overflow: hidden;
+  transition: all .2s ease;
 }
 
-#graph-calendar:target {
+.graph-calendar.graph-calendar-activated {
   opacity: 1;
   visibility: visible;
-  z-index:3
+  z-index: 3;
+  /* top: 0px; */
+  /* left: 0; */
+  /* right: 0; */
+  /* bottom: 0; */
+  margin: 10px;
+}
+
+/* Date Picker Rewrite CSS */
+
+.daterangepicker {
+  transform: translate(-50%, -50%);
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  transition: all .2s ease;
+}
+
+.daterangepicker.opensright:after,
+.daterangepicker.opensright:before {
+  display:none !important
 }
 
 /* Dashboard Small Box */
@@ -3816,6 +3854,7 @@ div#gauge {
 /* Current Value */
 
 /* Default */
+
 .gauge-container {
   width: 100%;
   height: auto;
@@ -3824,20 +3863,23 @@ div#gauge {
   padding: 10px;
   overflow: hidden;
 }
+
 /* Extra */
 
-.gauge-container > .gauge > .dial {
+.gauge-container>.gauge>.dial {
   stroke: #343a3f;
   fill: "#343a3f";
   /* stroke-dasharray: 31 1; */
   stroke-width: 2px;
 }
-.gauge-container > .gauge > .value {
+
+.gauge-container>.gauge>.value {
   stroke: #FF6DAF;
   /* stroke-dasharray: 30 1; */
   stroke-width: 9px;
 }
-.gauge-container > .gauge  .value-text {
+
+.gauge-container>.gauge .value-text {
   fill: #343a3f;
   font-size: 0.7em;
   color: #343a3f

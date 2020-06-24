@@ -153,7 +153,13 @@ function defaultSensorView(sensorId, sensorType) {
     
             <div class="card-tools">
                 <ul class="pagination pagination-sm">
-                    <li class="page-item"><a href="#" class="page-link">Change Time Interval</a></li>
+                    <li class="page-item">
+                    <!--<a href="#" class="page-link time-interval-button">Change Time Interval</a>-->
+                    <div id="reportrange" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
+                        <i class="fa fa-calendar"></i>&nbsp;
+                        <span></span> <i class="fa fa-caret-down"></i>
+                    </div>
+                    </li>
                 </ul>
             </div>
     
@@ -163,11 +169,11 @@ function defaultSensorView(sensorId, sensorType) {
         <div class="card-body">
             <a href="#" class='spinner ` + sensorId + `-graph-spinner'>
                 <span>Loading...</span>
-            </a>
-            
-            <div class="` + sensorId + `-graph-calendar">
-                                
-            </div>  
+            </a> 
+            <div class="` + sensorId + `-graph-calendar graph-calendar">
+                Time interval for ` + sensorId + ` 
+                <input name="dates" value="Button Change"> 
+            </div> 
         </div>
         
     </article>`
@@ -175,6 +181,73 @@ function defaultSensorView(sensorId, sensorType) {
     // stack the components
     return currentValueView + graphView
 }
+
+
+// Time Interval Change
+function timeIntervalChanger(sensorId) {
+
+    const overlay = $(".main-overlay")
+    const cancelBtn = $(".daterangepicker .cancelBtn")
+    const applyBtn = $(".daterangepicker .applyBtn")
+    const range = $(".ranges ul li:not(:last-child)")
+    const main = $("#main")
+
+    // open the overlay
+    $('.' + sensorId + '-card #reportrange').click(function(){
+        overlay.addClass("force-show-overlay")
+        main.addClass("no-scroll")
+    })
+
+    // close the overlay
+    overlay.click(function() {
+        overlay.removeClass("force-show-overlay")
+        main.removeClass("no-scroll")
+    });
+
+    cancelBtn.click(function() {
+        overlay.removeClass("force-show-overlay")
+        main.removeClass("no-scroll")
+    });
+
+    applyBtn.click(function() {
+        overlay.removeClass("force-show-overlay")
+        main.removeClass("no-scroll")
+    });
+
+    range.click(function() {
+        overlay.removeClass("force-show-overlay")
+        main.removeClass("no-scroll")
+    });
+    
+    var currentHourPm = moment().format("HH")
+    var currentMin = moment().format("mm")
+    var start = moment().subtract(currentHourPm, 'hours').subtract(currentMin, 'minutes');;
+    var end = moment();
+
+    function cb(start, end) {
+        $('.' + sensorId + '-card #reportrange span').html(start.format('MMM D, YYYY, HH:mm') + ' - ' + end.format('MMM D, YYYY, HH:mm'));
+    }
+
+    $('.' + sensorId + '-card #reportrange').daterangepicker({
+        // startDate: start,
+        // endDate: end,
+        timePicker: true,
+        "timePicker24Hour": true,
+        startDate: moment().startOf('hour'),
+        endDate: moment().startOf('hour').add(32, 'hour'),
+        ranges: {
+            'Today': [moment(), moment()],
+            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            'This Month': [moment().startOf('month'), moment().endOf('month')],
+            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+        }
+    }, cb);
+
+    cb(start, end);
+}
+
 
 function currentValueGauge(element) {
     console.log(element)
@@ -272,9 +345,9 @@ function currentValueSvgGauge(element, currentValue = 0) {
             dialStartAngle: 180,
             dialEndAngle: 0,
             value: currentValue,
-            label: function(value) {
+            label: function (value) {
                 return (Math.round(value * 10) / 10);
-              },
+            },
             viewBox: "0 0 100 57",
             // valueDialClass: "valueDial",
             // valueClass: "valueText",
@@ -311,6 +384,7 @@ function updateValueSvgGauge(element, gauge, value) {
     // }
 
 }
+
 
 const getData = async () => {
     const response = await fetch("https://anysensor.dasstec.ro/api/get-data/" + countyName)
@@ -377,7 +451,11 @@ let test = (async () => {
             $(".card-container").append(defaultSensorView(api_data.sensorIdList[i].sensorId, api_data.sensorIdList[i].sensorType));
             // currentValueSvgGauge(api_data.sensorIdList[i].sensorId + '-gauge')
             // console.log("Component created:", api_data.sensorIdList[i].sensorId, api_data.sensorIdList[i].sensorType)
+            timeIntervalChanger(api_data.sensorIdList[i].sensorId);
         }
+
+        // cal the time interval changer after the button of this action is created
+
 
         for (var index = 0; index < sensorCounter; index++) {
 
@@ -397,6 +475,8 @@ let test = (async () => {
                     var hour = parseInt(result[0].sensorAverage[i].sensorTime.split("T")[1].split(":")[0]) + 2
                     xlabels.push(hour < 10 ? "0" + String(hour) : String(hour))
                 }
+
+                // xlabels.push(hour+1 < 10 ? "0" + String(hour+1) : String(hour+1))
 
                 const xlabels_reversed = xlabels.reverse()
                 const ylabels_reversed = ylabels.reverse()
@@ -438,11 +518,6 @@ let test = (async () => {
     return chartList
 
 })
-
-async function delay(ms) {
-    // return await for better async stack trace support in case of errors.
-    return await new Promise(resolve => setTimeout(resolve, ms));
-}
 
 function arraysEqual(a1, a2) {
     /* WARNING: arrays must not contain {objects} or behavior may be undefined */
@@ -525,7 +600,7 @@ function updateData(chartList) {
                     // Do the update
                     gaugeList.forEach((element) => {
                         if (sensorIdToLookFor == element[0]) {
-                            // console.log(element[0], liveData)
+                            // console.log("Update", element[0], liveData)
                             updateValueSvgGauge(element[0] + '-gauge', element[1], liveData)
                         }
                     })
@@ -561,17 +636,17 @@ function updateData(chartList) {
 //     updateData();
 // })()
 
+async function delay(ms) {
+    // return await for better async stack trace support in case of errors.
+    return await new Promise(resolve => setTimeout(resolve, ms));
+}
+
 let run = async () => {
 
     while (1) {
         updateData(await test);
-        await delay(60*1000);
+        await delay(60 * 1000);
     }
 }
 
 run();
-
-//test git 2
-// setInterval(function(){
-//     updateData();
-// },1000)

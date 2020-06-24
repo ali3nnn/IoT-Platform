@@ -263,7 +263,7 @@ app.get("/map", cookieChecker, authDashboard, (req, res) => {
     })
 })
 
-app.get('/map/:county', (req, res) => {
+app.get('/map/:county', cookieChecker, authDashboard, (req, res) => {
 
     sess = req.session
     sess.county = req.params.county
