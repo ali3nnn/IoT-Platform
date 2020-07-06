@@ -19,8 +19,12 @@ const countyEnabled = "rgb(52, 58, 64)"
 const countyDisabled = "rgb(52, 58, 64, 0.5)"
 const countyHover = "rgb(73, 104, 136)"
 
+var time = new Date()
+
 // Zone List Append
 $("#zones-list").ready(function () {
+
+    // console.log("#zone-list is ready",new Date() - time)
 
     // Append Loading Spinner Until Zone List Is Fetched
     const loadingItem = `<div class="zone-item zone-item-loading">
@@ -31,6 +35,8 @@ $("#zones-list").ready(function () {
 
     $('#zones-list').append(loadingItem);
 
+    // console.log("loading append is ready",new Date() - time)
+
     // County Fetch
     const getZones = async () => {
         // const response = await fetch("https://anysensor.dasstec.ro/api/get-zones")
@@ -40,6 +46,10 @@ $("#zones-list").ready(function () {
 
     (async () => {
 
+        var json = {
+            result: []
+        }
+
         try {
             var json = await getZones()
         } catch {
@@ -48,49 +58,27 @@ $("#zones-list").ready(function () {
             }
         }
 
-        // console.log("County fetched:", json[0])
-
-        // let length = json[0].countiesCounter
-        let county_list = []
-
-        for (var item = 0; item < json[0].countiesCounter; item++) {
-            county_list.push(json[0].counties[item])
-        }
-
-        // console.log(county_list)
-        // console.log(county_list.filter(onlyUnique))
-
-        county_list = county_list.filter(onlyUnique)
-
-        // Map Change
-        // let countyElements = document.querySelectorAll(".romania-svg svg > path");
-
-        // for (var item = 0; item < countyElements.length; item++) {
-        //     // Get county name - string format
-        //     let county = countyElements[item].getAttribute("name")
-        //     // Replace diacritics
-        //     county = county.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-        //     // Check which county is in zone list
-        //     if (county_list.includes(county)) {
-        //         // console.log("county:",county)
-        //         // Background darker
-        //         countyElements[item].setAttribute("fill", countyEnabled)
-        //     } else {
-        //         // Backgorund lighter
-        //         countyElements[item].setAttribute("fill", countyDisabled)
-        //     }
-        // }
-
         // HTML Zone Append
         $('#zones-list .zone-item-loading').remove()
 
+        // console.log(json[0].error)
+
+
         // Add Zones List
-        if (json[0].countiesCounter == 0) {
+        if (json[0].error) {
             const htmlRes = `<div class="zone-item">
                                 <a href="#" class='no-zone'><i class="fas fa-lock"></i><span>No zone for you</span></a>
                             </div>`
             $('#zones-list').append(htmlRes);
         } else {
+
+            let county_list = []
+
+            for (var item = 0; item < json[0].countiesCounter; item++) {
+                county_list.push(json[0].counties[item])
+            }
+
+            county_list = county_list.filter(onlyUnique)
 
             for (var countyIndex=0; countyIndex<county_list.length; countyIndex++) {
                 var countyName = county_list[countyIndex]
@@ -116,7 +104,24 @@ $("#zones-list").ready(function () {
 
             // hoverZoneItem()
 
+            var infos = () => {
+                var brandH = $("#mySidenav .brand").height();
+                var basicItemsCounter = $("#mySidenav .basic-items").length;
+                var basicItemsH = $("#mySidenav .basic-items").height();
+                var zoneLisH = $("#mySidenav #zones-list").height();
+                var settingItemsH = $("#mySidenav .settings-items").height();
+                // console.log(brandH,basicItemsCounter,basicItemsH,zoneLisH,settingItemsH)
+                var minSidenavH = brandH + basicItemsCounter*basicItemsH + zoneLisH + settingItemsH + 10
+                $("#mySidenav").css("min-height",minSidenavH)
+            }
+    
+            infos()
+
         }
+
+        // console.log("done",new Date() - time)
+
+        
 
     })()
 });

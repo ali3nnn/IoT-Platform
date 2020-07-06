@@ -134,9 +134,10 @@ $(document).ready(function () {
 
     }, false);
 
+    
     try {
-        var childs = $(".small-box-container").children().length;
-        $(".small-box-container").addClass("children-" + String(childs))
+        // var childs = $(".small-box-container").children().length;
+        // $(".small-box-container").addClass("children-" + String(childs))
     } finally {
 
     }
@@ -674,3 +675,24 @@ function animationInNotification() {
 //         console.log("test")
 //     })
 // }
+
+// Set the minimum height of the sidebar
+let timeout = (ms,f) => {
+    let sleep =  new Promise(resolve => setTimeout(function(){
+        f()
+        // return resolve
+    }, ms))
+}
+
+timeout(3000, function(){
+    console.log("3 seconds async timeout")
+})
+
+var infos = () => {
+    var brandH = $("#mySidenav .brand").height();
+    var basicItemsCounter = $("#mySidenav .basicItems").length;
+    var basicItemsH = $("#mySidenav .basicItems").height();
+    var zoneLisH = $("#mySidenav .zone-list").height();
+    var settingItemsH = $("#mySidenav .settings-items").height();
+    console.log(brandH,basicItemsCounter,basicItemsH,zoneLisH,settingItemsH)
+}

@@ -14,17 +14,34 @@ host = "localhost"
 port = 8086
 user = "root"
 password = "root"
-dbname= "anysensor_dummy2"
+# dbname= "anysensor_dummy2"
+dbname= "anysensor3"
 
 clientdb = InfluxDBClient(host ,port, database=dbname)
 
-def write_influx(country,county,city,location,zone,sensorId,username,type,value):
+# def write_influx(country,county,city,location,zone,sensorId,username,type,value):
+#     clientdb.write_points([{
+#         "measurement":"sensors",
+#         "tags": {
+            
+#             },
+#         "fields":{
+#             "country": country,
+#             "county": county,
+#             "city": city,
+#             "location": location,
+#             "zone": zone,
+#             "sensorId":sensorId,
+#             "username":username,
+#             "type": type,
+#             "value": float(value)
+#             }
+#     }])
+    
+def write_influx(country,county,city,location,zone,sensorId,username,sensorType,value):
     clientdb.write_points([{
         "measurement":"sensors",
         "tags": {
-            
-            },
-        "fields":{
             "country": country,
             "county": county,
             "city": city,
@@ -32,7 +49,9 @@ def write_influx(country,county,city,location,zone,sensorId,username,type,value)
             "zone": zone,
             "sensorId":sensorId,
             "username":username,
-            "type": type,
+            "type": sensorType
+            },
+        "fields":{
             "value": float(value)
             }
     }])
@@ -53,40 +72,77 @@ def write_influx(country,county,city,location,zone,sensorId,username,type,value)
 #     	value = msg.payload
 #     	# write_influx(s[0],s[1],s[2],s[3],s[4],s[5],float(value),s[6])
 #         write_influx('Romania','bucuresti','bucuresti','bucuresti','test-zone','alexbarbu2',float(25),'type1')
+
+
 #     except Exception as ex:
 # 	print ex
+
+def injectIntoInflux2():
+    
+    print("Inject into influx2")
+    
+    value=float(random.uniform(0, 1)*25)
+    print('sensor22','alexbarbu2','type4',value)
+    write_influx('Romania','constanta','constanta','constanta','test-zone','sensor22','alexbarbu2','type4',value)
+    
+    value=float(random.uniform(0, 1)*25)
+    print('sensor2','alexbarbu2','type1',value)
+    write_influx('Romania','constanta','constanta','constanta','test-zone','sensor2','alexbarbu2','type1',value)
+
+    value=float(random.uniform(0, 1)*25)
+    print('sensor1','alexbarbu2','type2',value)
+    write_influx('Romania','constanta','constanta','constanta','test-zone','sensor1','alexbarbu2','type2',value)
+
+    print
     
 def injectIntoInflux():
     
     print("Inject into influx")
     
     value=float(random.uniform(0, 1)*50)
-    print('sensor2','alexbarbu2','type1',value)
-    write_influx('Romania','constanta','constanta','constanta','test-zone','sensor2','alexbarbu2','type1',value)
-    value=float(random.uniform(0, 1)*50)
-    print('sensor1','alexbarbu2','type2',value)
-    write_influx('Romania','constanta','constanta','constanta','test-zone','sensor1','alexbarbu2','type2',value)
-    value=float(random.uniform(0, 1)*50)
-    print('sensor17','alexbarbu2','type2',value)
-    write_influx('Romania','constanta','constanta','constanta','test-zone','sensor17','alexbarbu2','type2',value)
-    value=float(random.uniform(0, 1)*50)
-    print('sensor18','alexbarbu2','type1',value)
-    write_influx('Romania','constanta','constanta','constanta','test-zone','sensor18','alexbarbu2','type1',value)
-    value=float(random.uniform(0, 1)*50)
-    print('sensor19','alexbarbu2','type3',value)
-    write_influx('Romania','constanta','constanta','constanta','test-zone','sensor19','alexbarbu2','type3',value)
-    value=float(random.uniform(0, 1)*50)
     print('sensor22','alexbarbu2','type4',value)
     write_influx('Romania','constanta','constanta','constanta','test-zone','sensor22','alexbarbu2','type4',value)
     
-    print()
+    value=float(random.uniform(0, 1)*50)
+    print('sensor2','alexbarbu2','type1',value)
+    write_influx('Romania','constanta','constanta','constanta','test-zone','sensor2','alexbarbu2','type1',value)
+
+    value=float(random.uniform(0, 1)*50)
+    print('sensor1','alexbarbu2','type2',value)
+    write_influx('Romania','constanta','constanta','constanta','test-zone','sensor1','alexbarbu2','type2',value)
+
+    value=float(random.uniform(0, 1)*50)
+    print('sensor17','alexbarbu2','type2',value)
+    write_influx('Romania','constanta','constanta','constanta','test-zone','sensor17','alexbarbu2','type2',value)
+
+
+    value=float(random.uniform(0, 1)*50)
+    print('sensor18','alexbarbu2','type1',value)
+    write_influx('Romania','constanta','constanta','constanta','test-zone','sensor18','alexbarbu2','type1',value)
+
+    value=float(random.uniform(0, 1)*50)
+    print('sensor19','alexbarbu2','type3',value)
+    write_influx('Romania','constanta','constanta','constanta','test-zone','sensor19','alexbarbu2','type3',value)
+    
+    # depozit noriel
+    # ================================
+    print('sensor202','noriel','temperatura',value)
+    write_influx('Romania','bucuresti','bucuresti','depozit noriel','zona temperatura','sensor202','noriel','temperatura',value)
+    # ================================
+    # depozit noriel
+    
+    print
+    
+# injectIntoInflux()
     
 while True:
   localtime = time.localtime()
   result = time.strftime("%I:%M:%S %p", localtime)
   print(result)
-  if(result[6:8] == '00'):
+  if(int(result[6:8]) % 10 == 0):
     injectIntoInflux()
+  if(int(result[6:8]) % 5 == 0):
+    injectIntoInflux2()
   time.sleep(1)
 
 # client = mqtt.Client("test-sub")
