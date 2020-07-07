@@ -27,15 +27,6 @@ const influx = new Influx.InfluxDB({
     host: 'localhost',
     // database: 'anysensor_dummy2',
     database: 'anysensor3',
-    // schema: [
-    //     {
-    //         measurement: 'sensors',
-    //         tags: ['sensorId'],
-    //         fields: {
-    //             value: Influx.FieldType.FLOAT,
-    //         }
-    //     }
-    // ]
 })
 
 // // Influx Write - ASYNC
@@ -658,6 +649,7 @@ app.get('/api/get-data', (req, res) => {
     // console.log("done", new Date() - time)
 })
 
+// No longer used - instead I use /api/get-data/last/:county/:sensorQuery
 app.get('/api/get-data/type/:sensorId', (req, res) => {
     sess = req.session
     let data = []
@@ -668,7 +660,7 @@ app.get('/api/get-data/type/:sensorId', (req, res) => {
 
 
         // var query = `select distinct(type) as type from sensors where sensorId='`+req.params.sensorId+`' LIMIT 1`
-        var query = `select distinct(type) as type from (select type, value from sensors where sensorId='` + req.params.sensorId + `')`
+        var query = `select zone, type from (select zone, type, value from sensors where sensorId='` + req.params.sensorId + `') LIMIT 1`
 
         let type = influxReader(query).then((result) => {
             // console.log(influxQuery)
@@ -678,6 +670,7 @@ app.get('/api/get-data/type/:sensorId', (req, res) => {
                     message: "Data found",
                     sensorQueried: req.params.sensorId,
                     sensorType: result[0].type,
+                    sensorZone: result[0].zone,
                     user: sess.username,
                     responseTime: new Date() - time
                 })
@@ -686,7 +679,6 @@ app.get('/api/get-data/type/:sensorId', (req, res) => {
                     error: true,
                     message: "No data found",
                     sensorQueried: req.params.sensorId,
-                    sensorType: result[0].type,
                     user: sess.username,
                     responseTime: new Date() - time
                 })
@@ -876,22 +868,24 @@ app.get('/api/get-data/:county/:sensorQuery', (req, res) => {
         }
 
         // get sensor zone
-        var query = "select distinct(zone) as zone from (select zone, value from sensors where sensorId='" + req.params.sensorQuery + "')"
-        let sensorZone = influxReader(query).then((res) => {
-            return res[0].zone
+        var query = "select type, zone from (select type, zone, value from sensors where sensorId='" + req.params.sensorQuery + "') limit 1"
+        let sensorZoneAndType = influxReader(query).then((res) => {
+            return res[0]
         })
 
         let resultInfluxDb = influxReader(influxQuery).then(async (result) => {
+
+                let sensorZoneAndType_ = await sensorZoneAndType
+                // console.log(sensorZoneAndType_.type)
 
                 if (result.length) {
                     data.push({
                         error: false,
                         message: "Data found",
                         county: req.params.county,
-                        sensorZone: await sensorZone,
+                        sensorType: sensorZoneAndType_.type,
+                        sensorZone: sensorZoneAndType_.zone,
                         sensorQueried: req.params.sensorQuery,
-                        sensorType: result[0].type,
-                        sensorLive: result[0].live,
                         sensorReadings: result.length,
                         user: sess.username,
                         responseTime: new Date() - time + "ms",
@@ -1032,7 +1026,7 @@ app.get('/api/get-interval/:step', (req, res) => {
     sess = req.session
     let data = []
     // console.log("--->",req.params.step)
-    var time = new Date() - time
+    var time = new Date()
     console.log('/api/get-interval/...')
     // console.log("---")
     // console.log(req.params)
@@ -1050,6 +1044,15 @@ app.get('/api/get-interval/:step', (req, res) => {
             // group by
             // console.log(req.params.step)
             switch (req.params.step) {
+                case '30mins':
+                    var groupBy = `GROUP BY time(30m) ORDER BY time DESC`
+                    break;
+                case '10mins':
+                    var groupBy = `GROUP BY time(10m) ORDER BY time DESC`
+                    break;
+                case '1mins':
+                    var groupBy = `GROUP BY time(1m) ORDER BY time DESC`
+                    break;
                 case 'hourly':
                     var groupBy = `GROUP BY time(1h) ORDER BY time DESC`
                     break;
@@ -1070,7 +1073,7 @@ app.get('/api/get-interval/:step', (req, res) => {
             // var influxQuery = `select mean(value) as value, last(type) as type, last(value) as live from sensors ` + whereQuery + ` ` + groupBy + ` `
 
             // check what sensor type for the user
-            var influxQuery = `select mean(value) as value, last(type) as type from sensors ` + whereQuery + ` ` + groupBy + ` `
+            var influxQuery = `select mean(value) as value from sensors ` + whereQuery + ` ` + groupBy + ` `
 
             console.log(influxQuery)
 
@@ -1094,13 +1097,14 @@ app.get('/api/get-interval/:step', (req, res) => {
                     sensorQueried: req.query.sensorQuery,
                     start: req.query.start,
                     end: req.query.end,
-                    sensorType: result[0].type,
+                    step: req.params.step,
+                    // sensorType: result[0].type,
                     // sensorLive: result[0].live,
                     sensorReadings: result.length,
                     user: sess.username,
                     query: influxQuery,
                     sensorAverage: [],
-                    responseTime: new Date() - time
+                    responseTime: new Date() - time + "ms"
                 })
                 // var sensorType = false
                 for (var i = 0; i < result.length; i++) {

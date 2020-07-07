@@ -2,74 +2,91 @@
 <html lang="en" dir="ltr">
 
 <head>
-    {{> head}}
+  {{> head}}
 </head>
 
 <body class="map-page">
 
-    <!-- Main Sidebar Container -->
-    {{> aside}}
+  <!-- Main Sidebar Container -->
+  {{> aside}}
 
-    <!-- Add all page content inside this div if you want the side nav to push page content to the right (not used if you only want the sidenav to sit on top of the page -->
-    <div id="main">
+  <!-- Add all page content inside this div if you want the side nav to push page content to the right (not used if you only want the sidenav to sit on top of the page -->
+  <div id="main">
 
-        <div class="main-overlay hidden-overlay"></div>
+    <div class="main-overlay hidden-overlay"></div>
 
-        {{!-- Main Navbar --}}
-        {{> navbar-general}}
+    {{!-- Main Navbar --}}
+    {{> navbar-general}}
 
-        {{!-- Zones List --}}
-        {{!-- {{> mapzones}} --}}
+    {{!-- Zones List --}}
+    {{!-- {{> mapzones}} --}}
 
-        {{!-- Romanian Map SVG --}}
-        {{!-- <div class="container wrapper">
+    {{!-- Romanian Map SVG --}}
+    {{!-- <div class="container wrapper">
             {{> ro}}
         </div> --}}
 
-        {{!-- Map --}}
-        {{!-- <div class="container wrapper"> --}}
-            <div id="map" class="map"></div>
-        {{!-- </div> --}}
+    {{!-- Map --}}
+    {{!-- <div class="container wrapper"> --}}
+    <div id="map" class="map"></div>
+    {{!-- </div> --}}
 
-    </div>
+  </div>
 
-    {{> scripts}}
+  {{> scripts}}
 
-    <style>
-      .map {
-        height: calc(100vh - 52px - 1rem);
-        width: 100%;
-        /* border-radius: 13px; */
-        padding: 1rem;
-        position: relative;
-        overflow: hidden;
-        /* border-radius: 51px; */
-      }
-      .map > div {
-        border-radius: 13px;
-        box-shadow: var(--neuro);
-      }
-    </style>
+  <style>
+    .map {
+      height: calc(100vh - 52px - 1rem);
+      width: 100%;
+      /* border-radius: 13px; */
+      padding: 1rem;
+      position: relative;
+      overflow: hidden;
+      /* border-radius: 51px; */
+    }
 
-    <script type="text/javascript">
-    
-      var map = new ol.Map({
-        target: 'map',
-        layers: [
-          new ol.layer.Tile({
-            source: new ol.source.OSM()
-          })
-        ],
-        view: new ol.View({
-          center: ol.proj.fromLonLat([26.08,44.45]),
-          zoom: 14
+    .map>div {
+      border-radius: 13px;
+      box-shadow: var(--neuro);
+    }
+  </style>
+
+  <script type="text/javascript">
+
+    var map = new ol.Map({
+      target: 'map',
+      layers: [
+        new ol.layer.Tile({
+          source: new ol.source.OSM()
         })
-      });
+      ],
+      view: new ol.View({
+        center: ol.proj.fromLonLat([26.08, 44.45]),
+        zoom: 14
+      })
+    });
 
-    </script>
+    var feature = new ol.Feature({
+      geometry: new ol.geom.Point(ol.proj.fromLonLat([26.08, 44.45]))
+    })
 
-    {{!-- <script src="/js/map.js"></script> --}}
-  
+    var feature2 = new ol.Feature({
+      geometry: new ol.geom.Point(ol.proj.fromLonLat([28.08, 44.45]))
+    })
+
+    var layer = new ol.layer.Vector({
+      source: new ol.source.Vector({
+        features: [ feature2, feature ]
+      })
+    });
+    
+    map.addLayer(layer);
+
+  </script>
+
+  {{!-- <script src="/js/map.js"></script> --}}
+
 </body>
 
 </html>

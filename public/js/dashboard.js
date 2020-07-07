@@ -78,7 +78,7 @@ function currentValueSvgGauge(element, currentValue = NaN, updatedAt = false) {
 
     } else {
 
-        console.log(element + '-gauge')
+        // console.log(element + '-gauge')
 
         if (isCounter) {
             // pulse effect already appended
@@ -284,6 +284,8 @@ var plotData = (element, ylabels, xlabels, label) => {
     var sensorType = $('article.' + element + '-card').attr('sensorType')
     label = sensorType
 
+    // console.log(label)
+
     // Remove No data message
     $('article.' + element + '-card .no-data-from-sensor').remove()
 
@@ -292,7 +294,12 @@ var plotData = (element, ylabels, xlabels, label) => {
 
     // add canvas
     // console.log(`<canvas id="` + element + `-graph"></canvas> in`, '.' + element + '-card')
+    // console.log($('.' + element + '-card .card-body'))
+
     $('.' + element + '-card .card-body').append(`<canvas id="` + element + `-graph"></canvas>`)
+
+
+    // console.log($(element + "-graph"))
 
     // console.log("xlabels.length:", xlabels.length)
 
@@ -363,6 +370,7 @@ var plotData = (element, ylabels, xlabels, label) => {
                         },
                         gridLines: {
                             color: "#415f7d",
+                            zeroLineColor: '#037cf7'
                         }
                     }]
                 }
@@ -430,7 +438,7 @@ var plotData = (element, ylabels, xlabels, label) => {
 
 // select mean(value) as value, first(type) as type from sensors where username='alexbarbu2' and county='constanta' and sensorId='sensor22' and time>='2020-06-29T09:00:00.000000000Z' and time<'2020-07-01T17:00:00.000000000Z' GROUP BY time(1h) ORDER BY time DESC
 
-function defaultSensorView(sensorId, sensorType) {
+function defaultSensorView(sensorId, sensorType, sensorZone) {
 
     // console.log("append")
 
@@ -460,17 +468,18 @@ function defaultSensorView(sensorId, sensorType) {
     </div>
 
     <div class='card-alerts-settings alert-` + sensorId + `'>
+        <span class='card-settings-button-update'>
+            <i class="fas fa-save"></i>
+        </span>
         <span class='card-settings-button-inner'>
             <i class="far fa-sliders-h"></i>
         </span>
         <div class='settings-wrapper'>
             <div class="slidecontainer">
-                <p class='text-slider-optim text-success'>Best: <span></span>%</p>
-                <input type="range" min="1" max="100" value="0" class="slider" id="slider-optim">
-                <p class='text-slider-mid text-warning'>Satisfying: <span></span>%</p>
-                <input type="range" min="1" max="100" value="0" class="slider" id="slider-mid">
-                <p class='text-slider-warning text-danger'>Warning: <span></span>%</p>
-                <input type="range" min="1" max="100" value="0" class="slider" id="slider-warning">
+                <p class='label-input'>Minimum</p>
+                <input type="text" placeholder="Type a value..." class="input input-min">
+                <p class='label-input'>Maximum</p>
+                <input type="text" placeholder="Type a value..." class="input input-max">
             </div>
         </div>
     </div>
@@ -527,7 +536,7 @@ function defaultSensorView(sensorId, sensorType) {
 
             <h3 class="card-title">
                 <i class='update-icon'></i>
-                <span>Timeline Graph</span> |
+                <span>` + sensorZone + `</span> |
                 <b>` + sensorId + `</b>
             </h3>
     
@@ -624,32 +633,32 @@ function timeIntervalChanger(sensorId, chartList) {
 
     // open the overlay
     $('.' + sensorId + '-card #reportrange').click(function () {
-        overlay.addClass("force-show-overlay")
-        main.addClass("no-scroll")
+        // overlay.addClass("force-show-overlay")
+        // main.addClass("no-scroll")
     })
 
     // close the overlay
-    overlay.click(function () {
-        console.log("------------>click overlay")
-        overlay.removeClass("force-show-overlay")
-        main.removeClass("no-scroll")
-    });
+    // overlay.click(function () {
+    //     console.log("------------>click overlay")
+    //     overlay.removeClass("force-show-overlay")
+    //     main.removeClass("no-scroll")
+    // });
 
-    cancelBtn.click(function () {
-        overlay.removeClass("force-show-overlay")
-        main.removeClass("no-scroll")
-    });
+    // cancelBtn.click(function () {
+    //     overlay.removeClass("force-show-overlay")
+    //     main.removeClass("no-scroll")
+    // });
 
-    applyBtn.click(function () {
-        // console.log("------------>click apply")
-        overlay.removeClass("force-show-overlay")
-        main.removeClass("no-scroll")
-    });
+    // applyBtn.click(function () {
+    //     console.log("------------>click apply")
+    //     overlay.removeClass("force-show-overlay")
+    //     main.removeClass("no-scroll")
+    // });
 
-    range.click(function () {
-        overlay.removeClass("force-show-overlay")
-        main.removeClass("no-scroll")
-    });
+    // range.click(function () {
+    //     overlay.removeClass("force-show-overlay")
+    //     main.removeClass("no-scroll")
+    // });
 
     var currentHourPm = moment().format("HH")
     var currentMin = moment().format("mm")
@@ -685,14 +694,18 @@ function timeIntervalChanger(sensorId, chartList) {
 
         // subtract 3 hours because of timezone
         // subtract 1 more hour because influx is 1 hour behind
-        startAux = new Date(start) - (3 * 60 * 60 * 1000)
-        endAux = new Date(end) - (3 * 60 * 60 * 1000)
+
+        console.log(start, end)
+
+        startAux = new Date(start) - (4 * 60 * 60 * 1000)
+        endAux = new Date(end) - (4 * 60 * 60 * 1000)
+
+        // console.log(startAux, endAux)
 
         start = moment(new Date(startAux)).format('YYYY-MM-DD' + 'T' + 'HH:mm').split("+")[0] + ':00.000000000Z'
         end = moment(new Date(endAux)).format('YYYY-MM-DD' + 'T' + 'HH:mm').split("+")[0] + ':00.000000000Z'
 
-        // console.log('from:', start)
-        // console.log('to:', end)
+        console.log(start, end)
 
         reloadDataCustomCalendar(start, end, countyName, sensorId, chartList)
     }
@@ -791,7 +804,7 @@ function currentValueGauge(element) {
 
 function fontAwesomeClassGenerator(type) {
     // select an icon
-    if (type == 'type1' || type == 'temperatura') {
+    if (type == 'type1' || type == 'temperatura' || type == 'temperature') {
         var faClass = `fas fa-temperature-high mr-1`
     } else if (type == 'type2') {
         var faClass = `far fa-lightbulb`
@@ -835,12 +848,21 @@ let getSensorDataCustomInterval = async (countyName, sensor, start, end, chartLi
     const date2 = new Date(end);
     const diffTime = Math.abs(date2 - date1);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    // console.log(diffTime + " milliseconds");
-    // console.log(diffDays + " days");
+    const diffHours = diffTime / 1000 / 60 / 60
+    console.log(diffHours + " hours");
 
-    if (diffDays <= 1)
-        var step = 'hourly'
-    else if (diffDays <= 6)
+    if (diffDays <= 1) {
+
+        if (diffHours <= 1) {
+            var step = '1mins'
+        } else if (diffHours <= 3) {
+            var step = '10mins'
+        } else if (diffHours <= 6) {
+            var step = '30mins'
+        } else {
+            var step = 'hourly'
+        }
+    } else if (diffDays <= 6)
         var step = 'hourlyS'
     else if (diffDays <= 45)
         var step = 'daily'
@@ -848,7 +870,7 @@ let getSensorDataCustomInterval = async (countyName, sensor, start, end, chartLi
         var step = 'dailyS'
 
     const query = "https://anysensor.dasstec.ro/api/get-interval/" + step + "?" + "county=" + countyName + "&sensorQuery=" + sensor + "&start=" + start + "&end=" + end
-    // console.log(query)   
+    console.log(query)
 
     // remove graph and add loading
     $("#" + sensor + "-graph").parent().append(`<a href="#" class='spinner ` + sensor + `-graph-spinner'><span>Loading...</span></a> `)
@@ -863,7 +885,7 @@ let getSensorDataCustomInterval = async (countyName, sensor, start, end, chartLi
         const sensorId = data[0].sensorQueried
         const graphId = sensorId + '-graph'
 
-        // console.log("step:",data[0])
+        // console.log(data[0])
 
         if (data[0].error == false) {
 
@@ -890,8 +912,12 @@ let getSensorDataCustomInterval = async (countyName, sensor, start, end, chartLi
 
                 var influxTime = data[0].sensorAverage[i].sensorTime
                 var influxH = influxTime.split("T")[1].split(":")[0]
+                var influxMins = influxTime.split("T")[1].split(":")[1]
 
-                if (step == 'hourly') {
+                if (step == '1mins' || step == '10mins' || step == '30mins') {
+                    influxH = parseInt(influxH) + 1
+                    xlabels.push(influxH < 10 ? "0" + String(influxH) + ":" + String(influxMins) : (influxH == 24 ? "00" + ":" + String(influxMins) : String(influxH) + ":" + String(influxMins)))
+                } else if (step == 'hourly') {
 
                     // var influxDay = influxTime.split("T")[0].split("-")[2]
 
@@ -1030,12 +1056,8 @@ let reloadDataCustomCalendar = async (start, end, countyName, sensorId, chartLis
 
 }
 
+// no longer used - instead I use getSensorData()
 let getSensorType = async (sensorId) => {
-
-    // $.get( "https://anysensor.dasstec.ro/api/get-data/type/" + sensorId , function( data ) {
-    //     console.log("getsensorType",data)
-    //     return data
-    // });
 
     let response = await fetch("https://anysensor.dasstec.ro/api/get-data/type/" + sensorId)
     return response.json()
@@ -1097,49 +1119,44 @@ let test = (async () => {
 
         for (var i = 0; i < sensorCounter; i++) {
 
-            // $(".card-container").append(defaultSensorView(api_data.sensorIdList[i], false));
-
             (async () => {
 
-                let sensorType = await getSensorType(api_data.sensorIdList[i])
-                // console.log("defaultSensorView",sensorType[0].sensorQueried, sensorType[0].sensorType)
-                $(".card-container").append(defaultSensorView(sensorType[0].sensorQueried, sensorType[0].sensorType));
+                var sensorIdToLookFor = api_data.sensorIdList[i]
+                // let sensorType = await getSensorType(api_data.sensorIdList[i])
+                let sensorData = await getSensorData(sensorIdToLookFor);
+                // console.log(sensorIdToLookFor, sensorData[0])
 
-                sliderAlerts(".live-card-" + sensorType[0].sensorQueried + " #slider-optim")
-                sliderAlerts(".live-card-" + sensorType[0].sensorQueried + " #slider-mid")
-                sliderAlerts(".live-card-" + sensorType[0].sensorQueried + " #slider-warning")
+                // append default sensor view
+                $(".card-container").append(defaultSensorView(sensorData[0].sensorQueried, sensorData[0].sensorType, sensorData[0].sensorZone));
+                // console.log("append")
 
-                alertButtonToggle(sensorType[0].sensorQueried)
+                // Turn On alert sliders
+                sliderAlerts(".live-card-" + sensorData[0].sensorQueried + " #slider-optim")
+                sliderAlerts(".live-card-" + sensorData[0].sensorQueried + " #slider-mid")
+                sliderAlerts(".live-card-" + sensorData[0].sensorQueried + " #slider-warning")
+
+                alertButtonToggle(sensorData[0].sensorQueried)
 
                 // Add Icons based on sensor type
-                $(".live-card-" + sensorType[0].sensorQueried + " .update-icon").addClass(fontAwesomeClassGenerator(sensorType[0].sensorType))
-                $(".graph-" + sensorType[0].sensorQueried + " .update-icon").addClass(fontAwesomeClassGenerator(sensorType[0].sensorType))
+                $(".live-card-" + sensorData[0].sensorQueried + " .update-icon").addClass(fontAwesomeClassGenerator(sensorData[0].sensorType))
+                $(".graph-" + sensorData[0].sensorQueried + " .update-icon").addClass(fontAwesomeClassGenerator(sensorData[0].sensorType))
 
-            })()
+                // check readings of each sensor and plot
+                // let sensorIdToLookFor = await api_data.sensorIdList[i]
+                // let sensorData = await getSensorData(sensorIdToLookFor);
 
-        }
-
-        // cal the time interval changer after the button of this action is created
-
-        for (var index = 0; index < sensorCounter; index++) {
-
-            (async () => {
-                var sensorIdToLookFor = api_data.sensorIdList[index]
-                let sensorData = await getSensorData(sensorIdToLookFor);
+                // console.log(sensorIdToLookFor, api_data.sensorIdList, sensorData[0])
 
                 var ylabels = []
                 var xlabels = []
                 var label = sensorData[0].sensorType
 
-                // Append Zone to Default Sensor View
-                console.log(sensorIdToLookFor)
-                $("."+sensorIdToLookFor+"-card .card-title span").html(sensorData[0].sensorZone)
-
                 // Parse all readings of queried sensor
-                for (var i = 0; i < sensorData[0].sensorReadings; i++) {
+                // console.log("readings",sensorData[0].sensorReadings)
+                for (var index = 0; index < sensorData[0].sensorReadings; index++) {
 
-                    ylabels.push(parseFloat(sensorData[0].sensorAverage[i].sensorValue).toFixed(2))
-                    var influxTime = sensorData[0].sensorAverage[i].sensorTime
+                    ylabels.push(parseFloat(sensorData[0].sensorAverage[index].sensorValue).toFixed(2))
+                    var influxTime = sensorData[0].sensorAverage[index].sensorTime
                     var influxH = influxTime.split("T")[1].split(":")[0]
 
                     // influx time is 1 hour ahead of romanian time
@@ -1175,6 +1192,61 @@ let test = (async () => {
                 // plot data and add current value for each sensor
                 chartList.push([sensorIdToLookFor, plotData(String(sensorIdToLookFor), ylabels_reversed, xlabels_reversed, label)])
                 timeIntervalChanger(sensorIdToLookFor, chartList);
+
+            })()
+
+        }
+
+        for (var index = 0; index < sensorCounter; index++) {
+
+            (async () => {
+                // var sensorIdToLookFor = api_data.sensorIdList[index]
+                // let sensorData = await getSensorData(sensorIdToLookFor);
+
+                // var ylabels = []
+                // var xlabels = []
+                // var label = sensorData[0].sensorType
+
+                // // Parse all readings of queried sensor
+                // for (var i = 0; i < sensorData[0].sensorReadings; i++) {
+
+                //     ylabels.push(parseFloat(sensorData[0].sensorAverage[i].sensorValue).toFixed(2))
+                //     var influxTime = sensorData[0].sensorAverage[i].sensorTime
+                //     var influxH = influxTime.split("T")[1].split(":")[0]
+
+                //     // influx time is 1 hour ahead of romanian time
+                //     // increment influx with 2 because:
+                //     // if time of influx is 8:20, it means that romanian hour is 9:20
+                //     // and all the values between 9 to 10 (ro timezone) and (8 to 9 - influx timezone) is displayed as mean at 10h (ro rimezone)
+                //     // that's why is incremented with 2
+
+                //     var hour = parseInt(influxH) + 1
+                //     xlabels.push(hour < 10 ? "0" + String(hour) : (hour == 24 ? "00" : String(hour)))
+                //     // xlabels.push(parseInt(influxH)+1)
+                // }
+
+                // // xlabels.push(hour+1 < 10 ? "0" + String(hour+1) : String(hour+1))
+
+                // const xlabels_reversed = xlabels.reverse()
+                // const ylabels_reversed = ylabels.reverse()
+
+                // // var liveData = parseFloat(sensorData[0].sensorLive).toFixed(2)
+
+                // // if (sensorIdToLookFor.split('-')[1] == 'c') {
+                // //     // if sensor is a counter
+                // //     let lastValue = await getLatestValueRecorded(sensorIdToLookFor).then((resLast) => {
+                // //         gaugeList.push([sensorIdToLookFor, currentValueSvgGauge(sensorIdToLookFor, resLast[0].lastValue.value, resLast[0].lastValue.time)])
+                // //     })
+                // // } else {
+
+                // let lastValue = await getLatestValueRecorded(sensorIdToLookFor).then((resLast) => {
+                //     // console.log(sensorIdToLookFor, resLast[0].lastValue.value, resLast[0].lastValue.time)
+                //     gaugeList.push([sensorIdToLookFor, currentValueSvgGauge(sensorIdToLookFor, resLast[0].lastValue.value, resLast[0].lastValue.time)])
+                // })
+
+                // // plot data and add current value for each sensor
+                // chartList.push([sensorIdToLookFor, plotData(String(sensorIdToLookFor), ylabels_reversed, xlabels_reversed, label)])
+                // timeIntervalChanger(sensorIdToLookFor, chartList);
             })()
 
         }

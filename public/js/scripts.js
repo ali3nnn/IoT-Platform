@@ -676,7 +676,7 @@ function animationInNotification() {
 //     })
 // }
 
-// Set the minimum height of the sidebar
+// Async timeout
 let timeout = (ms,f) => {
     let sleep =  new Promise(resolve => setTimeout(function(){
         f()
@@ -684,10 +684,12 @@ let timeout = (ms,f) => {
     }, ms))
 }
 
+// Test async timeout
 timeout(3000, function(){
     console.log("3 seconds async timeout")
 })
 
+// Set the minimum height of the sidebar
 var infos = () => {
     var brandH = $("#mySidenav .brand").height();
     var basicItemsCounter = $("#mySidenav .basicItems").length;
