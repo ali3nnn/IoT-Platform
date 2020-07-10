@@ -17,6 +17,25 @@ var counterOld = ['', '']
 //     }, ms))
 // }
 
+// Make Socket.io connection
+var socket = io.connect("https://anysensor.dasstec.ro/")
+
+socket.on('message',function(data){
+
+    // console.log(data)
+
+    $(".messages.hideMe").remove()
+
+    $("#main notification").append(`<div class="messages hideMe">
+        <div class="alert alert-success mt-3 mb-0" role="alert">
+            <background></background>
+            `+data.send+`
+        </div>
+    </div>`)
+})
+
+// end WebSocket.io
+
 function addSmallBox(label, value, fontAwesome = false) {
     var component = `<div class="small-box bg-info county-detail box-shadow-5">
         <div class="inner">
@@ -249,6 +268,7 @@ function updateValueSvgGauge(element, gauge, value, updatedAt = false) {
             var oldUpdatedTime = $("." + element + "-newItem .update-time-gauge").html().split("Updated at ")[1]
 
             if (oldUpdatedTime != updatedTime) {
+
                 $("." + element + "-newItem .update-time-gauge").html("Updated at " + updatedTime)
                 $('#' + element + '-floatinBall').addClass("pulse-effect")
 
@@ -370,7 +390,7 @@ var plotData = (element, ylabels, xlabels, label) => {
                         },
                         gridLines: {
                             color: "#415f7d",
-                            zeroLineColor: '#037cf7'
+                            zeroLineColor: '#415f7d'
                         }
                     }]
                 }
@@ -576,10 +596,20 @@ function defaultSensorView(sensorId, sensorType, sensorZone) {
     // return currentValueView + graphView
 }
 
-// timeout(3000, function () {
-//     console.log("alerts")
-//     alertButtonToggle(sensorId)
-// })
+var alertsLoadFlag = true
+
+function alertsLoad() {
+    if (alertsLoadFlag)
+        (async () => {
+            alertsLoadFlag = false
+            let alerts = await mysqlAlerts()
+            for (var i = 0; i < alerts.result.length; i++) {
+                // console.log(alerts.result[i].sensorId, $(`.live-card-` + alerts.result[i].sensorId + ` .input-min`).length, alerts.result[i].min, alerts.result[i].min)
+                $(`.live-card-` + alerts.result[i].sensorId + ` .input-min`).attr("value", alerts.result[i].min)
+                $(`.live-card-` + alerts.result[i].sensorId + ` .input-max`).attr("value", alerts.result[i].max)
+            }
+        })()
+}
 
 function alertButtonToggle(sensorId) {
 
@@ -589,12 +619,43 @@ function alertButtonToggle(sensorId) {
         $(this).parent().parent().children('.card-alerts-settings').toggleClass('alerts-settings-up')
         $(this).parent().parent().children('.card-body').toggleClass('blur8')
         $(this).parent().parent().children('.card-header').toggleClass('blur8')
+
+        alertsLoad()
+
     })
     $(".live-card-" + sensorId + "  .card-settings-button-inner").click(function () {
         $(this).parent().parent().children('.card-alerts-settings').toggleClass('alerts-settings-up')
         $(this).parent().parent().children('.card-body').toggleClass('blur8')
         $(this).parent().parent().children('.card-header').toggleClass('blur8')
     })
+
+    $(".live-card-" + sensorId + " .card-settings-button-update").click(function () {
+        updateAlerts(sensorId)
+    })
+}
+
+let mysqlAlerts = async () => {
+    // if (sensorId)
+    //     let alerts = await fetch("https://anysensor.dasstec.ro/api/read-alerts?sensorId=" + sensorId + "")
+    // else
+    let alerts = await fetch("https://anysensor.dasstec.ro/api/read-alerts")
+
+    return alerts.json()
+}
+
+
+let insertAlert = async (sensorId, minVal, maxVal) => {
+    let response = await fetch("https://anysensor.dasstec.ro/api/set-alerts/?sensorId='" + sensorId + "'&min=" + minVal + "&max=" + maxVal)
+    return response.json()
+}
+
+async function updateAlerts(sensorId) {
+
+    const minVal = $(".live-card-" + sensorId + " .settings-wrapper .input-min").val()
+    const maxVal = $(".live-card-" + sensorId + " .settings-wrapper .input-max").val()
+
+    await insertAlert(sensorId, minVal, maxVal)
+
 }
 
 function sliderAlerts(element) {
@@ -695,7 +756,7 @@ function timeIntervalChanger(sensorId, chartList) {
         // subtract 3 hours because of timezone
         // subtract 1 more hour because influx is 1 hour behind
 
-        console.log(start, end)
+        // console.log(start, end)
 
         startAux = new Date(start) - (4 * 60 * 60 * 1000)
         endAux = new Date(end) - (4 * 60 * 60 * 1000)
@@ -705,7 +766,7 @@ function timeIntervalChanger(sensorId, chartList) {
         start = moment(new Date(startAux)).format('YYYY-MM-DD' + 'T' + 'HH:mm').split("+")[0] + ':00.000000000Z'
         end = moment(new Date(endAux)).format('YYYY-MM-DD' + 'T' + 'HH:mm').split("+")[0] + ':00.000000000Z'
 
-        console.log(start, end)
+        // console.log(start, end)
 
         reloadDataCustomCalendar(start, end, countyName, sensorId, chartList)
     }
@@ -821,6 +882,7 @@ function fontAwesomeClassGenerator(type) {
     return faClass
 }
 
+// get list of sensors from a county
 let getData = async () => {
     // console.log("getData")
     let response = await fetch("https://anysensor.dasstec.ro/api/get-data/sensorId/" + countyName)
@@ -828,6 +890,7 @@ let getData = async () => {
     return response.json()
 }
 
+// get all values of a sensor
 let getSensorData = async (sensor) => {
     // console.log("getSensorData")
     let response = await fetch("https://anysensor.dasstec.ro/api/get-data/" + countyName + "/" + sensor)
@@ -835,6 +898,7 @@ let getSensorData = async (sensor) => {
     return response.json()
 }
 
+// get last recorded value of a sensor
 let getLatestValueRecorded = async (sensor) => {
     // console.log("getLatestValueRecorded")
     let response = await fetch("https://anysensor.dasstec.ro/api/get-data/last/" + countyName + "/" + sensor)
@@ -842,6 +906,7 @@ let getLatestValueRecorded = async (sensor) => {
     return response.json()
 }
 
+// get and plot data by a specific interval
 let getSensorDataCustomInterval = async (countyName, sensor, start, end, chartList) => {
 
     const date1 = new Date(start);
@@ -1137,6 +1202,9 @@ let test = (async () => {
 
                 alertButtonToggle(sensorData[0].sensorQueried)
 
+                // Read alerts
+
+
                 // Add Icons based on sensor type
                 $(".live-card-" + sensorData[0].sensorQueried + " .update-icon").addClass(fontAwesomeClassGenerator(sensorData[0].sensorType))
                 $(".graph-" + sensorData[0].sensorQueried + " .update-icon").addClass(fontAwesomeClassGenerator(sensorData[0].sensorType))
@@ -1193,60 +1261,6 @@ let test = (async () => {
                 chartList.push([sensorIdToLookFor, plotData(String(sensorIdToLookFor), ylabels_reversed, xlabels_reversed, label)])
                 timeIntervalChanger(sensorIdToLookFor, chartList);
 
-            })()
-
-        }
-
-        for (var index = 0; index < sensorCounter; index++) {
-
-            (async () => {
-                // var sensorIdToLookFor = api_data.sensorIdList[index]
-                // let sensorData = await getSensorData(sensorIdToLookFor);
-
-                // var ylabels = []
-                // var xlabels = []
-                // var label = sensorData[0].sensorType
-
-                // // Parse all readings of queried sensor
-                // for (var i = 0; i < sensorData[0].sensorReadings; i++) {
-
-                //     ylabels.push(parseFloat(sensorData[0].sensorAverage[i].sensorValue).toFixed(2))
-                //     var influxTime = sensorData[0].sensorAverage[i].sensorTime
-                //     var influxH = influxTime.split("T")[1].split(":")[0]
-
-                //     // influx time is 1 hour ahead of romanian time
-                //     // increment influx with 2 because:
-                //     // if time of influx is 8:20, it means that romanian hour is 9:20
-                //     // and all the values between 9 to 10 (ro timezone) and (8 to 9 - influx timezone) is displayed as mean at 10h (ro rimezone)
-                //     // that's why is incremented with 2
-
-                //     var hour = parseInt(influxH) + 1
-                //     xlabels.push(hour < 10 ? "0" + String(hour) : (hour == 24 ? "00" : String(hour)))
-                //     // xlabels.push(parseInt(influxH)+1)
-                // }
-
-                // // xlabels.push(hour+1 < 10 ? "0" + String(hour+1) : String(hour+1))
-
-                // const xlabels_reversed = xlabels.reverse()
-                // const ylabels_reversed = ylabels.reverse()
-
-                // // var liveData = parseFloat(sensorData[0].sensorLive).toFixed(2)
-
-                // // if (sensorIdToLookFor.split('-')[1] == 'c') {
-                // //     // if sensor is a counter
-                // //     let lastValue = await getLatestValueRecorded(sensorIdToLookFor).then((resLast) => {
-                // //         gaugeList.push([sensorIdToLookFor, currentValueSvgGauge(sensorIdToLookFor, resLast[0].lastValue.value, resLast[0].lastValue.time)])
-                // //     })
-                // // } else {
-
-                // let lastValue = await getLatestValueRecorded(sensorIdToLookFor).then((resLast) => {
-                //     // console.log(sensorIdToLookFor, resLast[0].lastValue.value, resLast[0].lastValue.time)
-                //     gaugeList.push([sensorIdToLookFor, currentValueSvgGauge(sensorIdToLookFor, resLast[0].lastValue.value, resLast[0].lastValue.time)])
-                // })
-
-                // // plot data and add current value for each sensor
-                // chartList.push([sensorIdToLookFor, plotData(String(sensorIdToLookFor), ylabels_reversed, xlabels_reversed, label)])
-                // timeIntervalChanger(sensorIdToLookFor, chartList);
             })()
 
         }
@@ -1458,14 +1472,15 @@ async function delay(ms) {
 
 let run = async () => {
 
-    // setInterval(async function(){
-    //     updateData(await test);
-    // }, 10 * 1000)
-
     while (1) {
         updateData(await test);
+        // notification()
         await delay(5 * 1000);
     }
+}
+
+let notification = async () => {
+    fetch('/api/notification-test?message=Updating the sensor gauge')
 }
 
 run();

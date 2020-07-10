@@ -1,4 +1,4 @@
-<div id="mySidenav" class="sidenav sidenav-closed text-selection-disable-for-all">
+<div id="mySidenav" class="blur0 sidenav sidenav-closed text-selection-disable-for-all">
     <div class="sidenav-wrapper">
         <div class="brand">
             <a class="navbar-brand" href="/">
@@ -28,7 +28,7 @@
 
         <div class="settings-items">
 
-            <a href="/manage-sensors">
+            {{!-- <a href="/manage-sensors">
                 <i class="fas fa-cogs"></i>
                 <span>Manage Sensors</span><span class="badge badge-danger right">6</span>
             </a>
@@ -36,7 +36,15 @@
             <a href="/set-new-device">
                 <i class="fas fa-laptop-code"></i>
                 <span>Set new device</span>
+            </a> --}}
+            {{test}}
+
+            {{#if user_role_is_admin }}
+            <a href="/team" class='team-route'>
+                <i class="fas fa-sitemap"></i>
+                <span>Your team</span>
             </a>
+            {{/if}}
 
             {{#if username  }}
             <div class="logout-btn">

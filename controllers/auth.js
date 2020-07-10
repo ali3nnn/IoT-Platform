@@ -124,9 +124,9 @@ const authRegister = (req, res, next) => {
     // )
 
     // check duplicate username - old way
-    db.query("SELECT username FROM users WHERE Username = ?", [username], (err, result) => {
+    db.query("SELECT username FROM users WHERE username = ?", [username], (err, result) => {
         // console.log("result:",result)
-        if (err) console.log("There is a problem ", err)
+        if (err) console.log("There is a problem authRegister 1", err)
         else if (result.length) return res.render('register', {
             alert: 'That username is in use'
         })
@@ -135,7 +135,7 @@ const authRegister = (req, res, next) => {
     //check duplicate email - old way
     db.query("SELECT email FROM users WHERE Email = ?", [email], async (err, result) => {
 
-        if (err) console.log("There is a problem")
+        if (err) console.log("There is a problem authRegister 2")
         else if (result.length) return res.render('register', {
             alert: 'That email is in use!'
         })
@@ -185,7 +185,7 @@ const authLogin = async (req, res, next) => {
             db.query(sql_query, async (err, result) => {
 
                 if (err)
-                    console.log("There is a problem")
+                    console.log("There is a problem authLogin 1")
 
                 if (result.length) {
                     // check password
@@ -213,28 +213,31 @@ const authLogin = async (req, res, next) => {
                         sess.username = result[0].username
                         sess.user_role = result[0].user_role
                         sess.super_admin = ((result[0].user_role == 'superadmin') ? 1 : 0)
+                        sess.admin = ((result[0].user_role == 'admin') ? 1 : 0)
                         sess.check_cookies = 0 // 1 - check cookie; 0 - don't check cookie
 
                         console.log("Logged in")
                         console.log("Username:", sess.username, "Role:", sess.user_role)
 
                         // check sensor access for this user
-                        var sql_query = "SELECT sensors.sensorId FROM users, sensors WHERE users.username = '" + username + "' AND sensors.userId = users.id"
-                        db.query(sql_query, async (err, result) => {
-                            if (err)
-                                console.log("There is a problem")
-                            else if (result.length) {
-                                let sensorAccess = Array()
-                                for (var i = 0; i < result.length; i++)
-                                    if (result[i].sensorId)
-                                        sensorAccess.push(result[i].sensorId)
-                                sess.sensorAccess = (sensorAccess.length ? sensorAccess : ((username == 'superadmin') ? -1 : 0));
-                            } else {
-                                sess.sensorAccess = ((username == 'superadmin') ? -1 : 0);
-                            }
-                            console.log("Sensors:", sess.sensorAccess)
-                            next()
-                        })
+                        // var sql_query = "SELECT sensors.sensorId FROM users, sensors WHERE users.username = '" + username + "' AND sensors.userId = users.id"
+                        // db.query(sql_query, async (err, result) => {
+                        //     if (err)
+                        //         console.log("There is a problem authLogin 2")
+                        //     else if (result.length) {
+                        //         let sensorAccess = Array()
+                        //         for (var i = 0; i < result.length; i++)
+                        //             if (result[i].sensorId)
+                        //                 sensorAccess.push(result[i].sensorId)
+                        //         sess.sensorAccess = (sensorAccess.length ? sensorAccess : ((username == 'superadmin') ? -1 : 0));
+                        //     } else {
+                        //         sess.sensorAccess = ((username == 'superadmin') ? -1 : 0);
+                        //     }
+                        //     console.log("Sensors:", sess.sensorAccess)
+                        //     next()
+                        // })
+
+                        next()
 
                     }
                 } else {
@@ -304,10 +307,9 @@ const cookieChecker = async (req, res, next) => {
                 // }
 
                 // check sensor access for this user
-                var sql_query = "SELECT sensors.sensorId FROM users, sensors WHERE users.username = '" + sess.username + "' AND sensors.userId = users.id"
                 db.query(sql_query, async (err, result) => {
                     if (err)
-                        console.log("There is a problem")
+                        console.log("There is a problem cookieChecker")
                     else if (result.length) {
                         let sensorAccess = Array()
                         for (var i = 0; i < result.length; i++)

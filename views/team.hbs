@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    {{> head}}
+</head>
+
+<body class="team-page client-username-{{username}}">
+
+    <!-- Main Sidebar Container -->
+    {{> aside}}
+
+    <!-- Add all page content inside this div if you want the side nav to push page content to the right (not used if you only want the sidenav to sit on top of the page -->
+    <div id="main" class='blur0'>
+
+        <div class="main-overlay hidden-overlay"></div>
+
+        {{!-- Main Navbar --}}
+        {{> navbar-general}}
+
+        {{!-- County Data Fetch --}}
+
+        {{!-- <h1>County: <span class='county-name'></span></h1> --}}
+
+        <div class="small-box-container">
+            <div class="small-box bg-info county-detail box-shadow-5">
+                <div class="inner">
+                    <h3>Your Team</h3>
+                    <p>Dasstec B2B SRL</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="team-container">
+
+            <button type="button" class="btn btn-primary add-user">
+                <i class="fal fa-user-plus"></i>
+                <span>Add new user</span>
+            </button>
+
+            <table class="">
+                
+                <thead>
+                    <tr>
+                        <th class="">User</th>
+                        <th class="">Zones</th>
+                        <th class="">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{!-- <tr>
+                        <td class="">-</td>
+                        <td class="">-</td>
+                        <td class="">-</td>
+                    </tr>
+                    <tr>
+                        <td class="">-</td>
+                        <td class="">-</td>
+                        <td class="">-</td>
+                    </tr>
+                    <tr>
+                        <td class="">-</td>
+                        <td class="">-</td>
+                        <td class="">-</td>
+                    </tr>
+                    <tr>
+                        <td class="">-</td>
+                        <td class="">-</td>
+                        <td class="">+</td>
+                    </tr>
+                    <tr>
+                        <td class="">-</td>
+                        <td class="">+</td>
+                        <td class="">+</td>
+                    </tr>
+                    <tr>
+                        <td class="">+</td>
+                        <td class="">+</td>
+                        <td class="">+</td>
+                    </tr>
+                    <tr>
+                        <td class="">+</td>
+                        <td class="">+</td>
+                        <td class="">+</td>
+                    </tr>
+                    <tr>
+                        <td class="">+</td>
+                        <td class="">+</td>
+                        <td class="">+</td>
+                    </tr>
+                    <tr>
+                        <td class="">+</td>
+                        <td class="">+</td>
+                        <td class="">-</td>
+                    </tr>
+                    <tr>
+                        <td class="">+</td>
+                        <td class="">-</td>
+                        <td class="">-</td>
+                    </tr> --}}
+                </tbody>
+            </table>
+
+        </div>
+
+    </div>
+
+    {{> scripts}}
+
+    <script>
+        if (window.location.href.indexOf('team') > -1) {
+            $(".team-route").addClass("link-selected")
+        }
+    </script>
+
+</body>
+
+</html>

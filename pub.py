@@ -81,9 +81,9 @@ def injectIntoInflux2():
     
     print("Inject into influx2")
     
-    value=float(random.uniform(0, 1)*25)
-    print('sensor22','alexbarbu2','type4',value)
-    write_influx('Romania','constanta','constanta','constanta','test-zone','sensor22','alexbarbu2','type4',value)
+    # value=float(random.uniform(0, 1)*25)
+    # print('sensor22','alexbarbu2','type4',value)
+    # write_influx('Romania','constanta','constanta','constanta','test-zone','sensor22','alexbarbu2','type4',value)
     
     value=float(random.uniform(0, 1)*25)
     print('sensor2','alexbarbu2','type1',value)
@@ -144,6 +144,7 @@ while True:
   if(int(result[6:8]) % 5 == 0):
     injectIntoInflux2()
   time.sleep(1)
+
 
 # client = mqtt.Client("test-sub")
 # client.on_connect = on_connect

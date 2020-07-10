@@ -1621,7 +1621,7 @@ img.img-circle {
   /* color: var(--sidenav-link-color-hover); */
   /* background: var(--sidenav-link-background-hover); */
   color: var(--navbar-bg) !important;
-  background: #ffc10778;
+  background: #ffc107cf;
   /* text-shadow: 0px 0px 5px #0000009e; */
 }
 
@@ -3124,6 +3124,9 @@ img.img-circle {
   position: relative;
   display: block;
   /* background: black; */
+  filter: blur(0px);
+  -webkit-filter: blur(0px);
+  transition: all 0.2s ease;
 }
 
 article[class*="live"] {
@@ -3252,6 +3255,9 @@ html.maximized-card {
   border-top-left-radius: .25rem;
   border-top-right-radius: .25rem;
   border-color: transparent;
+  filter: blur(0px);
+  -webkit-filter: blur(0px);
+  transition: all 0.2s ease;
 }
 
 .collapsed-card .card-header {
@@ -3350,11 +3356,25 @@ span.card-settings-button:hover, .card-settings-button-inner:hover {
   visibility: visible;
 }
 
+.blur0 {
+  /* Add the blur effect */
+  filter: blur(0px) !important;
+  -webkit-filter: blur(0px) !important;
+  transition: all .1s ease;
+}
+
 .blur8 {
   /* Add the blur effect */
-  filter: blur(8px);
-  -webkit-filter: blur(8px);
+  filter: blur(8px) !important;
+  -webkit-filter: blur(8px) !important;
 }
+
+.blur4 {
+  /* Add the blur effect */
+  filter: blur(4px) !important;
+  -webkit-filter: blur(4px) !important;
+}
+
 
 /* sliders settings */
 
@@ -3818,7 +3838,8 @@ div#zones-list .zone-item a span {
   font-weight: 500;
 }
 
-div#zones-list .zone-item a:hover, div#zones-list .zone-item a.hovered-county, .zone-item-selected a {
+div#zones-list .zone-item a:hover, div#zones-list .zone-item a.hovered-county, .zone-item-selected a,
+a.link-selected {
   color: var(--navbar-bg) !important;
   background: #ffc107cf;
   /* padding: 10px 20px;
@@ -4283,12 +4304,11 @@ article[class*="graph-"] .card-body canvas {
 
 .messages {
   position: fixed;
-  right: 200px;
+  right: 0px;
   bottom: 0;
   margin: 10px;
-  /* transition: all 0.1s ease; */
-  opacity: 0;
-  visibility: visibile;
+  opacity: 1;
+  visibility: visible;
   border-radius: .25rem;
   overflow: hidden;
 }
@@ -4478,4 +4498,47 @@ div[id*="-floatinBall"] {
 .gauge-container.two > .gauge > .value {
 } */
 
-/* Graph */
+/* End Graph */
+
+/* Team Container */
+.team-container {
+  display: grid;
+  padding: 1rem 1rem 1rem 1rem;
+  grid-template-columns: 1fr;
+  grid-column-gap: 5rem;
+  grid-row-gap: 1rem;
+}
+
+.team-container tr {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 10px;
+}
+
+.team-container tbody tr:nth-child(2n+1) {
+  box-shadow: var(--neuro);
+}
+
+.team-container span.zone {
+  background: var(--nav-bg);
+  padding: 5px 18px;
+  margin: 5px 15px;
+  margin-left: 0px;
+  color: white;
+  border-radius: 13px;
+  display: inline-block;
+  box-shadow: var(--neuro);
+}
+
+.team-container button.btn {
+  max-width: 180px;
+  border-radius: 13px;
+  box-shadow: var(--neuro)
+}
+
+/* Modal */
+.modal-open .modal {
+  background: #000000d4;
+}
+
+/* End Team Container */

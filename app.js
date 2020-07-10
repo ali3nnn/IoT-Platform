@@ -11,6 +11,8 @@ const bcrypt = require('bcryptjs');
 const helmet = require('helmet');
 const url = require('url');
 
+var socket = require('socket.io')
+
 const Handlebars = require('handlebars');
 const HandlebarsIntl = require('handlebars-intl');
 
@@ -18,6 +20,51 @@ const Influx = require('influx');
 const mysql = require('mysql');
 // ==================================
 // End Imports
+
+// Security Stuff
+// ==================================
+app.disable('x-powered-by')
+app.use(helmet())
+app.set('trust proxy', 1)
+// ==================================
+// End Security Stuff
+
+// Handlebar Custom Helper
+// ==================================
+
+// for loop
+Handlebars.registerHelper('times', function (n, block) {
+    var accum = '';
+    for (var i = 0; i < n; ++i)
+        accum += block.fn(i);
+    return accum;
+});
+
+// if conditon HBS
+Handlebars.registerHelper('eq', function () {
+    const args = Array.prototype.slice.call(arguments, 0, -1);
+    return args.every(function (expression) {
+        return args[0] == expression;
+    });
+});
+// ==================================
+// End Handlebar Custom Helper
+
+// Middleware
+// ==================================
+const {
+    authRegister,
+    authLogin,
+    authDashboard,
+    authSuperAdmin,
+    cookieChecker
+} = require('./controllers/auth')
+const {
+    showAllUsers
+} = require('./controllers/all_users')
+// const { mean } = require('jscharting')
+// ==================================
+// End Middleware
 
 // Influx Connection
 // ==================================
@@ -76,51 +123,6 @@ function influxReader(query) {
 // ==================================
 // End Influx Connection
 
-// Security Stuff
-// ==================================
-app.disable('x-powered-by')
-app.use(helmet())
-app.set('trust proxy', 1)
-// ==================================
-// End Security Stuff
-
-// Handlebar Custom Helper
-// ==================================
-
-// for loop
-Handlebars.registerHelper('times', function (n, block) {
-    var accum = '';
-    for (var i = 0; i < n; ++i)
-        accum += block.fn(i);
-    return accum;
-});
-
-// if conditon HBS
-Handlebars.registerHelper('eq', function () {
-    const args = Array.prototype.slice.call(arguments, 0, -1);
-    return args.every(function (expression) {
-        return args[0] == expression;
-    });
-});
-// ==================================
-// End Handlebar Custom Helper
-
-// Middleware
-// ==================================
-const {
-    authRegister,
-    authLogin,
-    authDashboard,
-    authSuperAdmin,
-    cookieChecker
-} = require('./controllers/auth')
-const {
-    showAllUsers
-} = require('./controllers/all_users')
-// const { mean } = require('jscharting')
-// ==================================
-// End Middleware
-
 // MySQL Connection
 // ==================================
 
@@ -133,19 +135,19 @@ config_db = {
 }
 
 // Set the connection to DB - Async
-const db = mysql.createConnection(config_db)
+// let db = mysql.createConnection(config_db)
 
 // Connect to DB - Async
-db.connect((err) => {
-    if (err) console.log("Connecting to mysql failed")
-    else console.log("First connection to MySQL", '\r\n')
-})
+// db.connect((err) => {
+//     if (err) console.log("Connecting to mysql failed")
+//     else console.log("First connection to MySQL", '\r\n')
+// })
 
 // Database Connection In Promise
 class Database {
     constructor(config) {
         this.connection = mysql.createConnection(config);
-        console.log("Second connection to MySQL in promise")
+        // console.log("Second connection to MySQL in promise")
     }
     query(sql, args) {
         return new Promise((resolve, reject) => {
@@ -169,6 +171,33 @@ class Database {
 
 // Set and connect to DB - Promise
 database = new Database(config_db)
+
+function mysqlReader(query) {
+    return new Promise((resolve, reject) => {
+        // console.log(query)
+        database.query(query)
+            .then(result => {
+                return resolve(result)
+            })
+            .catch(error => {
+                return reject(error)
+            });
+    })
+}
+
+function mysqlWriter(query) {
+    return new Promise((resolve, reject) => {
+        // console.log(query)
+        database.query(query)
+            .then(result => {
+                return resolve(result)
+            })
+            .catch(error => {
+                return reject(error)
+            });
+    })
+}
+
 // ==================================
 // End MySQL Connection
 
@@ -219,14 +248,6 @@ app.set('view engine', 'hbs')
 // ==================================
 // END View Engine HBS
 
-
-// Define routes
-// app.use('/', require('./routes/pages'))
-// app.use('/auth', require('./routes/auth'))
-
-// const express = require('express');
-// const router = express.Router();
-
 // if the use that acces home page was logged in previously
 // make the log in automatically
 // based on cookie/session var
@@ -260,7 +281,8 @@ app.get("/map", cookieChecker, authDashboard, (req, res) => {
         username: sess.username,
         user_role: sess.user_role,
         sensorId: sess.sensorAccess,
-        user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0
+        user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0,
+        user_role_is_admin: sess.user_role == 'admin' ? 1 : 0
     })
 })
 
@@ -278,7 +300,8 @@ app.get('/map/:county', cookieChecker, authDashboard, (req, res) => {
             username: sess.username,
             user_role: sess.user_role,
             sensorId: sess.sensorId,
-            user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0
+            user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0,
+            user_role_is_admin: sess.user_role == 'admin' ? 1 : 0
         })
     else {
         res.status(403).render('message', {
@@ -316,6 +339,23 @@ app.get('/logout', function (req, res) {
         else res.redirect('/login');
     });
 });
+
+// ADMIN reuqest
+//=========================================
+
+app.get('/team', cookieChecker, authDashboard, (req, res) => {
+    sess = req.session
+    res.render("team", {
+        username: sess.username,
+        user_role: sess.user_role,
+        sensorId: sess.sensorAccess,
+        user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0,
+        user_role_is_admin: sess.user_role == 'admin' ? 1 : 0,
+    })
+})
+
+//=========================================
+// END ADMIN reuqest
 
 // SUPERADMIN reuqest
 //=========================================
@@ -427,6 +467,91 @@ app.get('/add-sensor', authDashboard, authSuperAdmin, (req, res) => {
 //=========================================
 // END - SUPERADMIN reuqest
 
+// Team Page
+//=========================================
+app.get('/api/sensors-access', (req, res) => {
+    var time = new Date()
+    var data = []
+
+    console.log(req.query.username)
+
+    if (req.query.username) {
+
+        var query = "SELECT * FROM sensors WHERE username='" + req.query.username + "'"
+
+        let mysqlResult = mysqlReader(query).then(async (rows) => {
+            return await rows
+        })
+
+        Promise.all([mysqlResult]).then(result => {
+            // console.log(result)
+            if (result[0].length) {
+                var sensorQuery = 'or ';
+                resultCounter = 0
+                result[0].forEach(element => {
+                    if (resultCounter < result[0].length - 1)
+                        sensorQuery += "sensorId='" + element.sensorId + "' or "
+                    else
+                        sensorQuery += "sensorId='" + element.sensorId + "'"
+                    resultCounter++
+                })
+                var whereQuery = "username='" + req.query.username + "' " + sensorQuery + " "
+            } else {
+                var whereQuery = "username='" + req.query.username + "'"
+            }
+
+            var influxQuery = "select zone, username, sensorId from (select * from sensors where " + whereQuery + ") group by sensorId limit 1;"
+            // console.log(influxQuery)
+
+            let influxResult = influxReader(influxQuery).then(async (result) => {
+                // console.log(influxQuery, await result)
+                return await result
+            })
+
+            Promise.all([influxResult]).then(result => {
+                result[0].forEach(element => {
+                    data.push({
+                        zone: element.zone,
+                        query: req.query.username,
+                        belongsTo: element.username,
+                        sensorId: element.sensorId,
+                        responseTime: new Date() - time + "ms",
+                    })
+                })
+                if (result[0].length == 0) {
+                    data.push({
+                        error: "No zone assigned",
+                        query: req.query.username,
+                        responseTime: new Date() - time + "ms",
+                    })
+                }
+                res.send(data)
+            }).catch(error => console.log(`Error in promises ${error}`))
+
+        })
+
+    } else {
+        res.send("username not found")
+    }
+
+})
+
+app.get('/api/get-users', (req, res) => {
+
+    var time = new Date()
+    var query = "SELECT Id, Name, Username, Email FROM users"
+    let mysqlResult = mysqlReader(query).then(async (rows) => {
+        return await rows
+    })
+    Promise.all([mysqlResult]).then(result => {
+        res.send(result)
+    }).catch(error => console.log(`Error in promises ${error}`))
+
+})
+
+//=========================================
+// End Team Page
+
 // API Get Data From Different Zones
 //=========================================
 
@@ -534,110 +659,147 @@ app.get('/api/get-data', (req, res) => {
 
     if (sess.username) {
 
-        // get counties
-        // var query = "select distinct(county) as county from sensors where username='" + sess.username + "'"
-        var queryCounties = "select distinct(county) as county from (select county, value from sensors where username='" + sess.username + "')"
+        // get sensor access from mysql
+        const query = "SELECT * FROM sensors WHERE username='" + sess.username + "'"
 
-        // console.log(query)
-        let counties = influxReader(queryCounties).then(async (result) => {
-            // console.log("GET counties", new Date() - time)
-            var counties = []
-            for (var i = 0; i < result.length; i++) {
-                counties.push(result[i].county)
+        mysqlReader(query).then(async (rows) => {
+            let rows_ = await rows
+            if (rows_.length) {
+
+                // var sensorListString = '/'
+                // for (var i = 0; i < rows_.length; i++) {
+                //     sensorListString += "'" + rows_[i].sensorId + "'|"
+                // }
+                // sensorListString+="/"
+
+                // // get counties based on username and manually assigned sensors in mysql>anysensor>sensors
+                // var queryCounties = "select distinct(county) as county from (select county, value from sensors where sensorId=~" + sensorListString + " or username='" + sess.username + "')"
+
+                var whereQuery = `where (username='` + sess.username + `') or (`
+
+                // var sensorListString = '/'
+
+                for (var i = 0; i < rows_.length; i++) {
+
+                    whereQuery += `sensorId='` + rows_[i].sensorId + `'`
+                    if (i < rows_.length - 1) whereQuery += ` or `
+                    else whereQuery += `)`
+                }
+
+                // whereQuery += ` and county='` + req.params.county + `')`
+
+                var queryCounties = `select distinct(county) as county from ( select county, value from sensors ` + whereQuery + ` )`
+
+            } else {
+
+                // get counties
+                var queryCounties = "select distinct(county) as county from (select county, value from sensors where username='" + sess.username + "')"
+
             }
 
-            return await counties
+            // console.log(queryCounties)
+
+            let counties = influxReader(queryCounties).then(async (result) => {
+
+                var counties = []
+                for (var i = 0; i < result.length; i++) {
+                    counties.push(result[i].county)
+                }
+
+                return await counties
+
+            })
+
+            // ================ cities, locations and zones ================
+            // ========== are disabled because no need of them all =========
+            // ============= and increase the time of response =============
+
+            // // get cities
+            // var queryCities = "select distinct(city) as city from (select city, value from sensors where username='"+sess.username+"')"
+            // let cities = influxReader(queryCities).then(async (result) => {
+
+            //     // console.log("GET cities", new Date() - time)
+            //     let cities = []
+            //     for (var i = 0; i < result.length; i++) {
+            //         cities.push(result[i].city)
+            //     }
+            //     // console.log("GET cities", new Date() - time)
+            //     return await cities
+            // })
+
+
+            // // get locations
+            // var queryLocation = "select distinct(location) as location from (select location, value from sensors where username='"+sess.username+"')"
+            // let locations = influxReader(queryLocation).then(async (result) => {
+
+            //     // console.log("GET locations", new Date() - time)
+            //     let locations = []
+            //     for (var i = 0; i < result.length; i++) {
+            //         locations.push(result[i].location)
+            //     }
+
+            //     // console.log("GET locations", new Date() - time)
+            //     return await locations
+            // })
+
+
+
+            // // get zones
+            // var queryZone = "select distinct(zone) as zone from (select zone, value from sensors where username='"+sess.username+"')"
+            // let zones = influxReader(queryZone).then(async (result) => {
+            //     // console.log("GET zones", new Date() - time)
+            //     let zones = []
+            //     for (var i = 0; i < result.length; i++) {
+            //         zones.push(result[i].zone)
+            //     }
+            //     // console.log("GET zones", new Date() - time)
+            //     return await zones
+            // })
+
+            var cities = [0]
+            var locations = [0]
+            var zones = [0]
+
+            // ================ END ================
+
+            Promise.all([counties, cities, locations, zones]).then((result) => {
+
+                // console.log("promise all", new Date() - time)
+
+                // build the output
+                if (result[0].length && result[1].length && result[2].length && result[3].length) {
+                    // console.log("promise all push", new Date() - time)
+                    data.push({
+                        error: false,
+                        message: "Data found",
+                        user: sess.username,
+                        countiesCounter: result[0].length,
+                        counties: result[0].length ? result[0] : "No county found",
+                        // citiesCounter: result[1].length,
+                        // cities: result[1].length ? result[1] : "No city found",
+                        // locationsCounter: result[2].length,
+                        // locations: result[2].length ? result[2] : "No location found",
+                        // zonesCounter: result[3].length,
+                        // zones: result[3].length ? result[3] : "No zone found",
+                        responseTime: new Date() - time + "ms"
+                    })
+                    // console.log("promise all push done", new Date() - time)
+                } else {
+                    data.push({
+                        error: true,
+                        message: "No data found for this user",
+                        user: sess.username
+                    })
+                }
+
+                // console.log("GET all", new Date() - time)
+
+                // send the data
+                res.status(200).send(data)
+
+            }).catch(error => console.log(`Error in promises ${error}`))
 
         })
-
-        // ================ cities, locations and zones ================
-        // ========== are disabled because no need of them all =========
-        // ============= and increase the time of response =============
-
-        // // get cities
-        // var queryCities = "select distinct(city) as city from (select city, value from sensors where username='"+sess.username+"')"
-        // let cities = influxReader(queryCities).then(async (result) => {
-
-        //     // console.log("GET cities", new Date() - time)
-        //     let cities = []
-        //     for (var i = 0; i < result.length; i++) {
-        //         cities.push(result[i].city)
-        //     }
-        //     // console.log("GET cities", new Date() - time)
-        //     return await cities
-        // })
-
-
-        // // get locations
-        // var queryLocation = "select distinct(location) as location from (select location, value from sensors where username='"+sess.username+"')"
-        // let locations = influxReader(queryLocation).then(async (result) => {
-
-        //     // console.log("GET locations", new Date() - time)
-        //     let locations = []
-        //     for (var i = 0; i < result.length; i++) {
-        //         locations.push(result[i].location)
-        //     }
-
-        //     // console.log("GET locations", new Date() - time)
-        //     return await locations
-        // })
-
-
-
-        // // get zones
-        // var queryZone = "select distinct(zone) as zone from (select zone, value from sensors where username='"+sess.username+"')"
-        // let zones = influxReader(queryZone).then(async (result) => {
-        //     // console.log("GET zones", new Date() - time)
-        //     let zones = []
-        //     for (var i = 0; i < result.length; i++) {
-        //         zones.push(result[i].zone)
-        //     }
-        //     // console.log("GET zones", new Date() - time)
-        //     return await zones
-        // })
-
-        var cities = [0]
-        var locations = [0]
-        var zones = [0]
-
-        // ================ END ================
-
-        Promise.all([counties, cities, locations, zones]).then((result) => {
-
-            // console.log("promise all", new Date() - time)
-
-            // build the output
-            if (result[0].length && result[1].length && result[2].length && result[3].length) {
-                // console.log("promise all push", new Date() - time)
-                data.push({
-                    error: false,
-                    message: "Data found",
-                    user: sess.username,
-                    countiesCounter: result[0].length,
-                    counties: result[0].length ? result[0] : "No county found",
-                    // citiesCounter: result[1].length,
-                    // cities: result[1].length ? result[1] : "No city found",
-                    // locationsCounter: result[2].length,
-                    // locations: result[2].length ? result[2] : "No location found",
-                    // zonesCounter: result[3].length,
-                    // zones: result[3].length ? result[3] : "No zone found",
-                    responseTime: new Date() - time + "ms"
-                })
-                // console.log("promise all push done", new Date() - time)
-            } else {
-                data.push({
-                    error: true,
-                    message: "No data found for this user",
-                    user: sess.username
-                })
-            }
-
-            // console.log("GET all", new Date() - time)
-
-            // send the data
-            res.status(200).send(data)
-
-        }).catch(error => console.log(`Error in promises ${error}`))
 
     } else {
         data.push({
@@ -657,7 +819,6 @@ app.get('/api/get-data/type/:sensorId', (req, res) => {
     console.log(req.originalUrl)
 
     if (sess.username) {
-
 
         // var query = `select distinct(type) as type from sensors where sensorId='`+req.params.sensorId+`' LIMIT 1`
         var query = `select zone, type from (select zone, type, value from sensors where sensorId='` + req.params.sensorId + `') LIMIT 1`
@@ -734,9 +895,9 @@ app.get('/api/get-data/sensorId/:county', (req, res) => {
             // var influxQuery = `select distinct(sensorId) as sensorId from sensors ` + whereQuery
 
             // return evrything that belongs to username and match county and is in a 1day time interval
-            var whereQuery = `where username='` + sess.username + `' and county='` + req.params.county + `'`
+            // var whereQuery = `where username='` + sess.username + `' and county='` + req.params.county + `'`
             // check what sensor type for the user
-            var influxQuery = `select distinct(sensorId) as sensorId from ( select sensorId, value from sensors ` + whereQuery + ` )`
+            // var influxQuery = `select distinct(sensorId) as sensorId from ( select sensorId, value from sensors ` + whereQuery + ` )`
 
         } else {
             // var whereQuery = `where county='`+req.params.county+`' and time>='`+today+`' and time<now()`
@@ -746,54 +907,84 @@ app.get('/api/get-data/sensorId/:county', (req, res) => {
             // // console.log(influxQuery)
         }
 
-        // console.log("before fetch", new Date() - time)
-        // console.log(influxQuery)
+        // get sensor access from mysql
+        const query = "SELECT * FROM sensors WHERE username='" + sess.username + "'"
+        mysqlReader(query).then(async (rows) => {
 
-        // Get all types of sensors of logged in user and from requested county
-        let sensorsData = influxReader(influxQuery).then((result) => {
+            let rows_ = await rows
 
-                // console.log("after fetch", new Date() - time)
+            if (rows_.length) {
 
-                // get sensor type
-                // var sensorTypeList = []
-                var sensorIdList = []
-                // var sensorIdListAux = []
 
-                for (var i = 0; i < result.length; i++) {
+                var whereQuery = `where (username='` + sess.username + `' and county='` + req.params.county + `') or ((`
 
-                    sensorIdList.push(result[i].sensorId)
+                for (var i = 0; i < rows_.length; i++) {
 
+                    whereQuery += `sensorId='` + rows_[i].sensorId + `'`
+                    if (i < rows_.length - 1) whereQuery += ` or `
+                    else whereQuery += `)`
                 }
 
-                // build the output
-                if (result.length) {
-                    data.push({
-                        error: false,
-                        message: "Data found",
-                        county: req.params.county,
-                        user: sess.username,
-                        sensorIdListLength: sensorIdList.length,
-                        sensorIdList: sensorIdList,
-                        responseTime: new Date() - time + "ms"
-                    })
-                } else {
-                    data.push({
-                        error: true,
-                        message: "No data found",
-                        county: req.params.county,
-                        length: result.length,
-                        user: sess.username,
-                        responseTime: new Date() - time + "ms"
-                    })
-                }
+                whereQuery += ` and county='` + req.params.county + `')`
 
-                // send the output
-                res.status(200).send(data)
+                var influxQuery = `select distinct(sensorId) as sensorId from ( select sensorId, value from sensors ` + whereQuery + ` )`
 
-            })
-            .catch((e) => {
-                res.status(404).send("Scraping sensorId data from influx failed", e)
-            })
+            } else {
+
+
+                var whereQuery = `where username='` + sess.username + `' and county='` + req.params.county + `'`
+                var influxQuery = `select distinct(sensorId) as sensorId from ( select sensorId, value from sensors ` + whereQuery + ` )`
+
+            }
+
+            // console.log(influxQuery)
+
+            // Get all types of sensors of logged in user and from requested county
+            let sensorsData = influxReader(influxQuery).then((result) => {
+
+                    // console.log("after fetch", new Date() - time)
+
+                    // get sensor type
+                    // var sensorTypeList = []
+                    var sensorIdList = []
+                    // var sensorIdListAux = []
+
+                    for (var i = 0; i < result.length; i++) {
+
+                        sensorIdList.push(result[i].sensorId)
+
+                    }
+
+                    // build the output
+                    if (result.length) {
+                        data.push({
+                            error: false,
+                            message: "Data found",
+                            county: req.params.county,
+                            user: sess.username,
+                            sensorIdListLength: sensorIdList.length,
+                            sensorIdList: sensorIdList,
+                            responseTime: new Date() - time + "ms"
+                        })
+                    } else {
+                        data.push({
+                            error: true,
+                            message: "No data found",
+                            county: req.params.county,
+                            length: result.length,
+                            user: sess.username,
+                            responseTime: new Date() - time + "ms"
+                        })
+                    }
+
+                    // send the output
+                    res.status(200).send(data)
+
+                })
+                .catch((e) => {
+                    res.status(404).send("Scraping sensorId data from influx failed", e)
+                })
+        });
 
     } else {
         data.push({
@@ -805,6 +996,7 @@ app.get('/api/get-data/sensorId/:county', (req, res) => {
 
 })
 
+// Get today' values of a sensor
 app.get('/api/get-data/:county/:sensorQuery', (req, res) => {
     sess = req.session
     let data = []
@@ -903,6 +1095,8 @@ app.get('/api/get-data/:county/:sensorQuery', (req, res) => {
                         message: "No data found",
                         county: req.params.county,
                         sensorQueried: req.params.sensorQuery,
+                        sensorType: sensorZoneAndType_.type,
+                        sensorZone: sensorZoneAndType_.zone,
                         sensorReadings: result.length,
                         responseTime: new Date() - time,
                         user: sess.username
@@ -1149,6 +1343,223 @@ app.get('/api/get-interval/:step', (req, res) => {
         res.status(403).send(data)
     }
 })
+
+// API for python
+// get counties of user
+app.get('/api/:username/get-counties', (req, res) => {
+
+    var time = new Date()
+    var data = []
+
+    var queryCounties = "select distinct(county) as county from (select county, value from sensors where username='" + req.params.username + "')"
+
+    let counties = influxReader(queryCounties).then(async (result) => {
+        var counties = []
+        for (var i = 0; i < result.length; i++) {
+            counties.push(result[i].county)
+        }
+
+        return await counties
+
+    })
+
+    var cities = [0]
+    var locations = [0]
+    var zones = [0]
+
+    // ================ END ================
+
+    Promise.all([counties, cities, locations, zones]).then((result) => {
+
+        // console.log("promise all", new Date() - time)
+
+        // build the output
+        if (result[0].length && result[1].length && result[2].length && result[3].length) {
+            // console.log("promise all push", new Date() - time)
+            data.push({
+                error: false,
+                message: "Data found",
+                user: req.params.username,
+                countiesCounter: result[0].length,
+                counties: result[0].length ? result[0] : "No county found",
+                responseTime: new Date() - time + "ms"
+            })
+            // console.log("promise all push done", new Date() - time)
+        } else {
+            data.push({
+                error: true,
+                message: "No data found for this user",
+                user: req.params.username
+            })
+        }
+
+        // send the data
+        res.status(200).send(data)
+
+    }).catch(error => console.log(`Error in promises ${error}`))
+
+})
+
+// get sensors
+app.get('/api/:username/:county/get-sensors', (req, res) => {
+    var time = new Date()
+    var data = []
+
+    // return evrything that belongs to username and match county and is in a 1day time interval
+    var whereQuery = `where username='` + req.params.username + `' and county='` + req.params.county + `'`
+    // check what sensor type for the user
+    var influxQuery = `select distinct(sensorId) as sensorId from ( select sensorId, value from sensors ` + whereQuery + ` )`
+
+    let sensorsData = influxReader(influxQuery).then((result) => {
+
+            // console.log("after fetch", new Date() - time)
+
+            // get sensor type
+            // var sensorTypeList = []
+            var sensorIdList = []
+            // var sensorIdListAux = []
+
+            for (var i = 0; i < result.length; i++) {
+
+                sensorIdList.push(result[i].sensorId)
+
+            }
+
+            // build the output
+            if (result.length) {
+                data.push({
+                    error: false,
+                    message: "Data found",
+                    county: req.params.county,
+                    user: req.params.username,
+                    sensorIdListLength: sensorIdList.length,
+                    sensorIdList: sensorIdList,
+                    responseTime: new Date() - time + "ms"
+                })
+            } else {
+                data.push({
+                    error: true,
+                    message: "No data found",
+                    county: req.params.county,
+                    length: result.length,
+                    user: req.params.username,
+                    responseTime: new Date() - time + "ms"
+                })
+            }
+
+            // send the output
+            res.status(200).send(data)
+
+        })
+        .catch((e) => {
+            res.status(404).send("Scraping sensorId data from influx failed", e)
+        })
+
+})
+
+// get last value
+app.get('/api/:sensor/get-value', (req, res) => {
+    var time = new Date()
+    var data = []
+
+    var whereQuery = `where sensorId='` + req.params.sensor + `'`
+    var influxQuery = `select last(value) as value, username, country, county, city, zone from sensors ` + whereQuery + ` ORDER BY time DESC LIMIT 1`
+
+    // console.log(influxQuery)
+
+    let resultInfluxDb = influxReader(influxQuery).then((result) => {
+
+        // console.log(result)
+
+        if (result.length) {
+            data.push({
+                error: false,
+                message: "Data found",
+                sensorQueried: req.params.sensor,
+                country: result[0].country,
+                county: result[0].county,
+                city: result[0].city,
+                zone: result[0].zone,
+                username: result[0].username,
+                lastValue: {
+                    value: result[0].value,
+                    time: result[0].time
+                },
+                responseTime: new Date() - time + "ms"
+            })
+        } else {
+            data.push({
+                error: true,
+                message: "No data found",
+                sensorQueried: req.params.sensor,
+                lastValue: result,
+                responseTime: new Date() - time + "ms"
+            })
+        }
+
+        return data
+
+
+    }).then((result) => {
+        res.status(200).send(result)
+    }).catch((e) => {
+        res.status(404).send("Scraping sensor data from influx failed")
+    })
+
+})
+
+// get last value for all sensors
+app.get('/api/get-last-value', (req, res) => {
+    var time = new Date()
+    var data = []
+    var influxQuery = `select last(value), county, country, city, location, zone, username, sensorId, type from (select * from sensors) group by sensorId;`
+    let resultInfluxDb = influxReader(influxQuery).then((result) => {
+
+        if (result.length) {
+
+            // data.push({
+            //     error: false,
+            //     message: "Data found",
+            //     sensorCount: result.length,
+            //     responseTime: new Date() - time + "ms"
+            // })
+
+            var sensorCounter = 0
+            result.forEach(sensor => {
+                data.push({
+                    sensorIndex: sensorCounter++,
+                    sensorQueried: sensor.sensorId,
+                    type: sensor.type,
+                    country: sensor.country,
+                    county: sensor.county,
+                    city: sensor.city,
+                    zone: sensor.zone,
+                    username: sensor.username,
+                    value: sensor.last,
+                    time: sensor.time,
+                })
+            })
+
+
+        } else {
+            data.push({
+                error: true,
+                message: "No data found",
+                lastValue: result,
+                responseTime: new Date() - time + "ms"
+            })
+        }
+
+        return data
+
+
+    }).then((result) => {
+        res.status(200).send(result)
+    }).catch((e) => {
+        res.status(404).send("Scraping sensor data from influx failed")
+    })
+})
+
 //=========================================
 // END - API Get Data From Different Zones
 
@@ -1246,6 +1657,101 @@ app.get('/set-new-device', authDashboard, (req, res) => {
 //=========================================
 // END - Sensor Settings
 
-
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, console.log(`Server started on port ${PORT}`));
+var server = app.listen(PORT, console.log(`Server started on port ${PORT}`));
+
+
+// socket setup
+var io = socket(server)
+io.on('connection', function (socket) {
+
+    // Test Notification
+    app.get('/api/notification-test', (req, res) => {
+        io.sockets.emit('message', {
+            send: req.query.message,
+            time: new Date()
+        })
+        res.send({
+            ok: "ok"
+        })
+    })
+
+    // Sensor Alert˚
+    app.get('/api/read-alerts', (req, res) => {
+        sess = req.session
+
+        if (req.query.sensorId)
+            var query = "SELECT * FROM alerts WHERE sensorId='" + req.query.sensorId + "'"
+        else
+            var query = "SELECT * FROM alerts"
+
+        var time = new Date()
+
+        let mysqlAlerts = mysqlReader(query).then(async (rows) => {
+            return await rows
+        })
+
+        Promise.all([mysqlAlerts]).then(result => {
+            res.send({
+                result: result[0],
+                responseTime: new Date() - time + "ms"
+            })
+        })
+    })
+
+    app.get('/api/set-alerts', (req, res) => {
+
+        sess = req.session
+
+        var query = "SELECT * FROM alerts WHERE sensorId=" + req.query.sensorId
+
+        let mysqlResult = mysqlReader(query).then(async (rows) => {
+            return await rows
+        })
+
+        Promise.all([mysqlResult]).then(result => {
+            var sensorExists = result[0].length
+
+            if (sensorExists) {
+                var queryUpdate = "UPDATE alerts SET min=" + req.query.min + ", max=" + req.query.max + " WHERE sensorId=" + req.query.sensorId + ";"
+                mysqlWriter(queryUpdate)
+                    .then((result) => {
+                        io.sockets.emit('message', {
+                            // send: "Alerts updated for "+req.query.sensorId+" with min="+req.query.min+" and max="+req.query.max+"",
+                            send: "Alerts updated",
+                            time: new Date()
+                        })
+                        res.send({
+                            "update": true,
+                            "query": query,
+                            "message": result
+                        })
+                    })
+            } else {
+                var query = "INSERT INTO alerts (sensorId, min, max) VALUES (" + req.query.sensorId + ", " + req.query.min + ", " + req.query.max + ");"
+                mysqlWriter(query)
+                    .then((result) => {
+                        io.sockets.emit('message', {
+                            // send: "Alerts updated for "+req.query.sensorId+" with min="+req.query.min+" and max="+req.query.max+"",
+                            send: "Alerts updated",
+                            time: new Date()
+                        })
+                        res.send({
+                            "insert": true,
+                            "query": query,
+                            "message": result
+                        })
+                    })
+            }
+
+        }).catch(error => {
+            console.error(`Error in promises ${error}`)
+            io.sockets.emit('message', {
+                send: "Error when updating the alerts",
+                time: new Date()
+            })
+        })
+
+    })
+    // End Sensor Alert
+})
