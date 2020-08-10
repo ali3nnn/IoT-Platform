@@ -7,6 +7,9 @@
 
 <body class="team-page client-username-{{username}}">
 
+    {{!-- Loading Screen --}}
+    {{> loader}}
+
     <!-- Main Sidebar Container -->
     {{> aside}}
 
@@ -26,7 +29,7 @@
             <div class="small-box bg-info county-detail box-shadow-5">
                 <div class="inner">
                     <h3>Your Team</h3>
-                    <p>Dasstec B2B SRL</p>
+                    <p class='company'>Company</p>
                 </div>
                 <div class="icon">
                     <i class="fas fa-users"></i>
@@ -51,70 +54,25 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {{!-- <tr>
-                        <td class="">-</td>
-                        <td class="">-</td>
-                        <td class="">-</td>
-                    </tr>
-                    <tr>
-                        <td class="">-</td>
-                        <td class="">-</td>
-                        <td class="">-</td>
-                    </tr>
-                    <tr>
-                        <td class="">-</td>
-                        <td class="">-</td>
-                        <td class="">-</td>
-                    </tr>
-                    <tr>
-                        <td class="">-</td>
-                        <td class="">-</td>
-                        <td class="">+</td>
-                    </tr>
-                    <tr>
-                        <td class="">-</td>
-                        <td class="">+</td>
-                        <td class="">+</td>
-                    </tr>
-                    <tr>
-                        <td class="">+</td>
-                        <td class="">+</td>
-                        <td class="">+</td>
-                    </tr>
-                    <tr>
-                        <td class="">+</td>
-                        <td class="">+</td>
-                        <td class="">+</td>
-                    </tr>
-                    <tr>
-                        <td class="">+</td>
-                        <td class="">+</td>
-                        <td class="">+</td>
-                    </tr>
-                    <tr>
-                        <td class="">+</td>
-                        <td class="">+</td>
-                        <td class="">-</td>
-                    </tr>
-                    <tr>
-                        <td class="">+</td>
-                        <td class="">-</td>
-                        <td class="">-</td>
-                    </tr> --}}
+
                 </tbody>
             </table>
 
         </div>
 
-    </div>
+        <notification></notification>
 
-    {{> scripts}}
+    </div>
 
     <script>
         if (window.location.href.indexOf('team') > -1) {
             $(".team-route").addClass("link-selected")
         }
+
+        var loggedInUser = JSON.parse('{{{json username}}}');
     </script>
+
+    {{> scripts}}
 
 </body>
 

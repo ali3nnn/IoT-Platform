@@ -1,4 +1,5 @@
 const mysql = require('mysql')
+const Influx = require('influx');
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 // const cookieParser = require('cookie-parser')
@@ -6,7 +7,12 @@ const bcrypt = require('bcryptjs')
 const dotenv = require("dotenv")
 
 // enable debugging
-const { parsed, error } = dotenv.config({ debug: true })
+const {
+    parsed,
+    error
+} = dotenv.config({
+    debug: true
+})
 
 // was there an error?
 // console.error(error)
@@ -32,37 +38,127 @@ const db = mysql.createConnection({
     database: process.env.DATABASE
 })
 
-// class Database {
-//     constructor(config) {
-//         this.connection = mysql.createConnection(config);
-//     }
-//     query(sql, args) {
-//         return new Promise((resolve, reject) => {
-//             this.connection.query(sql, args, (err, rows) => {
-//                 if (err)
-//                     return reject(err);
-//                 resolve(rows);
-//             });
-//         });
-//     }
-//     close() {
-//         return new Promise((resolve, reject) => {
-//             this.connection.end(err => {
-//                 if (err)
-//                     return reject(err);
-//                 resolve();
-//             });
-//         });
-//     }
-// }
+// Influx Connection
+// ==================================
 
-// Database.execute = function (config, callback) {
-//     const database = new Database(config);
-//     return callback(database).then(
-//         result => database.close().then(() => result),
-//         err => database.close().then(() => { throw err; })
-//     );
-// };
+// Connect to InfluxDB and set the SCHEMA
+const influx = new Influx.InfluxDB({
+    host: 'localhost',
+    database: 'anysensor3',
+})
+
+// Influx Write - ASYNC
+function influxWriter(measurement, country, county, city, location, zone, username, type, sensorId, value, database = 'anysensor3', precision = 's') {
+    console.log('Influx Write')
+    influx.writePoints([{
+            measurement,
+            tags: {
+                country,
+                county,
+                city,
+                location,
+                zone,
+                username,
+                type,
+                sensorId,
+            },
+            fields: {
+                value
+            }
+        }], {
+            database,
+            precision,
+        })
+        .catch(error => {
+            console.error(`Error saving data to InfluxDB! ${err.stack}`)
+        });
+}
+
+// Influx Query - PROMISE
+function influxReader(query) {
+    return new Promise((resolve, reject) => {
+        // console.log(query)
+        influx.query(query)
+            .then(result => {
+                return resolve(result)
+            })
+            .catch(error => {
+                return reject(error)
+            });
+    })
+}
+
+// ==================================
+// End Influx Connection
+
+// MySQL Connection
+// ==================================
+
+// DB Configuration
+config_db = {
+    host: process.env.DATABASE_HOST,
+    user: process.env.DATABASE_USER,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE
+}
+
+// Database Connection In Promise
+class Database {
+    constructor(config) {
+        this.connection = mysql.createConnection(config);
+        // console.log("Second connection to MySQL in promise")
+    }
+    query(sql, args) {
+        return new Promise((resolve, reject) => {
+            this.connection.query(sql, args, (err, rows) => {
+                if (err)
+                    return reject(err);
+                resolve(rows);
+            });
+        });
+    }
+    close() {
+        return new Promise((resolve, reject) => {
+            this.connection.end(err => {
+                if (err)
+                    return reject(err);
+                resolve();
+            });
+        });
+    }
+}
+
+// Set and connect to DB - Promise
+database = new Database(config_db)
+
+function mysqlReader(query) {
+    return new Promise((resolve, reject) => {
+        // console.log(query)
+        database.query(query)
+            .then(result => {
+                return resolve(result)
+            })
+            .catch(error => {
+                return reject(error)
+            });
+    })
+}
+
+function mysqlWriter(query) {
+    return new Promise((resolve, reject) => {
+        // console.log(query)
+        database.query(query)
+            .then(result => {
+                return resolve(result)
+            })
+            .catch(error => {
+                return reject(error)
+            });
+    })
+}
+
+// ==================================
+// End MySQL Connection
 
 function allTrue(obj) {
     for (var o in obj)
@@ -75,7 +171,14 @@ function allTrue(obj) {
 //auth controller register
 const authRegister = (req, res, next) => {
 
-    const { name, username, email, password, passwordConfirm } = req.body
+    const {
+        name,
+        username,
+        email,
+        company,
+        password,
+        passwordConfirm
+    } = req.body
 
     // password do not match
     if (password != passwordConfirm) return res.render('register', {
@@ -83,7 +186,14 @@ const authRegister = (req, res, next) => {
     })
 
     // all fields required
-    const allField = allTrue({ name, username, email, password, passwordConfirm })
+    const allField = allTrue({
+        name,
+        username,
+        email,
+        company,
+        password,
+        passwordConfirm
+    })
 
     if (!allField) return res.render('register', {
         alert: 'All fields are required!'
@@ -149,11 +259,18 @@ const authRegister = (req, res, next) => {
         let hashedPassword = await bcrypt.hash(password, 10)
 
         //register the user into db
-        db.query("INSERT INTO users SET ?", { name: name, username: username, email: email, password: hashedPassword, user_role: 'basic' }, (err) => {
+        db.query("INSERT INTO users SET ?", {
+            name: name,
+            username: username,
+            email: email,
+            company: company,
+            password: hashedPassword,
+            user_role: 'basic'
+        }, (err) => {
             if (err) console.log("Problem with insert ", err)
             else {
                 console.log("New user registration")
-                console.log(name, username, email, password, '\r\n')
+                console.log(name, username, email, company, password, '\r\n')
                 next()
             }
         })
@@ -168,7 +285,11 @@ const authLogin = async (req, res, next) => {
     // console.log("REQ.BODY:",req.body)
     try {
         // take the data from form body
-        const { username, password, remember } = req.body
+        const {
+            username,
+            password,
+            remember
+        } = req.body
 
         //start the session for future login
         sess = req.session
@@ -219,24 +340,6 @@ const authLogin = async (req, res, next) => {
                         console.log("Logged in")
                         console.log("Username:", sess.username, "Role:", sess.user_role)
 
-                        // check sensor access for this user
-                        // var sql_query = "SELECT sensors.sensorId FROM users, sensors WHERE users.username = '" + username + "' AND sensors.userId = users.id"
-                        // db.query(sql_query, async (err, result) => {
-                        //     if (err)
-                        //         console.log("There is a problem authLogin 2")
-                        //     else if (result.length) {
-                        //         let sensorAccess = Array()
-                        //         for (var i = 0; i < result.length; i++)
-                        //             if (result[i].sensorId)
-                        //                 sensorAccess.push(result[i].sensorId)
-                        //         sess.sensorAccess = (sensorAccess.length ? sensorAccess : ((username == 'superadmin') ? -1 : 0));
-                        //     } else {
-                        //         sess.sensorAccess = ((username == 'superadmin') ? -1 : 0);
-                        //     }
-                        //     console.log("Sensors:", sess.sensorAccess)
-                        //     next()
-                        // })
-
                         next()
 
                     }
@@ -257,11 +360,15 @@ const authLogin = async (req, res, next) => {
 const authDashboard = (req, res, next) => {
     // check if user is logged
     sess = req.session;
+    var time = new Date()
+    var data = []
+
+    // console.log("authDashboard")
+    // console.log(sess.counties)
 
     if (sess.username) {
         next()
-    }
-    else res.render("login", {
+    } else res.render("login", {
         alert: "You are not logged in"
     })
 }
@@ -273,8 +380,7 @@ const authSuperAdmin = (req, res, next) => {
     if (sess.super_admin == 1) {
         // console.log("this user is superadmin")
         next()
-    }
-    else {
+    } else {
         // console.log("this user is NOT superadmin")
         res.render('login', {
             alert: "Login with your superadmin account!"
@@ -329,9 +435,7 @@ const cookieChecker = async (req, res, next) => {
                 next() //go forward without username even is there is a cookie
             }
         })
-    }
-
-    else {
+    } else {
         // console.log("no cookie found | sess:",sess)
         next() //go forward without cookie retrieved
     }
@@ -340,11 +444,12 @@ const cookieChecker = async (req, res, next) => {
 
 }
 
-
 module.exports = {
     authRegister,
     authLogin,
     authDashboard,
     authSuperAdmin,
-    cookieChecker
+    cookieChecker,
+    // getCounties,
+    // getSensorLocation
 }

@@ -6,7 +6,10 @@
 </head>
 
 <body class="map-page">
-  
+
+  {{!-- Loading Screen --}}
+  {{> loader}}
+
   <!-- Main Sidebar Container -->
   {{> aside}}
 
@@ -29,63 +32,36 @@
     {{!-- Map --}}
     {{!-- <div class="container wrapper"> --}}
     <div id="map" class="map"></div>
+
+    <div class="temeprature-marker" sensorid="DAS001TDEMO"></div>
+    <div class="temeprature-marker" sensorid="sensor22"></div>
+
+    <script>
+      function insertAfter(newNode, referenceNode) {
+        console.log(newNode, referenceNode)
+        referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+      }
+
+      var sensorId = JSON.parse('{{{json sensors}}}');
+      console.log("sensorId:", sensorId)
+
+      sensorId.forEach(sensor => {
+
+        var element = document.createElement('div'); // it's a node
+        element.className = 'temeprature-marker';
+        $(element).attr("sensorid", sensor)
+       // $(element).insertAfter("#map")
+
+      })
+
+    </script>
     {{!-- </div> --}}
 
   </div>
 
   {{> scripts}}
 
-  <style>
-    .map {
-      height: calc(100vh - 52px - 1rem);
-      width: 100%;
-      /* border-radius: 13px; */
-      padding: 1rem;
-      position: relative;
-      overflow: hidden;
-      /* border-radius: 51px; */
-    }
 
-    .map>div {
-      border-radius: 13px;
-      box-shadow: var(--neuro);
-    }
-  </style>
-
-  <script type="text/javascript">
-
-    var map = new ol.Map({
-      target: 'map',
-      layers: [
-        new ol.layer.Tile({
-          source: new ol.source.OSM()
-        })
-      ],
-      view: new ol.View({
-        center: ol.proj.fromLonLat([26.08, 44.45]),
-        zoom: 14
-      })
-    });
-
-    var feature = new ol.Feature({
-      geometry: new ol.geom.Point(ol.proj.fromLonLat([26.08, 44.45]))
-    })
-
-    var feature2 = new ol.Feature({
-      geometry: new ol.geom.Point(ol.proj.fromLonLat([28.08, 44.45]))
-    })
-
-    var layer = new ol.layer.Vector({
-      source: new ol.source.Vector({
-        features: [ feature2, feature ]
-      })
-    });
-    
-    map.addLayer(layer);
-
-  </script>
-
-  {{!-- <script src="/js/map.js"></script> --}}
 
 </body>
 

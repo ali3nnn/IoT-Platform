@@ -20,18 +20,19 @@ var counterOld = ['', '']
 // Make Socket.io connection
 var socket = io.connect("https://anysensor.dasstec.ro/")
 
-socket.on('message',function(data){
+socket.on('message', function (data) {
 
     // console.log(data)
 
-    $(".messages.hideMe").remove()
+    // $(".messages.hideMe").remove()
 
-    $("#main notification").append(`<div class="messages hideMe">
-        <div class="alert alert-success mt-3 mb-0" role="alert">
-            <background></background>
-            `+data.send+`
-        </div>
-    </div>`)
+    // $("#main notification").append(`<div class="messages hideMe">
+    //     <div class="alert alert-success mt-3 mb-0" role="alert">
+    //         <background></background>
+    //         `+data.send+`
+    //     </div>
+    // </div>`)
+
 })
 
 // end WebSocket.io
@@ -192,6 +193,12 @@ function currentValueSvgGauge(element, currentValue = NaN, updatedAt = false) {
 
         }
 
+        // Append unit measure
+        if (Number.isInteger(currentValue))
+            $('#' + element + '-gauge g.text-container text').append(".0 &#8451;")
+        else
+            $('#' + element + '-gauge g.text-container text').append(" &#8451;")
+
         return gauge
     }
 
@@ -223,8 +230,15 @@ function updateValueSvgGauge(element, gauge, value, updatedAt = false) {
     var isCounter = false
     element.split('-')[1] == 'c' ? isCounter = true : isCounter = false
 
+    // Update the value
     if (!isNaN(value) && !isCounter)
-        gauge.setValueAnimated(value, 1);
+        gauge.setValue(value);
+
+    // Append unit measure
+    if (Number.isInteger(value))
+        $('#' + element + '-gauge g.text-container text').append(".0 &#8451;")
+    else
+        $('#' + element + '-gauge g.text-container text').append(" &#8451;")
 
     // console.log(updatedAt)
 
@@ -466,7 +480,7 @@ function defaultSensorView(sensorId, sensorType, sensorZone) {
 
     // current value gauge component
     var currentValueView = `
-    <article class="card height-control live-card-` + sensorId + `">
+    <article class="card height-control live-card-` + sensorId + `" sensorId="` + sensorId + `">
 
     <div class="card-header">
         <h3 class="card-title">
@@ -483,7 +497,9 @@ function defaultSensorView(sensorId, sensorType, sensorZone) {
             <a href="#" class='spinner ` + sensorId + `-currentValue-spinner'>
                 <span>Loading...</span>
             </a>
-            <div id="` + sensorId + `-gauge" class="gauge-container two hidden-element"></div>
+            <div id="` + sensorId + `-gauge" class="gauge-container two hidden-element">
+                
+            </div>
         </div>
     </div>
 
@@ -497,9 +513,13 @@ function defaultSensorView(sensorId, sensorType, sensorZone) {
         <div class='settings-wrapper'>
             <div class="slidecontainer">
                 <p class='label-input'>Minimum</p>
-                <input type="text" placeholder="Type a value..." class="input input-min">
+                <input type="number" placeholder="Type lower alert..." class="input input-min">
                 <p class='label-input'>Maximum</p>
-                <input type="text" placeholder="Type a value..." class="input input-max">
+                <input type="number" placeholder="Type upper alert..." class="input input-max">
+                <p class='label-input'>Lat</p>
+                <input type="number" placeholder="Type lat value..." class="input input-lat">
+                <p class='label-input'>Long</p>
+                <input type="number" placeholder="Type long value..." class="input input-long">
             </div>
         </div>
     </div>
@@ -514,9 +534,6 @@ function defaultSensorView(sensorId, sensorType, sensorZone) {
             <i class='update-icon'></i>
             Live Update
         </h3>
-        <!--<span class='card-settings-button'>
-            <i class="far fa-sliders-h"></i>
-        </span>-->
     </div>
 
     <div class="card-body">
@@ -529,28 +546,12 @@ function defaultSensorView(sensorId, sensorType, sensorZone) {
             <div id="` + sensorId + `-floatinBall" class="hidden-element"></div>
 
         </div>
-    </div>
-
-    <!--<div class='card-alerts-settings alert-` + sensorId + `'>
-        <span class='card-settings-button-inner'>
-            <i class="far fa-sliders-h"></i>
-        </span>
-        <div class='settings-wrapper'>
-            <div class="slidecontainer">
-                <p class='text-slider-optim text-success'>Best: <span></span>%</p>
-                <input type="range" min="1" max="100" value="0" class="slider" id="slider-optim">
-                <p class='text-slider-mid text-warning'>Satisfying: <span></span>%</p>
-                <input type="range" min="1" max="100" value="0" class="slider" id="slider-mid">
-                <p class='text-slider-warning text-danger'>Warning: <span></span>%</p>
-                <input type="range" min="1" max="100" value="0" class="slider" id="slider-warning">
-            </div>
-        </div>
-    </div>-->`
+    </div>`
 
     // graph view component
     var graphView = `</article>
 
-    <article class="card height-control ` + sensorId + `-card graph-` + sensorId + `" sensorType="` + sensorType + `">
+    <article class="card height-control ` + sensorId + `-card graph-` + sensorId + `" sensorType="` + sensorType + `" sensorId="` + sensorId + `">
     
         <div class="card-header">
 
@@ -598,20 +599,43 @@ function defaultSensorView(sensorId, sensorType, sensorZone) {
 
 var alertsLoadFlag = true
 
-function alertsLoad() {
+
+let readAlerts = async () => {
+    let alerts = await fetch("https://anysensor.dasstec.ro/api/read-alerts")
+    return alerts.json()
+}
+
+// let readLocation = async () => {
+//     let alerts = await fetch("https://anysensor.dasstec.ro/api/read-location")
+//     return alerts.json()
+// }
+
+
+function alertsAndLocationLoad() {
     if (alertsLoadFlag)
         (async () => {
             alertsLoadFlag = false
-            let alerts = await mysqlAlerts()
+            let alerts = await readAlerts() //this returns all the alerts in mysql - it should return only the  alerts of this user
             for (var i = 0; i < alerts.result.length; i++) {
-                // console.log(alerts.result[i].sensorId, $(`.live-card-` + alerts.result[i].sensorId + ` .input-min`).length, alerts.result[i].min, alerts.result[i].min)
-                $(`.live-card-` + alerts.result[i].sensorId + ` .input-min`).attr("value", alerts.result[i].min)
-                $(`.live-card-` + alerts.result[i].sensorId + ` .input-max`).attr("value", alerts.result[i].max)
+                var sensorId = alerts.result[i].sensorId
+
+                // load alert' values
+                $(`.live-card-` + sensorId + ` .input-min`).attr("value", alerts.result[i].min)
+                $(`.live-card-` + sensorId + ` .input-max`).attr("value", alerts.result[i].max)
+
+                // load locations into inputs value
+                var locationObj = getLocationObj()
+                if(locationObj[sensorId] != undefined) {
+                    // console.log(locationObj, locationObj[sensorId])
+                    $("article[class*='live'][sensorid='" + sensorId + "'] .input-lat").attr("value", locationObj[sensorId][0])
+                    $("article[class*='live'][sensorid='" + sensorId + "'] .input-long").attr("value", locationObj[sensorId][1])
+                }
             }
         })()
+
 }
 
-function alertButtonToggle(sensorId) {
+function sensorSettingsToggle(sensorId) {
 
     $(".live-card-" + sensorId + " .card-settings-button").removeClass("hidden-button")
 
@@ -620,7 +644,7 @@ function alertButtonToggle(sensorId) {
         $(this).parent().parent().children('.card-body').toggleClass('blur8')
         $(this).parent().parent().children('.card-header').toggleClass('blur8')
 
-        alertsLoad()
+        alertsAndLocationLoad()
 
     })
     $(".live-card-" + sensorId + "  .card-settings-button-inner").click(function () {
@@ -630,31 +654,37 @@ function alertButtonToggle(sensorId) {
     })
 
     $(".live-card-" + sensorId + " .card-settings-button-update").click(function () {
-        updateAlerts(sensorId)
+        updateSensorSettings(sensorId)
+        timeout(500, function(){
+            appendAlertsToHTML(sensorId)
+        })
     })
 }
 
-let mysqlAlerts = async () => {
-    // if (sensorId)
-    //     let alerts = await fetch("https://anysensor.dasstec.ro/api/read-alerts?sensorId=" + sensorId + "")
-    // else
-    let alerts = await fetch("https://anysensor.dasstec.ro/api/read-alerts")
 
-    return alerts.json()
+let saveSensorSettings = async (sensorId, minVal, maxVal, lat, long) => {
+    // let response = await fetch("https://anysensor.dasstec.ro/api/set-alerts/?sensorId='" + sensorId + "'&min=" + minVal + "&max=" + maxVal + "&lat=" + lat + "&long=" + long)
+    // console.log(await response)
+    // return response.json()
+
+    // need to replace with ajax request for notification
+    $.ajax({
+        url: "https://anysensor.dasstec.ro/api/set-alerts/?sensorId='" + sensorId + "'&min=" + minVal + "&max=" + maxVal + "&lat=" + lat + "&long=" + long,
+        type: 'GET',
+        success: function (msg) {
+            alert("Alerts and location updated!")
+        }
+    });
 }
 
-
-let insertAlert = async (sensorId, minVal, maxVal) => {
-    let response = await fetch("https://anysensor.dasstec.ro/api/set-alerts/?sensorId='" + sensorId + "'&min=" + minVal + "&max=" + maxVal)
-    return response.json()
-}
-
-async function updateAlerts(sensorId) {
+async function updateSensorSettings(sensorId) {
 
     const minVal = $(".live-card-" + sensorId + " .settings-wrapper .input-min").val()
     const maxVal = $(".live-card-" + sensorId + " .settings-wrapper .input-max").val()
+    const lat = $(".live-card-" + sensorId + " .settings-wrapper .input-lat").val()
+    const long = $(".live-card-" + sensorId + " .settings-wrapper .input-long").val()
 
-    await insertAlert(sensorId, minVal, maxVal)
+    await saveSensorSettings(sensorId, minVal, maxVal, lat, long)
 
 }
 
@@ -882,10 +912,48 @@ function fontAwesomeClassGenerator(type) {
     return faClass
 }
 
+
+function appendAlertsToHTML(sensorId_) {
+
+    (async () => {
+
+        // console.log("called for", sensorId_)
+
+        let alerts = await readAlerts()
+
+        var alertsDict = []
+
+        var alertCounter = 0
+
+        for (var i = 0; i < alerts.result.length; i++) {
+
+            var bodyEl = $("body")
+            if (sensorId.includes(alerts.result[i].sensorId)) {
+                alertsDict[alertCounter] = [alerts.result[i].sensorId, alerts.result[i].min, alerts.result[i].max]
+                alertCounter++
+            }
+
+        }
+
+        // bodyEl.prepend(`<alerts style="display:none">` + JSON.stringify(alertsDict) + `</alerts>`)
+
+        alertsDict.forEach(alert => {
+            // console.log(alert, sensorId_)
+            if (sensorId_ == alert[0]) {
+                $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .minAlertGauge").remove()
+                $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .maxAlertGauge").remove()
+                $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container").prepend(`<span class='minAlertGauge'>` + alert[1] + `</span><span class='maxAlertGauge'>` + alert[2] + `</span>`)
+            }
+
+        })
+
+    })()
+}
+
 // get list of sensors from a county
 let getData = async () => {
     // console.log("getData")
-    let response = await fetch("https://anysensor.dasstec.ro/api/get-data/sensorId/" + countyName)
+    let response = await fetch("https://anysensor.dasstec.ro/api/v2/get-data/sensorId/" + countyName)
     // console.log("getData",new Date()-time)
     return response.json()
 }
@@ -1134,14 +1202,9 @@ var gaugeList = []
 var chartList = []
 
 let test = (async () => {
-
     json = await getData();
-    // console.log("getData async",new Date()-time)
 
 })().then(() => {
-
-    // console.log("then",new Date()-time)
-
     // If error was returned, put 0 value for reading
     if (json[0].error) {
 
@@ -1174,13 +1237,8 @@ let test = (async () => {
 
     } else {
 
-        // const api_data = json.slice(1, json.length)
         const api_data = json[0]
         const sensorCounter = api_data.sensorIdListLength
-        // const sensorTypeCounter = api_data.sensorTypesLength
-        // var canvasList = []
-        // var liveData = []
-        // console.log(api_data.sensorIdList)
 
         for (var i = 0; i < sensorCounter; i++) {
 
@@ -1196,13 +1254,16 @@ let test = (async () => {
                 // console.log("append")
 
                 // Turn On alert sliders
-                sliderAlerts(".live-card-" + sensorData[0].sensorQueried + " #slider-optim")
-                sliderAlerts(".live-card-" + sensorData[0].sensorQueried + " #slider-mid")
-                sliderAlerts(".live-card-" + sensorData[0].sensorQueried + " #slider-warning")
+                // sliderAlerts(".live-card-" + sensorData[0].sensorQueried + " #slider-optim")
+                // sliderAlerts(".live-card-" + sensorData[0].sensorQueried + " #slider-mid")
+                // sliderAlerts(".live-card-" + sensorData[0].sensorQueried + " #slider-warning")
 
-                alertButtonToggle(sensorData[0].sensorQueried)
+                sensorSettingsToggle(sensorData[0].sensorQueried)
 
-                // Read alerts
+                // Append alerts
+                timeout(300, function(){
+                    appendAlertsToHTML(sensorData[0].sensorQueried)
+                })
 
 
                 // Add Icons based on sensor type

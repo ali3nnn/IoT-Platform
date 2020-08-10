@@ -161,6 +161,16 @@ h2 {
 
 /* Loader */
 
+.loader-wrapper span {
+  font-size: 12px;
+  top: calc(50% + 26px);
+  position: absolute;
+  left: calc(50% + 0px);
+  transform: translateX(-50%);
+  opacity: 0.3;
+  display: none;
+}
+
 .loader-anysensor {
   /* border: 16px solid #f3f3f3; */
   /* Light grey */
@@ -3258,6 +3268,7 @@ html.maximized-card {
   filter: blur(0px);
   -webkit-filter: blur(0px);
   transition: all 0.2s ease;
+  /* display: table; */
 }
 
 .collapsed-card .card-header {
@@ -3356,6 +3367,21 @@ span.card-settings-button:hover, .card-settings-button-inner:hover {
   visibility: visible;
 }
 
+span[class*='AlertGauge'] {
+  position: absolute;
+  bottom: 10px;
+}
+
+span.minAlertGauge {
+  left: 24px;
+}
+
+span.maxAlertGauge {
+  right: 19px;
+}
+
+span[class*='AlertGauge']:after {content: "°C";}
+
 .blur0 {
   /* Add the blur effect */
   filter: blur(0px) !important;
@@ -3421,11 +3447,12 @@ span.card-settings-button:hover, .card-settings-button-inner:hover {
 
 .settings-wrapper > div {
     display: grid;
-    grid-template-columns: 1fr;
-    /* grid-row-gap: 1rem; */
+    grid-template-columns: 0.25fr 1fr;
+    grid-row-gap: 0.4rem;
     align-content: center;
     max-width: 80%;
     /* margin: 0 auto; */
+    margin-top: 10px;
 }
 
 
@@ -3788,6 +3815,33 @@ span.card-settings-button:hover, .card-settings-button-inner:hover {
   width: 100%;
 }
 
+/* Map Container */
+
+.map {
+  height: calc(100vh - 52px - 1rem);
+  width: 100%;
+  /* border-radius: 13px; */
+  padding: 1rem;
+  position: relative;
+  overflow: hidden;
+  /* border-radius: 51px; */
+}
+
+.map>div {
+  border-radius: 13px;
+  box-shadow: var(--neuro);
+}
+
+div#map>div:first-child {
+  display: block !important;
+}
+
+div#map>div {
+  display: none;
+}
+
+/* End Map Container */
+
 /* Map Item */
 
 .map-page .map-button {
@@ -4003,7 +4057,7 @@ div#reportrange {
   /* width: 36px !important; */
   position: relative;
   transform: translate(-50%, -50%);
-  top: 50%;
+  top: 16px;
   left: 50%;
   border: 0px solid transparent !important;
   transition: all 0.2s ease;
@@ -4536,9 +4590,42 @@ div[id*="-floatinBall"] {
   box-shadow: var(--neuro)
 }
 
+.team-container tr.current-user {
+  /* background: gray; */
+  border-left: 10px solid #ffc009;
+}
+
 /* Modal */
+.hidden {
+  display:none;
+}
+
 .modal-open .modal {
   background: #000000d4;
+}
+
+.modal-backdrop {
+  background: none;
+}
+
+div[id*="edit-user"] form label {
+  margin-bottom: 0;
+}
+
+div[id*="edit-user"] form .form-zones-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-row-gap: 1rem;
+  grid-column-gap: 1rem;
+
+}
+
+div[id*="edit-user"] form .form-zones-container .form-check {
+  /* border: 1px solid black; */
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-radius: 5px;
+  padding-left: 30px;
 }
 
 /* End Team Container */

@@ -6,6 +6,9 @@
 </head>
 
 <body class="dashboard-page client-username-{{username}}">
+
+    {{!-- Loading Screen --}}
+    {{> loader}}
     
     <!-- Main Sidebar Container -->
     {{> aside}}
@@ -45,6 +48,11 @@
         {{> notification}}
 
     </div>
+
+    <script>
+      var sensorId = JSON.parse('{{{json sensors}}}');
+      console.log("sensorId:", sensorId)
+    </script>
 
     {{> scripts}}
 
