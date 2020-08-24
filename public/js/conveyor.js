@@ -156,12 +156,30 @@ function insertStatus(status) {
 }
 
 // block input toggle for a 3s after pressed
-function blockSwitchButton() {
+function blockSwitchButton(timeout) {
+    
     var time = new Date()
     $(".small-box #switch-conveyor").prop('disabled', true)
-    timeout_2(5000, function () {
+    $(".small-box #switch-conveyor").parent().append("<div class='switch-disable-time'>"+timeout/1000+" sec</div>")
+    displayTimeoutAndVanish('.switch-disable-time', timeout)
+
+    timeout_2(timeout, function () {
         // console.log("input toggle release ",new Date()-time)
         $(".small-box #switch-conveyor").prop('disabled', false)
+    })
+}
+
+function displayTimeoutAndVanish(element, timeout) {
+    var el = $(element)    
+    timeout_ = timeout / 1000
+    var x = setInterval(function(){
+        timeout_ -= 1
+        el.html(timeout_ + " sec")
+    }, 1000)
+
+    timeout_2(timeout, function(){
+        el.fadeOut(500)
+        clearInterval(x);
     })
 }
 
@@ -191,7 +209,7 @@ async function switchConveyor() {
             // if ($(".gate-info h3").html() == 'Closed') {
                 // if gate is closed start the conveyor
                 // insertStatus("on");
-                blockSwitchButton()
+                blockSwitchButton(5000)
                 sendMessage("socketChannel",{
                     topic: "start/stop",
                     message: "start"
@@ -254,7 +272,7 @@ async function switchConveyor() {
         $("#conveyor-img").attr('src', 'images/conveyor_' + username + '_stop.png')
         if (!firstTimeHere) {
             // insertStatus("off");
-            blockSwitchButton()
+            blockSwitchButton(5000)
 
             var timeTest = new Date()
 
@@ -342,15 +360,21 @@ function sendCommand() {
     // check toggle
     if ($(".small-box #switch-conveyor").is(':checked')) {
         console.log("Send start hard command")
-        sendMessage(client, "start/stop", "start")
+        sendMessage("socketChannel",{
+            topic: "start/stop",
+            message: "start"
+        })
         timeout(2000, function () {
-            sendMessage(client, "start/stop", "start")
+            // sendMessage(client, "start/stop", "start")
         })
     } else {
         console.log("Send stop hard command")
-        sendMessage(client, "start/stop", "stop")
+        sendMessage("socketChannel",{
+            topic: "start/stop",
+            message: "stop"
+        })
         timeout(2000, function () {
-            sendMessage(client, "start/stop", "stop")
+            // sendMessage(client, "start/stop", "stop")
         })
     }
 }

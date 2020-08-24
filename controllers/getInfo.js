@@ -2,7 +2,6 @@ const mysql = require('mysql')
 const Influx = require('influx');
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
-var mqttHandler = require('./mqtt_handler.js');
 
 // Influx Connection
 // ==================================

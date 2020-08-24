@@ -26,8 +26,6 @@ const HandlebarsIntl = require('handlebars-intl');
 const Influx = require('influx');
 const mysql = require('mysql');
 
-// var mqttHandler = require('./controllers/mqtt_handler.js');
-// var socketioHandler = require('./controllers/socketio_handler.js');
 // ==================================
 // End Imports
 
