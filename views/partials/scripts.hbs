@@ -1,5 +1,21 @@
 <script type="text/javascript" src="/js/svgGauge/gauge.min.js"> </script>
 <script src="/js/scripts.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/3.1.0/fetch.js"></script>
+
+{{!-- Insert map.js if mapzones partial is detected in template --}}
+<script>
+    if ($("#zones-list").length) {
+        console.log("map.js added")
+        const item = $(this)
+        if (item.length) {
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = '/js/map.js';
+
+            document.getElementsByTagName('head')[0].appendChild(script);
+        }
+    }
+</script>
 
 {{!-- Insert dashboard-page add script --}}
 <script>
@@ -30,15 +46,28 @@
     }
 </script>
 
-{{!-- Insert map.js if mapzones partial is detected in template --}}
 <script>
-    if ($("#zones-list").length) {
-        console.log("map.js added")
+    if ($(".scale-page").length) {
+        console.log("scale.js added")
         const item = $(this)
         if (item.length) {
             var script = document.createElement('script');
             script.type = 'text/javascript';
-            script.src = '/js/map.js';
+            script.src = '/js/scale.js';
+
+            document.getElementsByTagName('head')[0].appendChild(script);
+        }
+    }
+</script>
+
+<script>
+    if ($(".conveyor-page").length) {
+        console.log("conveyor.js added")
+        const item = $(this)
+        if (item.length) {
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = '/js/conveyor.js';
 
             document.getElementsByTagName('head')[0].appendChild(script);
         }

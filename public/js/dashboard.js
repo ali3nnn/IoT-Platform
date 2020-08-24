@@ -18,9 +18,9 @@ var counterOld = ['', '']
 // }
 
 // Make Socket.io connection
-var socket = io.connect("https://anysensor.dasstec.ro/")
+// var socket = io.connect("https://anysensor.dasstec.ro/")
 
-socket.on('message', function (data) {
+// socket.on('message', function (data) {
 
     // console.log(data)
 
@@ -33,8 +33,7 @@ socket.on('message', function (data) {
     //     </div>
     // </div>`)
 
-})
-
+// })
 // end WebSocket.io
 
 function addSmallBox(label, value, fontAwesome = false) {
@@ -85,6 +84,7 @@ function currentValueSvgGauge(element, currentValue = NaN, updatedAt = false) {
     if (isNaN(currentValue)) {
         if (isCounter) {
             $("." + element + "-newItem").prepend("No value recorded today")
+            $("." + element + "-newItem").attr("no-value")
             $(".live-card-" + element + " .card-settings-button").addClass("hidden-element")
             return [NaN, NaN]
         } else {
@@ -93,6 +93,7 @@ function currentValueSvgGauge(element, currentValue = NaN, updatedAt = false) {
             // and maybe a small info that the info is not very recent
             $(".live-card-" + element + " .card-settings-button").addClass("hidden-element")
             $("#" + element + "-gauge").parent().prepend("No value recorded today")
+            $("#" + element + "-gauge").parent().attr("no-value", 'true')
             return [NaN, NaN]
         }
 
@@ -194,10 +195,20 @@ function currentValueSvgGauge(element, currentValue = NaN, updatedAt = false) {
         }
 
         // Append unit measure
-        if (Number.isInteger(currentValue))
-            $('#' + element + '-gauge g.text-container text').append(".0 &#8451;")
-        else
-            $('#' + element + '-gauge g.text-container text').append(" &#8451;")
+        if (Number.isInteger(currentValue)) {
+            if (element.includes("source")) {
+                $('#' + element + '-gauge g.text-container text').append(".0 V")
+            } else {
+                $('#' + element + '-gauge g.text-container text').append(".0 &#8451;")
+            }
+        } else {
+            if (element.includes("source")) {
+                $('#' + element + '-gauge g.text-container text').append(" V")
+            } else {
+                $('#' + element + '-gauge g.text-container text').append(" &#8451;")
+            }
+        }
+
 
         return gauge
     }
@@ -235,10 +246,19 @@ function updateValueSvgGauge(element, gauge, value, updatedAt = false) {
         gauge.setValue(value);
 
     // Append unit measure
-    if (Number.isInteger(value))
-        $('#' + element + '-gauge g.text-container text').append(".0 &#8451;")
-    else
-        $('#' + element + '-gauge g.text-container text').append(" &#8451;")
+    if (Number.isInteger(value)) {
+        if (element.includes("source")) {
+            $('#' + element + '-gauge g.text-container text').append(".0 V")
+        } else {
+            $('#' + element + '-gauge g.text-container text').append(".0 &#8451;")
+        }
+    } else {
+        if (element.includes("source")) {
+            $('#' + element + '-gauge g.text-container text').append(" V")
+        } else {
+            $('#' + element + '-gauge g.text-container text').append(" &#8451;")
+        }
+    }
 
     // console.log(updatedAt)
 
@@ -417,7 +437,7 @@ var plotData = (element, ylabels, xlabels, label) => {
 
         // add no data message
         // console.log(`<canvas id="` + element + `-graph"></canvas> in`, '.' + element + '-card')
-        $('.' + element + '-card .card-body').append(`<p class='no-data-from-sensor' >No data from sensor with id <b>` + element + `</b></p>`)
+        $('.' + element + '-card .card-body').append(`<p class='no-data-from-sensor' >No data from sensor with id <b>` + element + `</b> for today</p>`)
 
         // add canvas
         // console.log(`<canvas id="` + element + `-graph"></canvas> in`, '.' + element + '-card')
@@ -612,9 +632,10 @@ let readAlerts = async () => {
 
 
 function alertsAndLocationLoad() {
+    console.log("alertsAndLocationLoad()")
     if (alertsLoadFlag)
         (async () => {
-            alertsLoadFlag = false
+            // alertsLoadFlag = false
             let alerts = await readAlerts() //this returns all the alerts in mysql - it should return only the  alerts of this user
             for (var i = 0; i < alerts.result.length; i++) {
                 var sensorId = alerts.result[i].sensorId
@@ -625,7 +646,7 @@ function alertsAndLocationLoad() {
 
                 // load locations into inputs value
                 var locationObj = getLocationObj()
-                if(locationObj[sensorId] != undefined) {
+                if (locationObj[sensorId] != undefined) {
                     // console.log(locationObj, locationObj[sensorId])
                     $("article[class*='live'][sensorid='" + sensorId + "'] .input-lat").attr("value", locationObj[sensorId][0])
                     $("article[class*='live'][sensorid='" + sensorId + "'] .input-long").attr("value", locationObj[sensorId][1])
@@ -636,6 +657,8 @@ function alertsAndLocationLoad() {
 }
 
 function sensorSettingsToggle(sensorId) {
+
+    console.log("sensorSettingsToggle()")
 
     $(".live-card-" + sensorId + " .card-settings-button").removeClass("hidden-button")
 
@@ -655,9 +678,7 @@ function sensorSettingsToggle(sensorId) {
 
     $(".live-card-" + sensorId + " .card-settings-button-update").click(function () {
         updateSensorSettings(sensorId)
-        timeout(500, function(){
-            appendAlertsToHTML(sensorId)
-        })
+        appendAlertsToHTML(sensorId)
     })
 }
 
@@ -673,6 +694,7 @@ let saveSensorSettings = async (sensorId, minVal, maxVal, lat, long) => {
         type: 'GET',
         success: function (msg) {
             alert("Alerts and location updated!")
+            console.log(msg)
         }
     });
 }
@@ -894,24 +916,46 @@ function currentValueGauge(element) {
 }
 
 function fontAwesomeClassGenerator(type) {
-    // select an icon
-    if (type == 'type1' || type == 'temperatura' || type == 'temperature') {
-        var faClass = `fas fa-temperature-high mr-1`
-    } else if (type == 'type2') {
-        var faClass = `far fa-lightbulb`
-    } else if (type == 'type3') {
-        var faClass = `fas fa-bolt`
-    } else if (type == 'type4') {
-        var faClass = `fas fa-adjust`
-    } else if (type == 'counter') {
-        var faClass = `far fa-chart-line`
-    } else {
-        var faClass = type + `_icon`
+
+    switch (type) {
+        case 'temperatura':
+            var faClass = `fas fa-temperature-high mr-1`
+            break;
+        case 'temperature':
+            var faClass = `fas fa-temperature-high mr-1`
+            break;
+        case 'counter':
+            var faClass = `far fa-chart-line`
+            break;
+        case 'scale':
+            var faClass = `fas fa-balance-scale`
+            break;
+        case 'voltage':
+            var faClass = `fas fa-car-battery`
+            break;
+        default:
+            var faClass = `fas fa-spinner`
     }
 
     return faClass
-}
 
+    // select an icon
+    // if (type == 'type1' || type == 'temperatura' || type == 'temperature') {
+    //     var faClass = `fas fa-temperature-high mr-1`
+    // } else if (type == 'type2') {
+    //     var faClass = `far fa-lightbulb`
+    // } else if (type == 'type3') {
+    //     var faClass = `fas fa-bolt`
+    // } else if (type == 'type4') {
+    //     var faClass = `fas fa-adjust`
+    // } else if (type == 'counter') {
+    //     var faClass = `far fa-chart-line`
+    // } else {
+    //     var faClass = type + `_icon`
+    // }
+
+    // return faClass
+}
 
 function appendAlertsToHTML(sensorId_) {
 
@@ -1203,7 +1247,6 @@ var chartList = []
 
 let test = (async () => {
     json = await getData();
-
 })().then(() => {
     // If error was returned, put 0 value for reading
     if (json[0].error) {
@@ -1261,10 +1304,7 @@ let test = (async () => {
                 sensorSettingsToggle(sensorData[0].sensorQueried)
 
                 // Append alerts
-                timeout(300, function(){
-                    appendAlertsToHTML(sensorData[0].sensorQueried)
-                })
-
+                timeout(500, appendAlertsToHTML(sensorData[0].sensorQueried))
 
                 // Add Icons based on sensor type
                 $(".live-card-" + sensorData[0].sensorQueried + " .update-icon").addClass(fontAwesomeClassGenerator(sensorData[0].sensorType))

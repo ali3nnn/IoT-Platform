@@ -1,7 +1,41 @@
 console.log("scale.js")
 
+// socket.on('mqtt', (data) => {
+//   console.log('mqtt', data)
+// })
+
+// The client listens on Socket.IO 
+socket.on('socketChannel', (data) => {
+
+  // Live Weight - client receives scale data from backend
+  if(data.topic.includes(username+"/scale")) {
+      // console.log("live weight:",data.message.weight,data.message.barcode)
+      liveWeight(data.message)
+
+      // Sen acknowledge message to server
+      // sendMessage("socketChannel",{
+      //     topic: 'ack',
+      //     message: "I am "+username+"! I updated live weight!"
+      // })
+  }
+
+})
+
+function sendMessage(topic, msg) {
+  // send a status message to get the gate status
+  socket.emit(topic, msg)
+}
+
+function liveWeight(payloadJson) {
+  var scaleTitle = $(".scale-info h3")
+  var barcodeTitle = $(".scale-info p")
+  // var payloadJson = JSON.parse(message.payloadString)
+  scaleTitle.html(payloadJson.weight + "g")
+  barcodeTitle.html(payloadJson.barcode)
+}
+
 let getScaleRecordings = async () => {
-    let response = await fetch("http://89.39.209.2:5000/api/get-scale-recordings")
+    let response = await fetch("https://anysensor.dasstec.ro/api/get-scale-recordings")
     return response.json()
 }
 
