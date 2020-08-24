@@ -461,16 +461,13 @@ const mqttOverSocketIoBridge = (req, res, next) => {
 
             // Mqtt message event
             mqttClient.on('message', function (topic, message) {
-                if (!topic.includes("romania")) {
+                if (!topic.includes("voltage")) {
                     console.log("MQTT Broker:", topic, message.toString());
                     console.log("TO CLIENT:","socketChannel", { topic, message: message.toString() })
                 }
                     
-
                 // whatever Node Server receive from mqtt broker
                 // it is sent via socket.io to client
-                
-
                 socketClient.emit("socketChannel", {
                     topic,
                     message: message.toString()
@@ -507,6 +504,10 @@ const mqttOverSocketIoBridge = (req, res, next) => {
                     if (msg.topic != 'ack') {
                         // mqttClient.publish(msg.topic, msg.message.toString());
                         console.log("PUBLISH:", msg.topic, msg.message.toString())
+                    }
+
+                    if(msg.topic.includes("gate")) {
+                        mqttClient.publish(msg.topic, msg.message.toString());
                     }
                 });
             })

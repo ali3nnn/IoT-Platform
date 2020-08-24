@@ -9,16 +9,16 @@
 // var socket = io.connect(":1920")
 
 // Client sends a status message to backend
-sendMessage("socketChannel",{
-    topic: 'gate/'+username,
+sendMessage("socketChannel", {
+    topic: 'gate/' + username,
     message: "status"
 })
 
-// // The client listens on Socket.IO 
+// The client listens on Socket.IO 
 socket.on('socketChannel', (data) => {
 
     // Live Weight - client receives scale data from backend
-    if(data.topic.includes(username+"/scale")) {
+    if (data.topic.includes(username + "/scale")) {
         // console.log("live weight:",data.message.weight,data.message.barcode)
         liveWeight(data.message)
 
@@ -29,6 +29,11 @@ socket.on('socketChannel', (data) => {
         // })
     }
 
+    // Live Gate Status
+    if (data.topic.includes("gate/" + username)) {
+        liveGate(data.message)
+    }
+
 })
 
 function liveWeight(payloadJson) {
@@ -37,6 +42,22 @@ function liveWeight(payloadJson) {
     // var payloadJson = JSON.parse(message.payloadString)
     scaleTitle.html(payloadJson.weight + "g")
     barcodeTitle.html(payloadJson.barcode)
+}
+
+function liveGate(status) {
+    var gate = $(".gate-info")
+    var gateTitle = $(".gate-info h3")
+    if (status == 0) {
+        // gate is closed
+        gate.attr("status", "closed")
+        document.querySelector(".gate-info").style.background = "#28a745"
+        gateTitle.html("Closed")
+    } else if (status == 1) {
+        // gate is open
+        gate.attr("status", "open")
+        document.querySelector(".gate-info").style.background = "#dc3545"
+        gateTitle.html("Open")
+    }
 }
 
 // =================================
@@ -157,10 +178,10 @@ function insertStatus(status) {
 
 // block input toggle for a 3s after pressed
 function blockSwitchButton(timeout) {
-    
+
     var time = new Date()
     $(".small-box #switch-conveyor").prop('disabled', true)
-    $(".small-box #switch-conveyor").parent().append("<div class='switch-disable-time'>"+timeout/1000+" sec</div>")
+    $(".small-box #switch-conveyor").parent().append("<div class='switch-disable-time'>" + timeout / 1000 + " sec</div>")
     displayTimeoutAndVanish('.switch-disable-time', timeout)
 
     timeout_2(timeout, function () {
@@ -170,14 +191,14 @@ function blockSwitchButton(timeout) {
 }
 
 function displayTimeoutAndVanish(element, timeout) {
-    var el = $(element)    
+    var el = $(element)
     timeout_ = timeout / 1000
-    var x = setInterval(function(){
+    var x = setInterval(function () {
         timeout_ -= 1
         el.html(timeout_ + " sec")
     }, 1000)
 
-    timeout_2(timeout, function(){
+    timeout_2(timeout, function () {
         el.fadeOut(500)
         clearInterval(x);
     })
@@ -207,60 +228,60 @@ async function switchConveyor() {
         // first time is when page is reloaded pass this part
         if (!firstTimeHere) {
             // if ($(".gate-info h3").html() == 'Closed') {
-                // if gate is closed start the conveyor
-                // insertStatus("on");
-                blockSwitchButton(5000)
-                sendMessage("socketChannel",{
-                    topic: "start/stop",
-                    message: "start"
-                })
-                var timeTest = new Date()
-                console.log("Conveyor START command sent!")
+            // if gate is closed start the conveyor
+            // insertStatus("on");
+            blockSwitchButton(5000)
+            sendMessage("socketChannel", {
+                topic: "start/stop",
+                message: "start"
+            })
+            var timeTest = new Date()
+            console.log("Conveyor START command sent!")
 
-                // timeout(5000, function () {
-                //     console.log("start 2", new Date - timeTest)
-                //     sendMessage("start/stop", "start")
-                // })
+            // timeout(5000, function () {
+            //     console.log("start 2", new Date - timeTest)
+            //     sendMessage("start/stop", "start")
+            // })
 
-                // timeout(7000, function () {
-                //     console.log("start 2", new Date - timeTest)
-                //     sendMessage("start/stop", "start")
-                // })
+            // timeout(7000, function () {
+            //     console.log("start 2", new Date - timeTest)
+            //     sendMessage("start/stop", "start")
+            // })
 
-                // timeout(10000, function () {
-                //     console.log("start 2", new Date - timeTest)
-                //     sendMessage("start/stop", "start")
-                // })
+            // timeout(10000, function () {
+            //     console.log("start 2", new Date - timeTest)
+            //     sendMessage("start/stop", "start")
+            // })
 
-                // timeout(13000, function () {
-                //     console.log("start 2", new Date - timeTest)
-                //     sendMessage("start/stop", "start")
-                // })
+            // timeout(13000, function () {
+            //     console.log("start 2", new Date - timeTest)
+            //     sendMessage("start/stop", "start")
+            // })
 
-                // timeout(15000, function () {
-                //     console.log("start 2", new Date - timeTest)
-                //     sendMessage("start/stop", "start")
-                // })
+            // timeout(15000, function () {
+            //     console.log("start 2", new Date - timeTest)
+            //     sendMessage("start/stop", "start")
+            // })
 
-                // timeout(17000, function () {
-                //     console.log("start 2", new Date - timeTest)
-                //     sendMessage("start/stop", "start")
-                // })
+            // timeout(17000, function () {
+            //     console.log("start 2", new Date - timeTest)
+            //     sendMessage("start/stop", "start")
+            // })
 
-                // timeout(20000, function () {
-                //     console.log("start 2", new Date - timeTest)
-                //     sendMessage("start/stop", "start")
-                // })
+            // timeout(20000, function () {
+            //     console.log("start 2", new Date - timeTest)
+            //     sendMessage("start/stop", "start")
+            // })
 
-                // timeout(25000, function () {
-                //     console.log("start 2", new Date - timeTest)
-                //     sendMessage("start/stop", "start")
-                // })
+            // timeout(25000, function () {
+            //     console.log("start 2", new Date - timeTest)
+            //     sendMessage("start/stop", "start")
+            // })
 
 
             // } else {
-                // if gate is open, show the alert
-                // alert("Close the gate first!")
+            // if gate is open, show the alert
+            // alert("Close the gate first!")
             // }
 
         }
@@ -278,7 +299,7 @@ async function switchConveyor() {
 
             console.log("Conveyor STOP command sent!")
 
-            sendMessage("socketChannel",{
+            sendMessage("socketChannel", {
                 topic: "start/stop",
                 message: "stop"
             })
@@ -294,7 +315,7 @@ async function switchConveyor() {
             // })
 
         }
-        
+
         firstTimeHere = false;
     }
 }
@@ -360,7 +381,7 @@ function sendCommand() {
     // check toggle
     if ($(".small-box #switch-conveyor").is(':checked')) {
         console.log("Send start hard command")
-        sendMessage("socketChannel",{
+        sendMessage("socketChannel", {
             topic: "start/stop",
             message: "start"
         })
@@ -369,7 +390,7 @@ function sendCommand() {
         })
     } else {
         console.log("Send stop hard command")
-        sendMessage("socketChannel",{
+        sendMessage("socketChannel", {
             topic: "start/stop",
             message: "stop"
         })

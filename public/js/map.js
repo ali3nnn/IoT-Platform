@@ -339,10 +339,15 @@ function createMap(coordinates, sensorValuesJson) {
       if (sensor[0].equals(pinLocation) === true) {
         
         // console.log(sensor[1], sensor[0].equals(pinLocation) === true, sensorValuesJson)
-
+        
         sensorValuesJson.forEach(sensorVal => {
-          if(sensor[1]==sensorVal[0])
-          val = parseFloat(sensorVal[1]).toFixed(1) + "°C"
+          if(sensor[1]==sensorVal[0]) {
+            if(sensor[1].includes("source")) {
+              val = parseFloat(sensorVal[1]) + "V"
+            } else {
+              val = parseFloat(sensorVal[1]) + "°C"
+            }
+          }
         })
 
         // val = sensorValuesJson[sensor[1]]
