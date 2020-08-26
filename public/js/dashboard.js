@@ -66,10 +66,10 @@ Date.prototype.addHours = function (h) {
 }
 
 // used to create the gauges
-function currentValueSvgGauge(element, currentValue = NaN, updatedAt = false) {
+function currentValueSvgGauge(element, currentValue = NaN, updatedAt = false, min = -20, max = 70) {
 
     var isCounter = false
-    element.split('-')[1] == 'c' ? isCounter = true : isCounter = false
+    // element.split('-')[1] == 'c' ? isCounter = true : isCounter = false
     // console.log(element, isCounter)
 
     if (isCounter) {
@@ -107,8 +107,8 @@ function currentValueSvgGauge(element, currentValue = NaN, updatedAt = false) {
             // console.log("else gauge")
             var gauge = Gauge(
                 document.getElementById(element + '-gauge'), {
-                    min: -20,
-                    max: 70,
+                    min: min,
+                    max: max,
                     dialStartAngle: 180,
                     dialEndAngle: 0,
                     value: currentValue,
@@ -663,7 +663,7 @@ function alertsAndLocationLoad() {
 
 function sensorSettingsToggle(sensorId) {
 
-    console.log("sensorSettingsToggle("+sensorId+")")
+    console.log("sensorSettingsToggle(" + sensorId + ")")
 
     $(".live-card-" + sensorId + " .card-settings-button").removeClass("hidden-button")
 
@@ -988,21 +988,21 @@ function appendAlertsToHTML(sensorId_) {
 
         }
 
-        // bodyEl.prepend(`<alerts style="display:none">` + JSON.stringify(alertsDict) + `</alerts>`)
-
         alertsDict.forEach(alert => {
-            console.log(alert, sensorId_)
+            // console.log(alert, sensorId_)
+
             if (sensorId_ == alert[0]) {
+
                 $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .minAlertGauge").remove()
                 $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .maxAlertGauge").remove()
                 $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container").prepend(`<span class='minAlertGauge' value='` + alert[1] + `' sensortype='` + alert[3] + `'>` + alert[1] + `</span><span class='maxAlertGauge' value='` + alert[2] + `' sensortype='` + alert[3] + `'>` + alert[2] + `</span>`)
                 // if sensortype = voltage add .alert-type-voltage class
-                if(alert[3]=="voltage") {
+                if (alert[3] == "voltage") {
                     $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .minAlertGauge").addClass("alert-type-voltage")
                     $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .maxAlertGauge").addClass("alert-type-voltage")
                 }
                 // if sensortype = temperature add .alert-type-temperature
-                if(alert[3]=="temperature") {
+                if (alert[3] == "temperature") {
                     $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .minAlertGauge").addClass("alert-type-temperature")
                     $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .maxAlertGauge").addClass("alert-type-temperature")
                 }
@@ -1011,6 +1011,60 @@ function appendAlertsToHTML(sensorId_) {
         })
 
     })()
+}
+
+// append alerts test
+async function appendAlertsToHTMLAsync(sensorId_) {
+
+    // console.log("called for", sensorId_)
+
+    let alerts = await readAlerts()
+
+    var alertsDict = []
+
+    var alertCounter = 0
+
+    for (var i = 0; i < alerts.result.length; i++) {
+
+        var bodyEl = $("body")
+        if (sensorId_.includes(alerts.result[i].sensorId)) {
+            alertsDict[alertCounter] = [alerts.result[i].sensorId, alerts.result[i].min, alerts.result[i].max, alerts.result[i].sensorType]
+            alertCounter++
+        }
+
+    }
+
+    // bodyEl.prepend(`<alerts style="display:none">` + JSON.stringify(alertsDict) + `</alerts>`)
+
+    var min_ = 0;
+    var max_ = 0;
+
+    alertsDict.forEach(alert => {
+        // console.log(alert, sensorId_)
+
+        if (sensorId_ == alert[0]) {
+
+            min_ = alert[1]
+            max_ = alert[2]
+
+            $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .minAlertGauge").remove()
+            $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .maxAlertGauge").remove()
+            $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container").prepend(`<span class='minAlertGauge' value='` + alert[1] + `' sensortype='` + alert[3] + `'>` + alert[1] + `</span><span class='maxAlertGauge' value='` + alert[2] + `' sensortype='` + alert[3] + `'>` + alert[2] + `</span>`)
+            // if sensortype = voltage add .alert-type-voltage class
+            if (alert[3] == "voltage") {
+                $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .minAlertGauge").addClass("alert-type-voltage")
+                $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .maxAlertGauge").addClass("alert-type-voltage")
+            }
+            // if sensortype = temperature add .alert-type-temperature
+            if (alert[3] == "temperature") {
+                $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .minAlertGauge").addClass("alert-type-temperature")
+                $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .maxAlertGauge").addClass("alert-type-temperature")
+            }
+        }
+
+    })
+
+    return [min_, max_]
 }
 
 // get list of sensors from a county
@@ -1323,7 +1377,7 @@ let test = (async () => {
                 sensorSettingsToggle(sensorData[0].sensorQueried)
 
                 // Append alerts
-                timeout(500, appendAlertsToHTML(sensorData[0].sensorQueried))
+                // timeout(500, appendAlertsToHTML(sensorData[0].sensorQueried))
 
                 // Add Icons based on sensor type
                 $(".live-card-" + sensorData[0].sensorQueried + " .update-icon").addClass(fontAwesomeClassGenerator(sensorData[0].sensorType))
@@ -1372,9 +1426,20 @@ let test = (async () => {
                 //     })
                 // } else {
 
+                let promise = new Promise(function (resolve, reject) {
+                    // executor (the producing code, "singer")
+                });
+
                 let lastValue = await getLatestValueRecorded(sensorIdToLookFor).then((resLast) => {
                     // console.log(sensorIdToLookFor, resLast[0].lastValue.value, resLast[0].lastValue.time)
-                    gaugeList.push([sensorIdToLookFor, currentValueSvgGauge(sensorIdToLookFor, resLast[0].lastValue.value, resLast[0].lastValue.time)])
+
+                    // appendAlertsToHTML(sensorData[0].sensorQueried)
+
+                    appendAlertsToHTMLAsync(sensorData[0].sensorQueried).then(res => {
+                        gaugeList.push([sensorIdToLookFor, currentValueSvgGauge(sensorIdToLookFor, resLast[0].lastValue.value, resLast[0].lastValue.time, min = res[0], max = res[1])])
+                    })
+
+                    // gaugeList.push([sensorIdToLookFor, currentValueSvgGauge(sensorIdToLookFor, resLast[0].lastValue.value, resLast[0].lastValue.time, min = 0, max = 30)])
                 })
 
                 // plot data and add current value for each sensor
