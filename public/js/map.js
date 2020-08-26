@@ -109,7 +109,7 @@
 
 // detect map container
 // let getLocation = async (sensorId) => {
-//   let response = await fetch("https://anysensor.dasstec.ro/api/read-location/?sensorId=" + sensorId)
+//   let response = await fetch("/api/read-location/?sensorId=" + sensorId)
 //   return response.json()
 // }
 
@@ -117,12 +117,12 @@
 
 // get coordinates
 let getSensorLocation = async () => {
-  let response = await fetch("https://anysensor.dasstec.ro/api/read-location")
+  let response = await fetch("/api/read-location")
   return response.json()
 }
 
 let lastValueOf = async (sensorId) => {
-  let response = await fetch("https://anysensor.dasstec.ro/api/get-last-value/?sensorIdList=" + sensorId)
+  let response = await fetch("/api/get-last-value/?sensorIdList=" + sensorId)
   return response.json()
 }
 
@@ -139,7 +139,7 @@ if (typeof sensorId !== 'undefined') {
       // console.log("then1")
       // console.log(json.result)
       json.result.forEach(sensor => {
-        // console.log(sensor)
+        // console.log(sensorId, sensor)
         if (sensorId.includes(sensor.sensorId)) {
           // console.log(sensor.coord.split(','))
           numbers = sensor.coord.split(',').map(Number);
@@ -153,6 +153,7 @@ if (typeof sensorId !== 'undefined') {
     .then(async response => {
       var sensorList = ''
       var sensorCounter = 0
+      // console.log(response)
       response.forEach(async sensor => {
         sensorCounter++
         if (sensorCounter != response.length)
@@ -280,8 +281,8 @@ function getLocationObj() {
 
 function createMap(coordinates, sensorValuesJson) {
 
-  console.log("create map with coord:", coordinates)
-  console.log("sensorValuesJson")
+  console.log("Add coordinates to body attr:", coordinates)
+  // console.log("sensorValuesJson")
   sensorValuesJson.forEach(sensor => {
     console.log(sensor)
   })
@@ -339,7 +340,7 @@ function createMap(coordinates, sensorValuesJson) {
       if (sensor[0].equals(pinLocation) === true) {
         
         // console.log(sensor[1], sensor[0].equals(pinLocation) === true, sensorValuesJson)
-        
+
         sensorValuesJson.forEach(sensorVal => {
           if(sensor[1]==sensorVal[0]) {
             if(sensor[1].includes("source")) {
@@ -348,6 +349,7 @@ function createMap(coordinates, sensorValuesJson) {
               val = parseFloat(sensorVal[1]) + "°C"
             }
           }
+            
         })
 
         // val = sensorValuesJson[sensor[1]]

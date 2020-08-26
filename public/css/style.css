@@ -3373,15 +3373,24 @@ div[no-value='true'] span.minAlertGauge, div[no-value='true'] span.maxAlertGauge
 }
 
 span.minAlertGauge {
-  left: 24px;
+  left: 26px;
 }
 
 span.maxAlertGauge {
-  right: 19px;
+  right: 25px;
 }
 
-span[class*='AlertGauge']:after {
+
+/* span[class*='AlertGauge']:after {
   content: "°C";
+} */
+
+.alert-type-temperature:after {
+  content: "°C";
+}
+
+.alert-type-voltage:after {
+  content: " V";
 }
 
 .blur0 {

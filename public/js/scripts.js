@@ -677,7 +677,14 @@ function animationInNotification() {
 // }
 
 // Async timeout
-let timeout = (ms,f) => {
+// let timeout = (ms,f) => {
+//     let sleep =  new Promise(resolve => setTimeout(function(){
+//         f()
+//         // return resolve
+//     }, ms))
+// }
+
+function timeout(ms, f) {
     let sleep =  new Promise(resolve => setTimeout(function(){
         f()
         // return resolve

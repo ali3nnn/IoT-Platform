@@ -1989,7 +1989,7 @@ app.get('/api/set-alerts', (req, res) => {
 
     sess = req.session
 
-    // console.log(req.query)
+    console.log(req.query)
 
     var mysqlReturn = []
 
@@ -2004,7 +2004,7 @@ app.get('/api/set-alerts', (req, res) => {
             var sensorExists = result[0].length
 
             if (sensorExists) {
-                var queryUpdate = "UPDATE alerts SET min=" + req.query.min + ", max=" + req.query.max + " WHERE sensorId=" + req.query.sensorId + ";"
+                var queryUpdate = "UPDATE alerts SET min=" + req.query.min + ", max=" + req.query.max + ", sensorType=" + req.query.sensorType + " WHERE sensorId=" + req.query.sensorId + ";"
                 mysqlWriter(queryUpdate)
                     .then((result) => {
                         // io.sockets.emit('message', {
@@ -2029,7 +2029,7 @@ app.get('/api/set-alerts', (req, res) => {
                         // })
                     })
             } else {
-                var query = "INSERT INTO alerts (sensorId, min, max) VALUES (" + req.query.sensorId + ", " + req.query.min + ", " + req.query.max + ");"
+                var query = "INSERT INTO alerts (sensorId, min, max, sensorType) VALUES (" + req.query.sensorId + ", " + req.query.min + ", " + req.query.max + ", " + req.query.sensorType + ");"
                 mysqlWriter(query)
                     .then((result) => {
                         // io.sockets.emit('message', {

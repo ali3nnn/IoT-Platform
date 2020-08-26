@@ -474,20 +474,19 @@ const mqttOverSocketIoBridge = (req, res, next) => {
                 })
 
                 // Send Dummy Live Weight
-                var sendLiveWeightDummy = true
-                if (sendLiveWeightDummy) {
-                    socketClient.emit("socketChannel", {
-                        topic: sess.username + "/scale",
-                        message: {
-                            weight: randomIntFromInterval(200, 500).toFixed(2),
-                            barcode: Date.now()
-                        }
-                    })
-                    sendLiveWeightDummy = false
-                } else {
-                    sendLiveWeightDummy = true
-                }
-
+                // var sendLiveWeightDummy = true
+                // if (sendLiveWeightDummy) {
+                //     socketClient.emit("socketChannel", {
+                //         topic: sess.username + "/scale",
+                //         message: {
+                //             weight: randomIntFromInterval(200, 500).toFixed(2),
+                //             barcode: Date.now()
+                //         }
+                //     })
+                //     sendLiveWeightDummy = false
+                // } else {
+                //     sendLiveWeightDummy = true
+                // }
 
             })
 
@@ -502,13 +501,16 @@ const mqttOverSocketIoBridge = (req, res, next) => {
 
                     // mqtt publish
                     if (msg.topic != 'ack') {
-                        // mqttClient.publish(msg.topic, msg.message.toString());
-                        console.log("PUBLISH:", msg.topic, msg.message.toString())
+                        mqttClient.publish(msg.topic, msg.message.toString());
+                        console.log("REAL PUBLISH:", msg.topic, msg.message.toString())
+                    } else {
+                        console.log("ACK MESSAGE:", msg.topic, msg.message.toString())
                     }
 
-                    if(msg.topic.includes("gate")) {
-                        mqttClient.publish(msg.topic, msg.message.toString());
-                    }
+                    // if(msg.topic.includes("gate")) {
+                    //     mqttClient.publish(msg.topic, msg.message.toString());
+                    //     console.log("REAL PUBLISH:", msg.topic, msg.message.toString())
+                    // }
                 });
             })
 

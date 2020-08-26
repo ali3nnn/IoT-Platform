@@ -1,7 +1,7 @@
 var time = new Date()
 
 // Global Variables
-const username = $(".navbar-brand b")[0].innerText.slice(0, $(".navbar-brand b")[0].innerText.length - 1)
+// var username = $(".navbar-brand b")[0].innerText.slice(0, $(".navbar-brand b")[0].innerText.length - 1)
 let countyName = $(".county-detail h3").html()
 let json = ''
 var oldUpdatedTime = ''
@@ -22,16 +22,16 @@ var counterOld = ['', '']
 
 // socket.on('message', function (data) {
 
-    // console.log(data)
+// console.log(data)
 
-    // $(".messages.hideMe").remove()
+// $(".messages.hideMe").remove()
 
-    // $("#main notification").append(`<div class="messages hideMe">
-    //     <div class="alert alert-success mt-3 mb-0" role="alert">
-    //         <background></background>
-    //         `+data.send+`
-    //     </div>
-    // </div>`)
+// $("#main notification").append(`<div class="messages hideMe">
+//     <div class="alert alert-success mt-3 mb-0" role="alert">
+//         <background></background>
+//         `+data.send+`
+//     </div>
+// </div>`)
 
 // })
 // end WebSocket.io
@@ -645,11 +645,16 @@ function alertsAndLocationLoad() {
                 $(`.live-card-` + sensorId + ` .input-max`).attr("value", alerts.result[i].max)
 
                 // load locations into inputs value
-                var locationObj = getLocationObj()
-                if (locationObj[sensorId] != undefined) {
-                    // console.log(locationObj, locationObj[sensorId])
-                    $("article[class*='live'][sensorid='" + sensorId + "'] .input-lat").attr("value", locationObj[sensorId][0])
-                    $("article[class*='live'][sensorid='" + sensorId + "'] .input-long").attr("value", locationObj[sensorId][1])
+                try {
+                    var locationObj = getLocationObj()
+                    if (locationObj[sensorId] != undefined) {
+                        // console.log(locationObj, locationObj[sensorId])
+                        $("article[class*='live'][sensorid='" + sensorId + "'] .input-lat").attr("value", locationObj[sensorId][0])
+                        $("article[class*='live'][sensorid='" + sensorId + "'] .input-long").attr("value", locationObj[sensorId][1])
+                    }
+                } catch {
+                    $("article[class*='live'][sensorid='" + sensorId + "'] .input-lat").attr("value", "not set")
+                    $("article[class*='live'][sensorid='" + sensorId + "'] .input-long").attr("value", "not set")
                 }
             }
         })()
@@ -658,7 +663,7 @@ function alertsAndLocationLoad() {
 
 function sensorSettingsToggle(sensorId) {
 
-    console.log("sensorSettingsToggle()")
+    console.log("sensorSettingsToggle("+sensorId+")")
 
     $(".live-card-" + sensorId + " .card-settings-button").removeClass("hidden-button")
 
@@ -683,18 +688,21 @@ function sensorSettingsToggle(sensorId) {
 }
 
 
-let saveSensorSettings = async (sensorId, minVal, maxVal, lat, long) => {
+let saveSensorSettings = async (sensorId, minVal, maxVal, lat, long, sensorType = null) => {
     // let response = await fetch("https://anysensor.dasstec.ro/api/set-alerts/?sensorId='" + sensorId + "'&min=" + minVal + "&max=" + maxVal + "&lat=" + lat + "&long=" + long)
     // console.log(await response)
     // return response.json()
 
     // need to replace with ajax request for notification
     $.ajax({
-        url: "https://anysensor.dasstec.ro/api/set-alerts/?sensorId='" + sensorId + "'&min=" + minVal + "&max=" + maxVal + "&lat=" + lat + "&long=" + long,
+        url: "https://anysensor.dasstec.ro/api/set-alerts/?sensorId='" + sensorId + "'&sensorType='" + sensorType + "'&min=" + minVal + "&max=" + maxVal + "&lat=" + lat + "&long=" + long,
         type: 'GET',
         success: function (msg) {
             alert("Alerts and location updated!")
-            console.log(msg)
+            console.log({
+                msg,
+                url: "https://anysensor.dasstec.ro/api/set-alerts/?sensorId='" + sensorId + "'&sensorType='" + sensorType + "'&min=" + minVal + "&max=" + maxVal + "&lat=" + lat + "&long=" + long
+            })
         }
     });
 }
@@ -705,8 +713,9 @@ async function updateSensorSettings(sensorId) {
     const maxVal = $(".live-card-" + sensorId + " .settings-wrapper .input-max").val()
     const lat = $(".live-card-" + sensorId + " .settings-wrapper .input-lat").val()
     const long = $(".live-card-" + sensorId + " .settings-wrapper .input-long").val()
+    const sensorType = $("article[class*='graph-'][sensorid='" + sensorId + "']").attr("sensortype")
 
-    await saveSensorSettings(sensorId, minVal, maxVal, lat, long)
+    await saveSensorSettings(sensorId, minVal, maxVal, lat, long, sensorType)
 
 }
 
@@ -972,8 +981,8 @@ function appendAlertsToHTML(sensorId_) {
         for (var i = 0; i < alerts.result.length; i++) {
 
             var bodyEl = $("body")
-            if (sensorId.includes(alerts.result[i].sensorId)) {
-                alertsDict[alertCounter] = [alerts.result[i].sensorId, alerts.result[i].min, alerts.result[i].max]
+            if (sensorId_.includes(alerts.result[i].sensorId)) {
+                alertsDict[alertCounter] = [alerts.result[i].sensorId, alerts.result[i].min, alerts.result[i].max, alerts.result[i].sensorType]
                 alertCounter++
             }
 
@@ -982,11 +991,21 @@ function appendAlertsToHTML(sensorId_) {
         // bodyEl.prepend(`<alerts style="display:none">` + JSON.stringify(alertsDict) + `</alerts>`)
 
         alertsDict.forEach(alert => {
-            // console.log(alert, sensorId_)
+            console.log(alert, sensorId_)
             if (sensorId_ == alert[0]) {
                 $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .minAlertGauge").remove()
                 $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .maxAlertGauge").remove()
-                $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container").prepend(`<span class='minAlertGauge'>` + alert[1] + `</span><span class='maxAlertGauge'>` + alert[2] + `</span>`)
+                $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container").prepend(`<span class='minAlertGauge' value='` + alert[1] + `' sensortype='` + alert[3] + `'>` + alert[1] + `</span><span class='maxAlertGauge' value='` + alert[2] + `' sensortype='` + alert[3] + `'>` + alert[2] + `</span>`)
+                // if sensortype = voltage add .alert-type-voltage class
+                if(alert[3]=="voltage") {
+                    $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .minAlertGauge").addClass("alert-type-voltage")
+                    $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .maxAlertGauge").addClass("alert-type-voltage")
+                }
+                // if sensortype = temperature add .alert-type-temperature
+                if(alert[3]=="temperature") {
+                    $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .minAlertGauge").addClass("alert-type-temperature")
+                    $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .maxAlertGauge").addClass("alert-type-temperature")
+                }
             }
 
         })
