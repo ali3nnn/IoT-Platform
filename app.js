@@ -87,7 +87,8 @@ const {
     getSensorLocation,
     isScaleAvailable,
     isConveyorAvailable,
-    mqttOverSocketIoBridge
+    mqttOverSocketIoBridge,
+    test
 } = require('./controllers/getInfo')
 // ==================================
 // End Middleware
@@ -252,6 +253,7 @@ app.use(express.static(public_dir))
 dotenv.config({
     path: './.env'
 })
+app.use(test)
 // ==================================
 // End Configuration
 

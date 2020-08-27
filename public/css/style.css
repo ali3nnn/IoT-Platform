@@ -3337,7 +3337,26 @@ span.card-settings-button-update:hover {
   cursor: pointer;
 }
 
-span.card-settings-button i, .card-settings-button-inner i, .card-settings-button-update i {
+span.card-settings-button-alert {
+  top: 9px;
+  right: 117px;
+  box-shadow: var(--neuro);
+  z-index: 99;
+  float: right;
+  padding: 8px 10px;
+  border-radius: 13px;
+  transform: translate(0%, 0%);
+  position: absolute;
+  border: 0px solid var(--body-bg);
+  transition: all .2s ease;
+}
+
+span.card-settings-button-alert:hover {
+  box-shadow: var(--neuro-hover);
+  cursor: pointer;
+}
+
+span.card-settings-button i, .card-settings-button-inner i, .card-settings-button-update i, .card-settings-button-alert i {
   float: left;
 }
 
@@ -3365,7 +3384,8 @@ span.card-settings-button:hover, .card-settings-button-inner:hover {
 
 span[class*='AlertGauge'] {
   position: absolute;
-  bottom: 10px;
+  bottom: 20px;
+  /* top: 10px; */
 }
 
 div[no-value='true'] span.minAlertGauge, div[no-value='true'] span.maxAlertGauge {
@@ -3373,11 +3393,13 @@ div[no-value='true'] span.minAlertGauge, div[no-value='true'] span.maxAlertGauge
 }
 
 span.minAlertGauge {
-  left: 26px;
+  left: 36px;
+  transform: translateX(-50%);
 }
 
 span.maxAlertGauge {
-  right: 25px;
+  right: 5px;
+  transform: translateX(-50%);
 }
 
 
@@ -4425,6 +4447,12 @@ article[class*="graph-"] .card-body canvas {
 
 /* Current Value */
 
+div[class*='-currentValue'] {
+    display: flex;
+    position: relative;
+    height: 100%;
+}
+
 /* Default */
 
 .gauge-container {
@@ -4435,14 +4463,16 @@ article[class*="graph-"] .card-body canvas {
   padding: 10px;
   overflow: hidden;
   max-width: 300px;
-  transform: translateX(-50%);
+  transform: translate(-50%,-50%);
   left: 50%;
   position: relative;
+  top: calc(50% - 30px);
 }
 
 @media only screen and (max-width:600px) {
   .gauge-container {
-    top: -20px
+    /* top: -20px */
+    top: calc(50% - 20px);
   }
 }
 
@@ -4476,6 +4506,7 @@ article[class*="graph-"] .card-body canvas {
   color: gray;
   font-size: 0.8em;
   font-style: italic;
+  margin-bottom: 0px;
 }
 
 /* Counter Gauge */
@@ -4833,3 +4864,45 @@ label.switch-label:active:after {
 }
 
 /* End Conveyor Page */
+
+/* Tooltip */
+.tooltip_test {
+  /* position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black; */
+}
+
+.tooltip_test .tooltiptext {
+  visibility: hidden;
+  /* width: 120px; */
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  top: 130%;
+  left: calc(50% - 20px);
+  margin-left: -60px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  display: table;
+  padding: 10px 10px;
+}
+
+.tooltip_test .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent #555 transparent;
+}
+
+.tooltip_test:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}

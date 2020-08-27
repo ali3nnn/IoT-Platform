@@ -229,8 +229,8 @@ async function switchConveyor() {
         if (!firstTimeHere) {
             // if ($(".gate-info h3").html() == 'Closed') {
             // if gate is closed start the conveyor
-            // insertStatus("on");
-            blockSwitchButton(5000)
+            insertStatus("on");
+            blockSwitchButton(30000)
             sendMessage("socketChannel", {
                 topic: "start/stop",
                 message: "start"
@@ -292,7 +292,7 @@ async function switchConveyor() {
         // red
         $("#conveyor-img").attr('src', 'images/conveyor_' + username + '_stop.png')
         if (!firstTimeHere) {
-            // insertStatus("off");
+            insertStatus("off");
             blockSwitchButton(5000)
 
             var timeTest = new Date()

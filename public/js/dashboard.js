@@ -524,8 +524,13 @@ function defaultSensorView(sensorId, sensorType, sensorZone) {
     </div>
 
     <div class='card-alerts-settings alert-` + sensorId + `'>
-        <span class='card-settings-button-update'>
+        <span class='card-settings-button-alert tooltip_test'>
+            <i class="fas fa-bell"></i>
+            <span class="tooltiptext">New feature is coming!</span>
+        </span>
+        <span class='card-settings-button-update tooltip_test'>
             <i class="fas fa-save"></i>
+            <span class="tooltiptext">By clicking you will update alerts and location!</span>
         </span>
         <span class='card-settings-button-inner'>
             <i class="far fa-sliders-h"></i>

@@ -531,10 +531,11 @@ const mqttOverSocketIoBridge = (req, res, next) => {
     }
 }
 
-// const test = () => {
-//     var mqttClientOutput = new mqttHandler("username");
-//     mqttClientOutput.connect();
-// }
+// This is a test middleware that is used by every route
+const test = (req, res, next) => {
+    // console.log("--->>>", req.originalUrl)
+    next()
+}
 
 // ==================================
 // End Middlewares
@@ -545,5 +546,5 @@ module.exports = {
     isScaleAvailable,
     isConveyorAvailable,
     mqttOverSocketIoBridge,
-    // test
+    test
 }

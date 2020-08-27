@@ -76,3 +76,12 @@
 <script type='text/javascript'>
     var username = JSON.parse('{{{json username}}}');
 </script>
+
+<script>
+    function quitBox(cmd) {
+        if (cmd == 'quit') {
+            open(location, '_self').close();
+        }
+        return false;
+    }
+</script>
