@@ -11,12 +11,7 @@ const db = mysql.createConnection({
 })
 
 const showAllUsers = (req,res,next) => {
-
-    // const promise = createAudioFileAsync(audioSettings); 
-    // promise.then(successCallback, failureCallback);
-
     next()
-
 }
 
 module.exports = {

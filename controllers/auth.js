@@ -287,6 +287,18 @@ const authRegister = (req, res, next) => {
     // res.send("form submitted")
 }
 
+function writeCookie(attr, text, res) {
+    console.log("Write cookie:", attr, text)
+    const cookieOptions = {
+        expires: new Date(
+            Date.now() + process.env.JWT_COOKIE_EXPIRES * 24 * 60 * 60 * 1000
+        ),
+        httpOnly: true,
+        signed: true
+    }
+    res.cookie(attr, text, cookieOptions)
+}
+
 //auth controller login
 const authLogin = async (req, res, next) => {
     // console.log("REQ.BODY:",req.body)
@@ -325,15 +337,16 @@ const authLogin = async (req, res, next) => {
 
                         // Set Cookie if checked
                         if (remember == '1') {
-                            console.log("Write cookie for user:", result[0].username)
-                            const cookieOptions = {
-                                expires: new Date(
-                                    Date.now() + process.env.JWT_COOKIE_EXPIRES * 24 * 60 * 60 * 1000
-                                ),
-                                httpOnly: true,
-                                signed: true
-                            }
-                            res.cookie('username', result[0].username, cookieOptions)
+                            // console.log("Write cookie for user:", result[0].username)
+                            // const cookieOptions = {
+                            //     expires: new Date(
+                            //         Date.now() + process.env.JWT_COOKIE_EXPIRES * 24 * 60 * 60 * 1000
+                            //     ),
+                            //     httpOnly: true,
+                            //     signed: true
+                            // }
+                            // res.cookie('username', result[0].username, cookieOptions)
+                            writeCookie("username", result[0].username, res)
                         }
 
                         // set other sess variables
@@ -405,9 +418,11 @@ const cookieChecker = async (req, res, next) => {
     // console.log("URL:",req.originalUrl)
 
     // if user has already logged in don't check cookies anymore
-    if (sess.username) next()
-
-    // if user not logged in check cookie
+    if (sess.username) {
+        username_cookie = sess.username
+        next()
+    }
+    // if user not logged in by cookie
     else if (username_cookie) {
         let sql_query = "SELECT id, username, password, user_role FROM users WHERE username = '" + username_cookie + "'"
         db.query(sql_query, (err, result) => {
