@@ -1,4 +1,6 @@
 var time = new Date()
+var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+var dayName = days[time.getDay()];
 
 // Global Variables
 // var username = $(".navbar-brand b")[0].innerText.slice(0, $(".navbar-brand b")[0].innerText.length - 1)
@@ -327,12 +329,48 @@ function updateValueSvgGauge(element, gauge, value, updatedAt = false) {
     }
 }
 
-
-var plotData = (element, ylabels, xlabels, label) => {
+var plotData = async (element, ylabels, xlabels, label) => {
 
     // Check if there is data
-    // console.log(element, ylabels.length)
+    console.log(element, ylabels, ylabels.length)
     // console.log("NEW chart for:", element, "ylabels.length", ylabels.length, ylabels)
+
+    // AI Prediction
+    // ===============================================
+    // console.log("PLOT DATA:")
+    var prediction = []
+    // for (i = 0; i < ylabels.length; i++) {
+    //     prediction[i] = null;
+    //     if (i == ylabels.length - 1) {
+    //         prediction[i] = ylabels[i];
+    //     }
+    // }
+
+    if (!$("body").hasClass("calendar-active"))
+        var xLastHour = xlabels[xlabels.length - 1]
+        for (var i = parseInt(xLastHour) + 1; i < 24; i++) {
+            xlabels.push(i.toString())
+            ylabels.push(null)
+            // prediction.push(Math.floor(Math.random() * (29 - 27 + 1)) + 27)
+        }
+    // ===============================================
+    // END AI Prediction
+
+    // Get last week of this day
+    // ===============================================
+    let experiment = await getSensorDataExperiment(element);
+    if (!experiment[0].error)
+        experiment[0].sensorAverage.forEach(item => {
+            prediction.push(item.sensorValue.toFixed(1))
+        })
+    prediction = prediction.reverse()
+    // console.log(experiment[0].sensorAverage)
+    // console.log(prediction)
+    // ===============================================
+    // END Get last week of this day
+
+    // console.log("y:", ylabels)
+    // console.log("x:", xlabels)
 
     // Get sensorType attribute
     var sensorType = $('article.' + element + '-card').attr('sensorType')
@@ -383,7 +421,7 @@ var plotData = (element, ylabels, xlabels, label) => {
             data: {
                 labels: xlabels,
                 datasets: [{
-                    label: label,
+                    label: label[0].toUpperCase() + label.slice(1, label.length),
                     data: ylabels,
                     backgroundColor: 'rgba(51, 153, 255, 0.2)',
                     borderColor: 'rgba(51, 153, 255, 1)',
@@ -430,6 +468,11 @@ var plotData = (element, ylabels, xlabels, label) => {
                 }
             }
         });
+
+        if (!experiment[0].error)
+            switchSecondGraph(chart, element, prediction)
+        else
+            disableSwitchSecondGraph(element)
 
         // return chart
 
@@ -589,10 +632,16 @@ function defaultSensorView(sensorId, sensorType, sensorZone) {
             <div class="card-tools">
                 <ul class="pagination pagination-sm">
                     <li class="page-item">
-                    <div id="reportrange" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
-                        <i class="fa fa-calendar"></i>&nbsp;
-                        <span></span> <i class="fa fa-caret-down"></i>
-                    </div>
+                        <div id="reportrange" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
+                            <i class="fa fa-calendar"></i>&nbsp;
+                            <span></span> <i class="fa fa-caret-down"></i>
+                        </div>
+                    </li>
+                    <li class="page-item">
+                        <div id="predictor-switch" clicked="false" class="tooltip_test" style="background: #fff;cursor: pointer;padding: 5px 10px;border: 1px solid #ccc;width: 100%;height: 32px;width: 36px;">
+                            <i class="fas fa-history" aria-hidden="true"></i> 
+                            <span class="tooltiptext">Show data for last ` + dayName.toLowerCase() + `</span>
+                        </div>
                     </li>
                 </ul>
             </div>
@@ -1088,6 +1137,14 @@ let getSensorData = async (sensor) => {
     return response.json()
 }
 
+// experiment
+let getSensorDataExperiment = async (sensor) => {
+    // console.log("getSensorData")
+    let response = await fetch("https://anysensor.dasstec.ro/api/experiment/get-data/" + countyName + "/" + sensor)
+    // console.log("getSensorData",new Date()-time)
+    return response.json()
+}
+
 // get last recorded value of a sensor
 let getLatestValueRecorded = async (sensor) => {
     // console.log("getLatestValueRecorded")
@@ -1098,6 +1155,12 @@ let getLatestValueRecorded = async (sensor) => {
 
 // get and plot data by a specific interval
 let getSensorDataCustomInterval = async (countyName, sensor, start, end, chartList) => {
+
+    if (!$("body").hasClass("calendar-active")) {
+        $("body").addClass("calendar-active")
+        $("#predictor-switch .tooltiptext").html("Disabled function when calendar view is active - refresh the page")
+    }
+        
 
     const date1 = new Date(start);
     const date2 = new Date(end);
@@ -1449,6 +1512,7 @@ let test = (async () => {
 
                 // plot data and add current value for each sensor
                 chartList.push([sensorIdToLookFor, plotData(String(sensorIdToLookFor), ylabels_reversed, xlabels_reversed, label)])
+
                 timeIntervalChanger(sensorIdToLookFor, chartList);
 
             })()
@@ -1660,10 +1724,46 @@ async function delay(ms) {
     return await new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function switchSecondGraph(chart, sensorId, x) {
+    $("body:not(.calendar-active) .graph-" + sensorId + " #predictor-switch").click(function (e) {
+        e.preventDefault;
+        // console.log(chart)
+        // console.log($(".graph-" + sensorId + " #predictor-switch").attr('clicked') == 'false')
+        if ($(".graph-" + sensorId + " #predictor-switch").attr('clicked') == 'false') {
+            document.querySelector(".graph-" + sensorId + " #predictor-switch").setAttribute('clicked', 'true')
+            chart.config.data.datasets.push({
+                label: 'Last ' + dayName,
+                data: x,
+                // backgroundColor: 'rgba(225, 193, 7, 0.2)',
+                borderColor: 'rgba(225, 193, 7, 1)',
+                pointBorderColor: '#343a40',
+                pointBackgroundColor: "rgba(225, 193, 7, 1)",
+                pointHoverBackgroundColor: "white",
+                pointRadius: 0,
+                pointHoverRadius: 0,
+                pointBorderWidth: 0,
+                borderWidth: 1,
+                lineTension: 0.2
+            })
+            chart.update();
+        } else if ($(".graph-" + sensorId + " #predictor-switch").attr('clicked') == 'true') {
+            document.querySelector(".graph-" + sensorId + " #predictor-switch").setAttribute('clicked', 'false')
+            chart.config.data.datasets.pop()
+            chart.update()
+        }
+    })
+}
+
+function disableSwitchSecondGraph(sensorId) {
+    document.querySelector(".graph-" + sensorId + " #predictor-switch").setAttribute('clicked', 'disabled')
+    $(".graph-" + sensorId + " #predictor-switch .tooltiptext").html("No data test test test test test")
+}
+
 let run = async () => {
 
     while (1) {
         updateData(await test);
+        // test
         // notification()
         await delay(5 * 1000);
     }
@@ -1673,4 +1773,4 @@ let notification = async () => {
     fetch('/api/notification-test?message=Updating the sensor gauge')
 }
 
-run();
+// run();

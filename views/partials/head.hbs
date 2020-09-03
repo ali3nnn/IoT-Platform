@@ -1,6 +1,7 @@
 <meta charset="utf-8">
 <title>Anysensor</title>
 <meta content="width=device-width, initial-scale=1" name="viewport" />
+{{!-- <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"> --}}
 
 <link rel="stylesheet" id="bootstrap-css" href="/css/bootstrap.css">
 {{!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"> --}}
@@ -46,6 +47,8 @@
     integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
     crossorigin="anonymous"></script>
 
+<script src="/js/jspdf.min.js"></script>
+
 <!-- Ionicons -->
 <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
 {{!-- Icons MDI --}}
@@ -60,6 +63,10 @@
 {{!-- Font Awsome 5 PRO --}}
 <link rel="stylesheet" type="text/css" href="/css/fontawesome/css/pro.min.css" />
 
+<script type='text/javascript'>
+    var username = JSON.parse('{{{json username}}}');
+</script>
+
 {{!-- Socket.IO Connection is here to load on every page --}}
 <script>
     var socket = io.connect(":1920")
@@ -68,20 +75,19 @@
     var socketChannel = 'socketChannel'
     socket.on(socketChannel, (data) => {
         // display everything receiver from server on socketChannel
-        console.log(socketChannel, data)
+        // console.log(socketChannel, data)
     })
 
-</script>
+    socket.emit("loginChannel", {
+        message: username
+    })
 
-<script type='text/javascript'>
-    var username = JSON.parse('{{{json username}}}');
-</script>
-
-<script>
-    function quitBox(cmd) {
-        if (cmd == 'quit') {
-            open(location, '_self').close();
-        }
-        return false;
+    // Async timeout
+    var timeoutAsync = (ms, f) => {
+        let sleep = new Promise(resolve => setTimeout(function () {
+            f();
+            // return resolve
+        }, ms))
     }
+
 </script>

@@ -1,5 +1,3 @@
-console.log("scale.js")
-
 // socket.on('mqtt', (data) => {
 //   console.log('mqtt', data)
 // })

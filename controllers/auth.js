@@ -180,6 +180,13 @@ const authRegister = (req, res, next) => {
         passwordConfirm
     } = req.body
 
+    console.log(name,
+        username,
+        email,
+        company,
+        password,
+        passwordConfirm)
+
     // password do not match
     if (password != passwordConfirm) return res.render('register', {
         alert: "Passwords do not match!"

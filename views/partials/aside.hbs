@@ -40,7 +40,6 @@
                 }
             </script>
         </div>
-        {{!-- {{> mapzones}} --}}
 
         {{#if isScaleAvailable.tableExist}}
         {{#if isScaleAvailable.count}}
@@ -55,8 +54,7 @@
         <div class="basic-items">
             <a href="/scale-dashboard" class='scale-button'>
                 <i class="fas fa-balance-scale"></i>
-                {{!-- <i class="far fa-conveyor-belt-alt"></i> --}}
-                <span>Scale <span class="badge badge-danger">0 recordings</span> </span>
+                <span>Scale <span class="badge badge-danger">No recordings</span> </span>
             </a>
         </div>
         {{/if}}
@@ -66,7 +64,6 @@
         {{#if isConveyorAvailable.count}}
         <div class="basic-items">
             <a href="/conveyor-dashboard" class='conveyor-button'>
-                {{!-- <i class="fas fa-weight"></i> --}}
                 <i class="far fa-conveyor-belt-alt"></i>
                 <span>Conveyor </span>
             </a>
@@ -74,7 +71,6 @@
         {{else}}
         <div class="basic-items">
             <a href="/conveyor-dashboard" class='conveyor-button'>
-                {{!-- <i class="fas fa-weight"></i> --}}
                 <i class="far fa-conveyor-belt-alt"></i>
                 <span>Conveyor</span>
             </a>
@@ -82,6 +78,23 @@
         {{/if}}
         {{/if}}
 
+        {{#if isScannerAvailable.tableExist}}
+        {{#if isScannerAvailable.count}}
+        <div class="basic-items">
+            <a href="/scanner-dashboard" class='scanner-button'>
+                <i class="fas fa-barcode"></i>
+                <span>Scanner</span>
+            </a>
+        </div>
+        {{else}}
+        <div class="basic-items">
+            <a href="/scanner-dashboard" class='scanner-button'>
+                <i class="fas fa-barcode"></i>
+                <span>Scanner <span class="badge badge-danger">No recordings</span></span>
+            </a>
+        </div>
+        {{/if}}
+        {{/if}}
 
         <div class="settings-items">
 

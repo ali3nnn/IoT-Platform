@@ -2,10 +2,10 @@
   "name": "anysensor2",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "anysensor.js",
   "scripts": {
-    "dev": "nodemon app.js",
-    "prod": "forever start --spinSleepTime 1000 app.js"
+    "dev": "nodemon anysensor.js",
+    "prod": "forever start --spinSleepTime 1000 anysensor.js"
   },
   "author": "Alex Barbu",
   "license": "ISC",

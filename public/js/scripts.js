@@ -1,9 +1,20 @@
-var passwordField = document.querySelector('.login-container .charInput:nth-child(4)');
-var otherPasswordFields = document.querySelectorAll('.login-container .charInput:not(:nth-child(4))');
-var registerButton = document.querySelector('.login-container input:last-child');
+console.log("script.js added")
 
+// var passwordField = document.querySelector('.login-container .charInput:nth-child(4)');
+// var otherPasswordFields = document.querySelectorAll('.login-container .charInput:not(:nth-child(4))');
+// var registerButton = document.querySelector('.login-container input:last-child');
+
+// var passwordRules = document.querySelector('.login-container .passwordRules');
+
+// var passwordUpperCase = document.querySelector('.login-container .passwordRules li:first-child');
+// var passwordLowerCase = document.querySelector('.login-container .passwordRules li:nth-child(2)');
+// var passwordDigit = document.querySelector('.login-container .passwordRules li:nth-child(3)');
+// var password8Char = document.querySelector('.login-container .passwordRules li:nth-child(4)');
+
+var passwordField = document.querySelector('.login-container .charInput[name="password"]');
+var otherPasswordFields = document.querySelectorAll('.login-container .charInput[name="password"]');
+var registerButton = document.querySelector('.login-container input[name="register"]');
 var passwordRules = document.querySelector('.login-container .passwordRules');
-
 var passwordUpperCase = document.querySelector('.login-container .passwordRules li:first-child');
 var passwordLowerCase = document.querySelector('.login-container .passwordRules li:nth-child(2)');
 var passwordDigit = document.querySelector('.login-container .passwordRules li:nth-child(3)');
@@ -24,8 +35,10 @@ if (passwordRules)
 if (passwordField)
     passwordField.addEventListener('click', function (e) {
         e.preventDefault();
-        // console.log('password input clicked');
+        console.log('password input clicked');
+        console.log(passwordRules.classList)
         passwordRules.classList.remove('hideRules');
+        console.log(passwordRules.classList)
     });
 
 if (passwordField)
@@ -134,7 +147,7 @@ $(document).ready(function () {
 
     }, false);
 
-    
+
     try {
         // var childs = $(".small-box-container").children().length;
         // $(".small-box-container").addClass("children-" + String(childs))
@@ -145,26 +158,26 @@ $(document).ready(function () {
 });
 
 
-// sidebar navigation
 try {
 
-    const toggleButtons = document.querySelectorAll(".toggleSidenav")
-    const openButton = document.querySelector(".open-button");
-    const overlay = document.querySelector(".main-overlay")
-    const asideLinks = document.querySelectorAll(".sidenav-wrapper a")
+    var toggleButtons = document.querySelectorAll(".toggleSidenav")
+    var openButton = document.querySelector(".open-button");
+    var overlay = document.querySelector(".main-overlay")
+    var asideLinks = document.querySelectorAll(".sidenav-wrapper a")
 
-    const sidenav = document.getElementById("mySidenav")
-    const mainbody = document.getElementById("main")
+    var sidenav = document.getElementById("mySidenav")
+    var mainbody = document.getElementById("main")
 
-    const body = document.getElementById('main');
-    const except = document.getElementById('mySidenav');
+    var body = document.getElementById('main');
+    var except = document.getElementById('mySidenav');
 
     var flagOpenMenu = false
     var flagCloseMenu = false
 
-    const widthOpen = "250px"
-    const widthClosed = "50px"
+    var widthOpen = "250px"
+    var widthClosed = "50px"
 
+    // sidebar navigation
     function openedFinal() {
         setTimeout(function () {
             sidenav.classList.add("sidenav-opened-final");
@@ -179,7 +192,6 @@ try {
         // }, 200)
     }
 
-
     // Check if mobile to wrap sidenav or not
 
     // Run at first load
@@ -192,25 +204,27 @@ try {
             $("body").addClass("window-loaded")
         }
 
-        if (window.innerWidth > 991) {
-            if (!sidenav.classList.contains("sidenav-opened")) {
-                // openButton.click()
-                // var date_1;
+        if (sidenav) {
+            if (window.innerWidth > 991) {
+                if (!sidenav.classList.contains("sidenav-opened")) {
+                    // openButton.click()
+                    // var date_1;
 
-                let openButtonClick = function (callback) {
-                    // date_1 = new Date();
-                    // date_1 = date_1.getTime()
-                    // console.log(date_1)
-                    openButton.click();
-                    setTimeout(function () {
-                        callback()
-                    }, 150)
+                    let openButtonClick = function (callback) {
+                        // date_1 = new Date();
+                        // date_1 = date_1.getTime()
+                        // console.log(date_1)
+                        openButton.click();
+                        setTimeout(function () {
+                            callback()
+                        }, 150)
+                    }
+                    openButtonClick(addBodyClass)
                 }
-                openButtonClick(addBodyClass)
+            } else {
+                closedFinal.bind()();
+                addBodyClass()
             }
-        } else {
-            closedFinal.bind()();
-            addBodyClass()
         }
 
     })
@@ -410,7 +424,7 @@ function chartIt(selector) {
 
 // chart_TimeSeries('timeseries_1', generateData())
 
-
+// not used
 function chart_TimeSeries(selector, data) {
     var ctx = document.getElementById(selector).getContext('2d');
     var color = Chart.helpers.color;
@@ -647,7 +661,6 @@ function animationInNotification() {
     }))
 }
 
-
 // navigator.usb.getDevices()
 // .then(device => {
 //   console.log(device.productName);      // "Arduino Micro"
@@ -685,14 +698,14 @@ function animationInNotification() {
 // }
 
 function timeout(ms, f) {
-    let sleep =  new Promise(resolve => setTimeout(function(){
+    let sleep = new Promise(resolve => setTimeout(function () {
         f()
         // return resolve
     }, ms))
 }
 
 // Test async timeout
-timeout(3000, function(){
+timeout(3000, function () {
     console.log("3 seconds async timeout")
 })
 
@@ -703,5 +716,5 @@ var infos = () => {
     var basicItemsH = $("#mySidenav .basicItems").height();
     var zoneLisH = $("#mySidenav .zone-list").height();
     var settingItemsH = $("#mySidenav .settings-items").height();
-    console.log(brandH,basicItemsCounter,basicItemsH,zoneLisH,settingItemsH)
+    console.log(brandH, basicItemsCounter, basicItemsH, zoneLisH, settingItemsH)
 }

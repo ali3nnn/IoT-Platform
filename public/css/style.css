@@ -162,13 +162,16 @@ h2 {
 /* Loader */
 
 .loader-wrapper span {
-  font-size: 12px;
-  top: calc(50% + 26px);
+  font-size: 16px;
+  top: calc(50% + 30px);
   position: absolute;
   left: calc(50% + 0px);
   transform: translateX(-50%);
-  opacity: 0.3;
+  opacity: 1;
   display: none;
+  /* text-shadow: 0px 0px 2px #0000004a; */
+  /* background: #00000033; */
+  padding: 0px 10px;
 }
 
 .loader-anysensor {
@@ -601,28 +604,28 @@ animation-delay: 0.9s;
 }
 
 /* .logout-button {
-  float: right;
-  background-color: #56baed;
-  border: none;
-  padding: 15px 80px;
-  text-align: center;
-  text-decoration: none;
-  text-transform: uppercase;
-  font-size: 13px;
-  -webkit-box-shadow: 0 10px 30px 0 rgba(95, 186, 233, 0.4);
-  box-shadow: 0 10px 30px 0 rgba(95, 186, 233, 0.4);
-  -webkit-border-radius: 5px 5px 5px 5px;
-  border-radius: 5px 5px 5px 5px;
+float: right;
+background-color: #56baed;
+border: none;
+padding: 15px 80px;
+text-align: center;
+text-decoration: none;
+text-transform: uppercase;
+font-size: 13px;
+-webkit-box-shadow: 0 10px 30px 0 rgba(95, 186, 233, 0.4);
+box-shadow: 0 10px 30px 0 rgba(95, 186, 233, 0.4);
+-webkit-border-radius: 5px 5px 5px 5px;
+border-radius: 5px 5px 5px 5px;
 }
 
 .logout-button:hover {
-  background-color: #00a9ff;
+background-color: #00a9ff;
 }
 
 .logout-button a {
-  color: black;
-  margin: -15px -80px;
-  padding: 15px 80px;
+color: black;
+margin: -15px -80px;
+padding: 15px 80px;
 } */
 
 .logout-button a:hover {
@@ -1360,7 +1363,7 @@ form.update-container>input[type=submit] {
   display: none;
 }
 
-@media screen and (min-width:992px) {
+@media screen and (min-width: 992px) {
   .toggleSidenav {
     display: none;
   }
@@ -1416,7 +1419,7 @@ form.update-container>input[type=submit] {
   overflow: hidden;
 }
 
-@media screen and (max-width:499px) {
+@media screen and (max-width: 499px) {
   .sidenav-opened {
     width: 80%;
   }
@@ -1461,8 +1464,8 @@ form.update-container>input[type=submit] {
 
 @media screen and (min-width: 992x) {
   /* #main { 
-    padding-left: 250px
-  } */
+  padding-left: 250px
+} */
 }
 
 /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
@@ -1501,7 +1504,7 @@ form.update-container>input[type=submit] {
   /* display: none; */
 }
 
-@media screen and (min-width:992px) {
+@media screen and (min-width: 992px) {
   .main-overlay {
     /* display: none; */
     opacity: 0;
@@ -1662,7 +1665,7 @@ img.img-circle {
 }
 
 /* .settings-items > .basic-items:last-of-type {
-  padding-bottom: 5px
+padding-bottom: 5px
 } */
 
 /* button icon font awesome */
@@ -3064,9 +3067,9 @@ img.img-circle {
 }
 
 /* --breakpoint-sm:576px;
-  --breakpoint-md:768px;
-  --breakpoint-lg:992px;
-  --breakpoint-xl:1200px; */
+--breakpoint-md:768px;
+--breakpoint-lg:992px;
+--breakpoint-xl:1200px; */
 
 @media screen and (max-width: 768px) {
   .card {
@@ -3136,6 +3139,19 @@ img.img-circle {
   filter: blur(0px);
   -webkit-filter: blur(0px);
   transition: all 0.2s ease;
+}
+
+@media (max-width: 600px) {
+  .card.height-control .card-body {
+    padding-top: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .card.height-control .card-body {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
 }
 
 article[class*="live"] {
@@ -3268,6 +3284,8 @@ html.maximized-card {
   -webkit-filter: blur(0px);
   transition: all 0.2s ease;
   /* display: table; */
+  /* position: relative; */
+  z-index: 1;
 }
 
 .collapsed-card .card-header {
@@ -3388,6 +3406,12 @@ span[class*='AlertGauge'] {
   /* top: 10px; */
 }
 
+@media (max-width: 600px) {
+  span[class*='AlertGauge'] {
+    bottom: 10px;
+  }
+}
+
 div[no-value='true'] span.minAlertGauge, div[no-value='true'] span.maxAlertGauge {
   display: none;
 }
@@ -3402,9 +3426,8 @@ span.maxAlertGauge {
   transform: translateX(-50%);
 }
 
-
 /* span[class*='AlertGauge']:after {
-  content: "°C";
+content: "°C";
 } */
 
 .alert-type-temperature:after {
@@ -3518,10 +3541,10 @@ span.maxAlertGauge {
 
 .slider:before {
   /* content:"Optim:";
-  position: absolute;
-  color: var(--nav-bg);
-  padding-left:10px;
-  margin-top: -30px; */
+position: absolute;
+color: var(--nav-bg);
+padding-left:10px;
+margin-top: -30px; */
 }
 
 .slider:hover {
@@ -3602,7 +3625,7 @@ span.maxAlertGauge {
   margin: 10px 0
 }
 
-@media (max-width:576px) {
+@media (max-width: 576px) {
   .chart-legend>li {
     float: left;
     margin-right: 10px
@@ -3755,8 +3778,8 @@ span.maxAlertGauge {
 
 .card-wrapper {
   /* padding: 15px 15px 0px 0px;
-    width: 100%;
-    flex-basis: 25%; */
+  width: 100%;
+  flex-basis: 25%; */
 }
 
 .watermark {
@@ -3787,6 +3810,12 @@ span.maxAlertGauge {
 @media only screen and (max-width: 600px) {
   .card-container {
     grid-template-columns: 1fr;
+  }
+  article[class*="graph-"]:not([class*="live"]) {
+    left: 0 !important;
+  }
+  article[class*="graph-"]:not([class*="live"]) .card-body {
+    margin: 0px -0.5rem -10px -0.5rem !important;
   }
 }
 
@@ -3878,7 +3907,7 @@ div#map>div {
 
 .map-page .map-button {
   /* color: var(--sidenav-link-color-hover);
-  background: var(--sidenav-link-background-hover); */
+background: var(--sidenav-link-background-hover); */
   color: var(--navbar-bg) !important;
   background: var(--yellow);
 }
@@ -3929,8 +3958,8 @@ div#zones-list .zone-item a:hover, div#zones-list .zone-item a.hovered-county, .
   color: var(--navbar-bg) !important;
   background: var(--yellow);
   /* padding: 10px 20px;
-  text-decoration: none;
-  position: relative; */
+text-decoration: none;
+position: relative; */
   /* text-shadow: 0px 0px 5px #0000009e; */
 }
 
@@ -3945,6 +3974,49 @@ div#zones-list .zone-item:last-child a {
 }
 
 /* Temperature Card */
+
+/* History Button */
+
+div#predictor-switch {
+  background: var(--body-bg) !important;
+  /* border: none !important; */
+  border-radius: 3px;
+  /* border-color: #3499fe !important; */
+  box-shadow: var(--neuro);
+  border-radius: 13px;
+  font-size: 0;
+  /* display: block; */
+  /* width: 36px !important; */
+  position: relative;
+  transform: translate(-50%, -50%);
+  top: 16px;
+  left: 50%;
+  border: 0px solid transparent !important;
+  transition: all 0.2s ease;
+}
+
+.calendar-active div#predictor-switch {
+  box-shadow: 1px 1px 2px #adadad;
+  color: #343a3e5e;
+}
+
+body:not(.calendar-active) div#predictor-switch:hover {
+  box-shadow: var(--neuro-hover);
+  border: 0px solid var(--body-bg) !important;
+  cursor: pointer;
+}
+
+div#predictor-switch i {
+  font-size: initial;
+  padding: 3px 1px;
+}
+
+li.page-item {
+  margin-right: 8px;
+  margin-left: 7px;
+}
+
+/* End History Button */
 
 div#gauge {
   width: 100%;
@@ -4362,13 +4434,29 @@ article[class*="graph-"] .card-body canvas {
 
 /* Sensor Update Message */
 
+.alert-info {
+  color: #343a3f;
+  background-color: #ffc009;
+  border: none;
+}
+
+notification>.messages {
+  display: block;
+}
+
+notification {
+  position: fixed;
+  right: 0;
+  bottom: 0px;
+}
+
 .messages .alert {
   margin: 0 !important;
   box-shadow: 0px 0px 20px #00000024;
 }
 
 .messages {
-  position: fixed;
+  position: relative;
   right: 0px;
   bottom: 0;
   margin: 10px;
@@ -4448,31 +4536,40 @@ article[class*="graph-"] .card-body canvas {
 /* Current Value */
 
 div[class*='-currentValue'] {
-    display: flex;
-    position: relative;
-    height: 100%;
+  display: flex;
+  position: relative;
+  height: 100%;
+  min-height: 180px;
+  /* border: 1px solid black; */
 }
 
 /* Default */
 
 .gauge-container {
   width: 100%;
-  height: auto;
+  /* height: auto; */
   display: block;
-  float: left;
+  /* float: left; */
   padding: 10px;
   overflow: hidden;
   max-width: 300px;
-  transform: translate(-50%,-50%);
+  transform: translate(-50%, -50%);
   left: 50%;
   position: relative;
   top: calc(50% - 30px);
 }
 
-@media only screen and (max-width:600px) {
+@media only screen and (max-width: 600px) {
   .gauge-container {
-    /* top: -20px */
-    top: calc(50% - 20px);
+    top: 50%;
+    /* top: calc(50% - 0px); */
+    /* position: relative; */
+    /* display: block; */
+    /* height: 120px; */
+    position: absolute;
+    /* min-height: 300px; */
+    /* top: 0px; */
+    /* bottom: 0px; */
   }
 }
 
@@ -4507,6 +4604,12 @@ div[class*='-currentValue'] {
   font-size: 0.8em;
   font-style: italic;
   margin-bottom: 0px;
+}
+
+@media (max-width: 600px) {
+  .update-time-gauge {
+    bottom: -10px;
+  }
 }
 
 /* Counter Gauge */
@@ -4558,16 +4661,16 @@ div[id*="-floatinBall"] {
 }
 
 /* .gauge-container.two {
-  height: auto;
-  border: 1px solid rgba(255,255,255,0.1);
+height: auto;
+border: 1px solid rgba(255,255,255,0.1);
 }
 .gauge-container.two > .gauge > .value {
-  stroke: #334455;
-  stroke-width: 10;
+stroke: #334455;
+stroke-width: 10;
 }
 .gauge-container.two > .gauge > .dial {
-  stroke-dasharray: none;
-  stroke-width: 10;
+stroke-dasharray: none;
+stroke-width: 10;
 }
 .gauge-container.two > .gauge > .value {
 } */
@@ -4715,7 +4818,7 @@ div[id*="edit-user"] form .form-zones-container .form-check {
   transform: translateY(-50%);
 }
 
-@media (max-width:600px) {
+@media (max-width: 600px) {
   .send-command {
     height: 112px;
   }
@@ -4866,10 +4969,11 @@ label.switch-label:active:after {
 /* End Conveyor Page */
 
 /* Tooltip */
+
 .tooltip_test {
   /* position: relative;
-  display: inline-block;
-  border-bottom: 1px dotted black; */
+display: inline-block;
+border-bottom: 1px dotted black; */
 }
 
 .tooltip_test .tooltiptext {
@@ -4889,6 +4993,7 @@ label.switch-label:active:after {
   transition: opacity 0.3s;
   display: table;
   padding: 10px 10px;
+  font-size: 14px;
 }
 
 .tooltip_test .tooltiptext::after {
@@ -4906,3 +5011,12 @@ label.switch-label:active:after {
   visibility: visible;
   opacity: 1;
 }
+
+/* Scanner Page */
+
+.scanner-page .scanner-button {
+  color: var(--navbar-bg) !important;
+  background: var(--yellow);
+}
+
+/* End Scanner Page */

@@ -73,3 +73,17 @@
         }
     }
 </script>
+
+<script>
+    if ($(".scanner-page").length) {
+        console.log("scanner.js added")
+        const item = $(this)
+        if (item.length) {
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = '/js/scanner.js';
+
+            document.getElementsByTagName('head')[0].appendChild(script);
+        }
+    }
+</script>
