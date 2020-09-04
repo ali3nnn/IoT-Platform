@@ -3947,6 +3947,10 @@ div#zones-list .zone-item a {
   text-transform: capitalize;
 }
 
+.no-zone span {
+  text-transform: initial;
+}
+
 div#zones-list .zone-item a span {
   padding-left: 10px;
   font-size: var(--sidenav-font-size);
@@ -3995,12 +3999,12 @@ div#predictor-switch {
   transition: all 0.2s ease;
 }
 
-.calendar-active div#predictor-switch {
+div#predictor-switch[clicked="disabled"] {
   box-shadow: 1px 1px 2px #adadad;
   color: #343a3e5e;
 }
 
-body:not(.calendar-active) div#predictor-switch:hover {
+div#predictor-switch:not([clicked="disabled"]):hover {
   box-shadow: var(--neuro-hover);
   border: 0px solid var(--body-bg) !important;
   cursor: pointer;
@@ -4459,11 +4463,12 @@ notification {
   position: relative;
   right: 0px;
   bottom: 0;
-  margin: 10px;
+  margin: 15px;
   opacity: 1;
   visibility: visible;
   border-radius: .25rem;
   overflow: hidden;
+  border-bottom-right-radius: 13px;
 }
 
 .messages background {

@@ -113,6 +113,53 @@
 //   return response.json()
 // }
 
+function showNotification(message, error = 0) {
+
+  if (error == 0)
+    $("notification").append(`<div class="messages hideMe">
+                                  <div class="alert alert-info mt-3 mb-0" role="alert">
+                                  <i class="fas fa-barcode"></i>
+                                      <background></background>
+                                      ` + message + `
+                                  </div>
+                              </div>`).show('slow');
+  else if (error == 1)
+    $("notification").append(`<div class="messages hideMe">
+                                  <div class="alert alert-danger mt-3 mb-0" role="alert">
+                                      <i class="fas fa-exclamation-triangle"></i>
+                                      <background></background>
+                                      ` + message + `
+                                  </div>
+                              </div>`).show('slow');
+
+  else if (error == 2)
+    $("notification").append(`<div class="messages hideMe">
+                                      <div class="alert alert-success mt-3 mb-0" role="alert">
+                                          <i class="fas fa-print"></i>
+                                          <background></background>
+                                          ` + message + `
+                                      </div>
+                              </div>`).show('slow');
+
+  else if (error == 3)
+    $("notification").append(`<div class="messages hideMe">
+                                      <div class="alert alert-info mt-3 mb-0" role="alert">
+                                          <i class="fas fa-times-circle"></i>
+                                          <background></background>
+                                          ` + message + `
+                                      </div>
+                              </div>`).show('slow');
+
+  else if (error == 4)
+    $("notification").append(`<div class="messages hideMe">
+                              <div class="alert alert-info mt-3 mb-0" role="alert">
+                                  <background></background>
+                                  ` + message + `
+                              </div>
+                          </div>`).show('slow');
+
+}
+
 // cluster
 
 // get coordinates
@@ -162,14 +209,20 @@ if (typeof sensorId !== 'undefined') {
           sensorList += sensor[2]
       })
 
-      // console.log(sensorList)
+      // console.log(sensorList, sensorList.length)
+      if (sensorList.length) {
+        let sensorLatestValueJson = await lastValueOf(sensorList);
 
-      let sensorLatestValueJson = await lastValueOf(sensorList);
-      sensorLatestValueJson.forEach(sensor=>{
-        lastValue.push([sensor.sensorQueried, sensor.value])
-      })
+        sensorLatestValueJson.forEach(sensor => {
+          lastValue.push([sensor.sensorQueried, sensor.value])
+        })
 
-      return await [response, lastValue]
+        return await [response, lastValue]
+      } else {
+        return await [response, [NaN, NaN]]
+      }
+
+
 
     })
     .then(response => {
@@ -228,6 +281,47 @@ function appendCoordToHTML(sensorId, coord) {
   bodyEl.attr("location", value)
 }
 
+// Aux Functions for getZoomOfMap()
+function getDistanceFromLatLon(lat1,lon1,lat2,lon2) {
+  var R = 6371; // Radius of the earth in km
+  var dLat = deg2rad(lat2-lat1);  // deg2rad below
+  var dLon = deg2rad(lon2-lon1); 
+  var a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2)
+    ; 
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  var d = R * c; // Distance in km
+  return d*1000;
+}
+
+function deg2rad(deg) {
+  return deg * (Math.PI/180)
+}
+// End Aux Functions for getZoomOfMap()
+
+function getZoomOfMap() {
+  var locationObj = getLocationObj()
+  // console.log()
+  var coordToCalc = []
+  for(item in locationObj) {
+    coordToCalc.push(locationObj[item])
+  }
+  
+  if(coordToCalc.length == 2)
+    var dist = getDistanceFromLatLon(coordToCalc[0][1],coordToCalc[0][0],coordToCalc[1][1],coordToCalc[1][0])
+  else if(coordToCalc.length == 1)
+    var dist = 1000
+  else if (coordToCalc.length >= 3) 
+    var dist = 1000
+
+  if(dist < 500)
+    return 17
+  else 
+    return 6
+}
+
 function getCenterOfMap() {
   // var bodyEl = $("body")
   // var location = []
@@ -265,9 +359,23 @@ function getCenterOfMap() {
 function getLocationObj() {
   var bodyEl = $("body")
   var location = []
-  location.push(bodyEl.attr("location"))
-  var locationObj = JSON.parse(location)
-  return locationObj
+  if (bodyEl.attr("location")) {
+    location.push(bodyEl.attr("location"))
+    var locationObj = JSON.parse(location)
+
+    // if($("body").hasClass("map-page")) {
+    //   showNotification("You have <b>"+location.length+" "+ (location.length>1 ? `sensors` : `sensor`) +"</b> on map!", error = 4)
+    // }
+      
+    return locationObj
+  } else {
+    // return coordinates of bucharest (lon,lat)
+    showNotification("You have no sensor assigned!", error = 4)
+    return {
+      "bucharest": [44.439663, 26.096306]
+    }
+  }
+
 }
 
 // function createDictionary(sensorId = null, pos = null) {
@@ -281,11 +389,13 @@ function getLocationObj() {
 
 function createMap(coordinates, sensorValuesJson) {
 
-  console.log("Add coordinates to body attr:", coordinates)
-  // console.log("sensorValuesJson")
-  sensorValuesJson.forEach(sensor => {
-    console.log(sensor)
-  })
+  // console.log("Add coordinates to body attr:", coordinates)
+
+  // console.log("sensorValuesJson:",sensorValuesJson)
+
+  // sensorValuesJson.forEach(sensor => {
+  //   console.log(sensor)
+  // })
 
   var features = new Array();
   for (var i = 0; i < coordinates.length; ++i) {
@@ -338,18 +448,18 @@ function createMap(coordinates, sensorValuesJson) {
       // console.log(sensor[1], sensorValuesJson)
 
       if (sensor[0].equals(pinLocation) === true) {
-        
+
         // console.log(sensor[1], sensor[0].equals(pinLocation) === true, sensorValuesJson)
 
         sensorValuesJson.forEach(sensorVal => {
-          if(sensor[1]==sensorVal[0]) {
-            if(sensor[1].includes("source")) {
+          if (sensor[1] == sensorVal[0]) {
+            if (sensor[1].includes("source")) {
               val = parseFloat(sensorVal[1]) + "V"
             } else {
               val = parseFloat(sensorVal[1]) + "°C"
             }
           }
-            
+
         })
 
         // val = sensorValuesJson[sensor[1]]
@@ -467,7 +577,7 @@ function createMap(coordinates, sensorValuesJson) {
     target: 'map',
     view: new ol.View({
       center: ol.proj.fromLonLat(getCenterOfMap()),
-      zoom: 6
+      zoom: getZoomOfMap()
     })
   });
 

@@ -5,6 +5,7 @@ var dayName = days[time.getDay()];
 // Global Variables
 // var username = $(".navbar-brand b")[0].innerText.slice(0, $(".navbar-brand b")[0].innerText.length - 1)
 let countyName = $(".county-detail h3").html()
+document.title = countyName.toUpperCase() + " | Anysensor"
 let json = ''
 var oldUpdatedTime = ''
 var counterOld = ['', '']
@@ -329,7 +330,7 @@ function updateValueSvgGauge(element, gauge, value, updatedAt = false) {
     }
 }
 
-var plotData = async (element, ylabels, xlabels, label) => {
+var plotData = async (element, ylabels, xlabels, label, graphConfig = false) => {
 
     // Check if there is data
     console.log(element, ylabels, ylabels.length)
@@ -346,13 +347,21 @@ var plotData = async (element, ylabels, xlabels, label) => {
     //     }
     // }
 
-    if (!$("body").hasClass("calendar-active"))
-        var xLastHour = xlabels[xlabels.length - 1]
-        for (var i = parseInt(xLastHour) + 1; i < 24; i++) {
-            xlabels.push(i.toString())
-            ylabels.push(null)
-            // prediction.push(Math.floor(Math.random() * (29 - 27 + 1)) + 27)
-        }
+    // Check last datestamp
+    if (!$("body").hasClass("calendar-active")) {
+        // var xLastHour = xlabels[xlabels.length - 1]
+        var lastDatestamp = xlabels[xlabels.length - 1]
+        var convertLastDatestamp = new Date(lastDatestamp)
+        var xLastHour = convertLastDatestamp.getHours()
+        // console.log(xLastHour, xlabels.length, xlabels.length/xLastHour)
+    }
+
+
+    // for (var i = parseInt(xLastHour) + 1; i < 24; i++) {
+    //     xlabels.push(i.toString())
+    //     ylabels.push(null)
+        // prediction.push(Math.floor(Math.random() * (29 - 27 + 1)) + 27)
+    // }
     // ===============================================
     // END AI Prediction
 
@@ -385,57 +394,15 @@ var plotData = async (element, ylabels, xlabels, label) => {
     $('.' + element + '-graph-spinner').remove()
 
     // add canvas
-    // console.log(`<canvas id="` + element + `-graph"></canvas> in`, '.' + element + '-card')
-    // console.log($('.' + element + '-card .card-body'))
-
     $('.' + element + '-card .card-body').append(`<canvas id="` + element + `-graph"></canvas>`)
 
-
-    // console.log($(element + "-graph"))
-
-    // console.log("xlabels.length:", xlabels.length)
-
     if (ylabels.length) {
-
-        // Remove Loading Item
-        // console.log('.' + element + '-graph-spinner', 'removed')
-        // $('.' + element + '-graph-spinner').remove()
 
         /* CHART JS */
         var chart_canvas = document.getElementById(element + '-graph').getContext("2d");
 
-        // if (chart) {
-        //     chart.destroy();
-        // }
-
-        // var gradientStroke = chart_canvas.createLinearGradient(500, 0, 100, 0);
-        // gradientStroke.addColorStop(0, '#80b6f4');
-        // gradientStroke.addColorStop(1, '#f49080');
-
-        // var gradientFill = chart_canvas.createLinearGradient(500, 0, 100, 0);
-        // gradientFill.addColorStop(0, "rgba(128, 182, 244, 0.6)");
-        // gradientFill.addColorStop(1, "rgba(244, 144, 128, 0.6)");
-
-        var chart = new Chart(chart_canvas, {
-            type: 'line',
-            data: {
-                labels: xlabels,
-                datasets: [{
-                    label: label[0].toUpperCase() + label.slice(1, label.length),
-                    data: ylabels,
-                    backgroundColor: 'rgba(51, 153, 255, 0.2)',
-                    borderColor: 'rgba(51, 153, 255, 1)',
-                    pointBorderColor: '#343a40',
-                    pointBackgroundColor: "rgba(51, 153, 255, 1)",
-                    pointHoverBackgroundColor: "white",
-                    pointRadius: 7,
-                    pointHoverRadius: 7,
-                    pointBorderWidth: 4,
-                    borderWidth: 1,
-                    lineTension: 0.2
-                }]
-            },
-            options: {
+        if (graphConfig != false) {
+            var options = {
                 animation: false,
                 responsive: true,
                 maintainAspectRatio: false,
@@ -448,6 +415,11 @@ var plotData = async (element, ylabels, xlabels, label) => {
                 },
                 scales: {
                     xAxes: [{
+                        type: "time",
+                        time: {
+                            unit: graphConfig
+                        },
+                        // distribution: 'series',
                         gridLines: {
                             color: "rgba(0, 0, 0, 0)",
                         },
@@ -467,6 +439,81 @@ var plotData = async (element, ylabels, xlabels, label) => {
                     }]
                 }
             }
+        } else {
+            var options = {
+                animation: false,
+                responsive: true,
+                maintainAspectRatio: false,
+                drawBorder: false,
+                // onResize: console.log("chart resize"),
+                legend: {
+                    labels: {
+                        fontColor: 'white'
+                    }
+                },
+                scales: {
+                    xAxes: [{
+                        type: "time",
+                        time: {
+                            unit: 'minute'
+                        },
+                        // distribution: 'series',
+                        gridLines: {
+                            color: "rgba(0, 0, 0, 0)",
+                        },
+                        ticks: {
+                            fontColor: 'white'
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: false,
+                            fontColor: 'white'
+                        },
+                        gridLines: {
+                            color: "#415f7d",
+                            zeroLineColor: '#415f7d'
+                        }
+                    }]
+                }
+            }
+        }
+
+        var chart = new Chart(chart_canvas, {
+            type: 'line',
+            data: {
+                labels: xlabels,
+                datasets: [{
+                    label: label[0].toUpperCase() + label.slice(1, label.length),
+                    data: ylabels,
+
+                    // old design
+                    // backgroundColor: 'rgba(51, 153, 255, 0.2)',
+                    // borderColor: 'rgba(51, 153, 255, 1)',
+                    // pointBorderColor: '#343a40',
+                    // pointBackgroundColor: "rgba(51, 153, 255, 1)",
+                    // pointHoverBackgroundColor: "white",
+                    // pointRadius: 7,
+                    // pointHoverRadius: 7,
+                    // pointBorderWidth: 4,
+                    // borderWidth: 1,
+                    // lineTension: 0.2
+
+                    // new design
+                    backgroundColor: 'rgba(51, 153, 255, 0.2)',
+                    borderColor: 'rgba(51, 153, 255, 1)',
+                    pointBorderColor: '#343a40',
+                    pointBackgroundColor: "rgba(51, 153, 255, 1)",
+                    pointHoverBackgroundColor: "#ffc107",
+                    pointRadius: 1.5,
+                    pointHoverRadius: 7,
+                    pointBorderWidth: 1,
+                    borderWidth: 1,
+                    lineTension: 0.2
+
+                }]
+            },
+            options
         });
 
         if (!experiment[0].error)
@@ -846,8 +893,8 @@ function timeIntervalChanger(sensorId, chartList) {
         // endDate: end,
         timePicker: true,
         "timePicker24Hour": true,
-        startDate: moment().startOf('hour'),
-        endDate: moment().startOf('hour').add(32, 'hour'),
+        startDate: moment().startOf('hour').subtract(currentHourPm, 'hour'),
+        endDate: moment().startOf('hour').add(24 - currentHourPm, 'hour'),
         // ranges: {
         //     'Today': [moment(), moment()],
         //     'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
@@ -1132,7 +1179,7 @@ let getData = async () => {
 // get all values of a sensor
 let getSensorData = async (sensor) => {
     // console.log("getSensorData")
-    let response = await fetch("https://anysensor.dasstec.ro/api/get-data/" + countyName + "/" + sensor)
+    let response = await fetch("https://anysensor.dasstec.ro/api/v2/get-data/" + countyName + "/" + sensor)
     // console.log("getSensorData",new Date()-time)
     return response.json()
 }
@@ -1158,9 +1205,10 @@ let getSensorDataCustomInterval = async (countyName, sensor, start, end, chartLi
 
     if (!$("body").hasClass("calendar-active")) {
         $("body").addClass("calendar-active")
-        $("#predictor-switch .tooltiptext").html("Disabled function when calendar view is active - refresh the page")
+        // $("#predictor-switch").setAttribute('clicked','disabled')
+        disableSwitchSecondGraph(sensor)
+        $("#predictor-switch .tooltiptext").html("The functionality is disabled when calendar view is active - refresh the page")
     }
-        
 
     const date1 = new Date(start);
     const date2 = new Date(end);
@@ -1170,20 +1218,23 @@ let getSensorDataCustomInterval = async (countyName, sensor, start, end, chartLi
     console.log(diffHours + " hours");
 
     if (diffDays <= 1) {
-
         if (diffHours <= 1) {
             var step = '1mins'
         } else if (diffHours <= 3) {
             var step = '10mins'
         } else if (diffHours <= 6) {
-            var step = '30mins'
+            var step = '10mins'
+            // var step = '10mins'
         } else {
-            var step = 'hourly'
+            // var step = 'hourly'
+            var step = '10mins'
         }
     } else if (diffDays <= 6)
-        var step = 'hourlyS'
+        // var step = 'hourlyS'
+        var step = '30mins'
     else if (diffDays <= 45)
-        var step = 'daily'
+        // var step = 'daily'
+        var step = 'hourly'
     else
         var step = 'dailyS'
 
@@ -1226,73 +1277,87 @@ let getSensorDataCustomInterval = async (countyName, sensor, start, end, chartLi
             const xlabels = []
 
             for (var i = 0; i < data[0].sensorReadings; i++) {
+
+                // ylabel preprocess
                 ylabels.push(parseFloat(data[0].sensorAverage[i].sensorValue).toFixed(2))
 
+                // xlabel preprocess
                 var influxTime = data[0].sensorAverage[i].sensorTime
-                var influxH = influxTime.split("T")[1].split(":")[0]
-                var influxMins = influxTime.split("T")[1].split(":")[1]
+                // console.log(influxTime)
+                var newDate = new Date(influxTime)
+                // console.log(newDate)
+                var adjustedDate = newDate.setHours(newDate.getHours() - 2)
+                // console.log(adjustedDate)
+                xlabels.push(adjustedDate)
 
-                if (step == '1mins' || step == '10mins' || step == '30mins') {
-                    influxH = parseInt(influxH) + 1
-                    xlabels.push(influxH < 10 ? "0" + String(influxH) + ":" + String(influxMins) : (influxH == 24 ? "00" + ":" + String(influxMins) : String(influxH) + ":" + String(influxMins)))
+                // var influxH = influxTime.split("T")[1].split(":")[0]
+                // var influxMins = influxTime.split("T")[1].split(":")[1]
+                console.log("STEP: ", step, diffDays, diffHours)
+                if (step == '1mins') {
+                    graphConfig = 'second'
+                    //     influxH = parseInt(influxH) + 1
+                    //     xlabels.push(influxH < 10 ? "0" + String(influxH) + ":" + String(influxMins) : (influxH == 24 ? "00" + ":" + String(influxMins) : String(influxH) + ":" + String(influxMins)))
+                } else if (step == '10mins' || step == '30mins') {
+                    graphConfig = 'minute'
                 } else if (step == 'hourly') {
+                    graphConfig = 'hour'
+                    //     // var influxDay = influxTime.split("T")[0].split("-")[2]
 
-                    // var influxDay = influxTime.split("T")[0].split("-")[2]
+                    //     // var influxMonth = influxTime.split("T")[0].split("-")[1]
+                    //     // influxMonth = parseInt(influxMonth)
+                    //     // influxMonth = monthChanger(influxMonth).slice(0, 3)
 
-                    // var influxMonth = influxTime.split("T")[0].split("-")[1]
-                    // influxMonth = parseInt(influxMonth)
-                    // influxMonth = monthChanger(influxMonth).slice(0, 3)
+                    //     influxH = parseInt(influxH) + 1
+                    //     // influxH = influxDay + " " + influxMonth + " " + influxH + ':00'
 
-                    influxH = parseInt(influxH) + 1
-                    // influxH = influxDay + " " + influxMonth + " " + influxH + ':00'
+                    //     // example: influxH = '29 Jun 17:00'
 
-                    // example: influxH = '29 Jun 17:00'
-
-                    xlabels.push(influxH < 10 ? "0" + String(influxH) : (influxH == 24 ? "00" : String(influxH)))
+                    //     xlabels.push(influxH < 10 ? "0" + String(influxH) : (influxH == 24 ? "00" : String(influxH)))
 
                 } else if (step == 'hourlyS') {
+                    graphConfig = 'hour'
+                    //     var influxDay = influxTime.split("T")[0].split("-")[2]
 
-                    var influxDay = influxTime.split("T")[0].split("-")[2]
+                    //     var influxMonth = influxTime.split("T")[0].split("-")[1]
+                    //     influxMonth = parseInt(influxMonth)
+                    //     influxMonth = monthChanger(influxMonth).slice(0, 3)
 
-                    var influxMonth = influxTime.split("T")[0].split("-")[1]
-                    influxMonth = parseInt(influxMonth)
-                    influxMonth = monthChanger(influxMonth).slice(0, 3)
+                    //     influxH = parseInt(influxH) + 1
+                    //     influxH = influxDay + " " + influxMonth + " " + influxH + ':00'
 
-                    influxH = parseInt(influxH) + 1
-                    influxH = influxDay + " " + influxMonth + " " + influxH + ':00'
+                    //     // example: influxH = '29 Jun 17:00'
 
-                    // example: influxH = '29 Jun 17:00'
-
-                    xlabels.push(influxH)
+                    //     xlabels.push(influxH)
 
                 } else if (step == 'daily') {
+                    graphConfig = 'day'
+                    //     var influxDay = influxTime.split("T")[0].split("-")[2]
 
-                    var influxDay = influxTime.split("T")[0].split("-")[2]
+                    //     var influxMonth = influxTime.split("T")[0].split("-")[1]
+                    //     influxMonth = parseInt(influxMonth)
+                    //     influxMonth = monthChanger(influxMonth).slice(0, 3)
 
-                    var influxMonth = influxTime.split("T")[0].split("-")[1]
-                    influxMonth = parseInt(influxMonth)
-                    influxMonth = monthChanger(influxMonth).slice(0, 3)
-
-                    // influxH = parseInt(influxH) + 1
-                    // influxH = influxDay + " " + influxMonth + " " +influxH +':00'
-                    // example: influxH = '29 Jun 17:00'
+                    //     // influxH = parseInt(influxH) + 1
+                    //     // influxH = influxDay + " " + influxMonth + " " +influxH +':00'
+                    //     // example: influxH = '29 Jun 17:00'
 
 
-                    xlabels.push(influxDay + " " + influxMonth)
+                    //     xlabels.push(influxDay + " " + influxMonth)
 
                 } else {
-                    var influxDay = influxTime.split("T")[0].split("-")[2]
+                    graphConfig = 'day'
+                    //     var influxDay = influxTime.split("T")[0].split("-")[2]
 
-                    var influxMonth = influxTime.split("T")[0].split("-")[1]
-                    influxMonth = parseInt(influxMonth)
-                    influxMonth = monthChanger(influxMonth).slice(0, 3)
+                    //     var influxMonth = influxTime.split("T")[0].split("-")[1]
+                    //     influxMonth = parseInt(influxMonth)
+                    //     influxMonth = monthChanger(influxMonth).slice(0, 3)
 
-                    // influxH = parseInt(influxH) + 1
-                    // influxH = influxDay + " " + influxMonth + " " +influxH +':00'
-                    // example: influxH = '29 Jun 17:00'
+                    //     // influxH = parseInt(influxH) + 1
+                    //     // influxH = influxDay + " " + influxMonth + " " +influxH +':00'
+                    //     // example: influxH = '29 Jun 17:00'
 
 
-                    xlabels.push(influxDay + " " + influxMonth)
+                    //     xlabels.push(influxDay + " " + influxMonth)
                 }
 
                 // console.log(step, influxH)
@@ -1322,7 +1387,7 @@ let getSensorDataCustomInterval = async (countyName, sensor, start, end, chartLi
             /* CHART JS RE-APPEND */
 
             // remove loading spinner and append graph
-            plotData(sensorId, ylabels_reversed, xlabels_reversed, label)
+            plotData(sensorId, ylabels_reversed, xlabels_reversed, label, graphConfig)
 
             $("#" + graphId).css("min-height", "250px")
 
@@ -1431,7 +1496,7 @@ let test = (async () => {
                 var sensorIdToLookFor = api_data.sensorIdList[i]
                 // let sensorType = await getSensorType(api_data.sensorIdList[i])
                 let sensorData = await getSensorData(sensorIdToLookFor);
-                // console.log(sensorIdToLookFor, sensorData[0])
+                console.log(sensorIdToLookFor, sensorData[0])
 
                 // append default sensor view
                 $(".card-container").append(defaultSensorView(sensorData[0].sensorQueried, sensorData[0].sensorType, sensorData[0].sensorZone));
@@ -1465,20 +1530,29 @@ let test = (async () => {
                 // console.log("readings",sensorData[0].sensorReadings)
                 for (var index = 0; index < sensorData[0].sensorReadings; index++) {
 
-                    ylabels.push(parseFloat(sensorData[0].sensorAverage[index].sensorValue).toFixed(2))
+                    // Values preprocessed
+                    ylabels.push(parseFloat(sensorData[0].sensorAverage[index].sensorValue).toFixed(1))
+
+                    // Timestamp preprocessed
                     var influxTime = sensorData[0].sensorAverage[index].sensorTime
-                    var influxH = influxTime.split("T")[1].split(":")[0]
+                    // var influxH = influxTime.split("T")[1].split(":")[0]
 
-                    // influx time is 1 hour ahead of romanian time
-                    // increment influx with 2 because:
-                    // if time of influx is 8:20, it means that romanian hour is 9:20
-                    // and all the values between 9 to 10 (ro timezone) and (8 to 9 - influx timezone) is displayed as mean at 10h (ro rimezone)
-                    // that's why is incremented with 2
+                    // // influx time is 1 hour behind of romanian time
+                    // // increment influx with 2 because:
+                    // // if time of influx is 8:20, it means that romanian hour is 9:20
 
-                    var hour = parseInt(influxH) + 1
-                    xlabels.push(hour < 10 ? "0" + String(hour) : (hour == 24 ? "00" : String(hour)))
-                    // xlabels.push(parseInt(influxH)+1)
+                    // var hour = parseInt(influxH) + 1
+                    // xlabels.push(hour < 10 ? "0" + String(hour) : (hour == 24 ? "00" : String(hour)))
+                    // // xlabels.push(parseInt(influxH)+1)
+                    // console.log(influxTime)
+                    var newDate = new Date(influxTime)
+                    // console.log(newDate)
+                    var adjustedDate = newDate.setHours(newDate.getHours() - 2)
+                    // console.log(adjustedDate)
+                    xlabels.push(adjustedDate)
                 }
+
+
 
                 // xlabels.push(hour+1 < 10 ? "0" + String(hour+1) : String(hour+1))
 
@@ -1756,7 +1830,7 @@ function switchSecondGraph(chart, sensorId, x) {
 
 function disableSwitchSecondGraph(sensorId) {
     document.querySelector(".graph-" + sensorId + " #predictor-switch").setAttribute('clicked', 'disabled')
-    $(".graph-" + sensorId + " #predictor-switch .tooltiptext").html("No data test test test test test")
+    $(".graph-" + sensorId + " #predictor-switch .tooltiptext").html("There is not enough data to enable this functionality")
 }
 
 let run = async () => {

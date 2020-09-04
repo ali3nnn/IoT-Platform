@@ -3,6 +3,9 @@
 
 <head>
   {{> head}}
+  <script>
+    document.title = "MAP | Anysensor"
+  </script>
 </head>
 
 <body class="map-page">
@@ -33,9 +36,6 @@
     {{!-- <div class="container wrapper"> --}}
     <div id="map" class="map"></div>
 
-    <div class="temeprature-marker" sensorid="DAS001TDEMO"></div>
-    <div class="temeprature-marker" sensorid="sensor22"></div>
-
     <script>
       function insertAfter(newNode, referenceNode) {
         console.log(newNode, referenceNode)
@@ -56,6 +56,8 @@
 
     </script>
     {{!-- </div> --}}
+
+    <notification></notification>
 
   </div>
 

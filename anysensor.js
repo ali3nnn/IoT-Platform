@@ -1117,7 +1117,7 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', (req, res) => {
         var yyyy = today.getFullYear();
         today = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
 
-        console.log(">> TODAY start:",today)
+        console.log(">> TODAY start:", today)
 
         // Mean of last week - experiment
         // ==========================================
@@ -1128,7 +1128,7 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', (req, res) => {
         var yyyy = lastweekTodayStart.getFullYear();
         lastweekTodayStart = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
 
-        console.log(">> lastweekTodayStart start:",lastweekTodayStart)
+        console.log(">> lastweekTodayStart start:", lastweekTodayStart)
 
         var lastweekTodayStop = new Date();
         lastweekTodayStop.setDate(lastweekTodayStop.getDate() - 7)
@@ -1137,7 +1137,7 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', (req, res) => {
         var yyyy = lastweekTodayStop.getFullYear();
         lastweekTodayStop = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
 
-        console.log(">> lastweekTodayStop start:",lastweekTodayStop)
+        console.log(">> lastweekTodayStop start:", lastweekTodayStop)
         // ==========================================
         // END Mean of last week - experiment
 
@@ -1146,7 +1146,7 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', (req, res) => {
         if (sess.sensorAccess != -1) {
 
             // return evrything that belongs to username and match county and is in a 1day time interval
-            var whereQueryExperiment = `where county='` + req.params.county + `' and sensorId='` + req.params.sensorQuery + `' and time>='` + lastweekTodayStart + `' and time<'`+lastweekTodayStop+`'`
+            var whereQueryExperiment = `where county='` + req.params.county + `' and sensorId='` + req.params.sensorQuery + `' and time>='` + lastweekTodayStart + `' and time<'` + lastweekTodayStop + `'`
             // var whereQuery = `where county='` + req.params.county + `' and sensorId='` + req.params.sensorQuery + `' and time>='` + today + `' and time<now()`
 
             // if (isCounter) {
@@ -1404,6 +1404,178 @@ app.get('/api/get-data/:county/:sensorQuery', (req, res) => {
                 res.status(200).send(result)
             }).catch((e) => {
                 res.status(404).send("Scraping sensor data from influx failed")
+            })
+
+    } else {
+        data.push({
+            error: "you are not logged in"
+        })
+        res.status(403).send(data)
+    }
+
+})
+
+// Get today' values of a sensor API v2
+app.get('/api/v2/get-data/:county/:sensorQuery', (req, res) => {
+    sess = req.session
+    let data = []
+    var time = new Date()
+
+    // console.log(sess.username, req.params)
+
+    if (sess.username) {
+
+        // Server side log
+        req.params.county = req.params.county.toLowerCase()
+        // req.params.sensorQuery = req.params.sensorQuery.toLowerCase()
+
+        // the way I check if sensor is counter should be estabilshed after
+        // we decide about sensorId template
+        var isCounter = (req.params.sensorQuery.split('-')[1] == 'c' ? true : false)
+
+        console.log(req.originalUrl)
+        // console.log('/api/get-data/' + req.params.county + '/' + req.params.sensorQuery)
+        // console.log("User:", sess.username);
+        // console.log("Access to sensorId:", sess.sensorAccess);
+        // console.log(req.params)
+
+        // Get the date for influx query - this day 0 to currentHour
+        var today = new Date();
+        // cannot query for today date starting at 00:00 because influx tz is -1h than romanian tz
+        // set today 00:00 as yesterday 23:00
+        today.setDate(today.getDate() - 1)
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+        var yyyy = today.getFullYear();
+        today = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
+        dd = (parseInt(dd) + 1).toLocaleString('en-US', {
+            minimumIntegerDigits: 2,
+            useGrouping: false
+        })
+        // todayEnd = "'" + yyyy + '-' + mm + '-' + dd + 'T23:00:00Z' + "'";
+        todayEnd = "now()"
+
+        // console.log(">> TODAY start:",today)
+
+        // Mean of last week - experiment
+        // ==========================================
+        // var lastweekTodayStart = new Date();
+        // lastweekTodayStart.setDate(lastweekTodayStart.getDate() - 8)
+        // var dd = String(lastweekTodayStart.getDate()).padStart(2, '0');
+        // var mm = String(lastweekTodayStart.getMonth() + 1).padStart(2, '0'); //January is 0!
+        // var yyyy = lastweekTodayStart.getFullYear();
+        // lastweekTodayStart = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
+
+        // console.log(">> lastweekTodayStart start:",lastweekTodayStart)
+
+        // var lastweekTodayStop = new Date();
+        // lastweekTodayStop.setDate(lastweekTodayStop.getDate() - 7)
+        // var dd = String(lastweekTodayStop.getDate()).padStart(2, '0');
+        // var mm = String(lastweekTodayStop.getMonth() + 1).padStart(2, '0'); //January is 0!
+        // var yyyy = lastweekTodayStop.getFullYear();
+        // lastweekTodayStop = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
+
+        // console.log(">> lastweekTodayStop start:",lastweekTodayStop)
+        // ==========================================
+        // END Mean of last week - experiment
+
+        // console.log("api req date:", today)
+
+        if (sess.sensorAccess != -1) {
+
+            // return evrything that belongs to username and match county and is in a 1day time interval
+            // var whereQueryExperiment = `where county='` + req.params.county + `' and sensorId='` + req.params.sensorQuery + `' and time>='` + lastweekTodayStart + `' and time<'`+lastweekTodayStop+`'`
+            var whereQuery = `where county='` + req.params.county + `' and sensorId='` + req.params.sensorQuery + `' and time>='` + today + `' and time<=` + todayEnd + ``
+
+            // if (isCounter) {
+            //     // check what sensor type for the user
+            //     var influxQuery = `select sum(value) as value from sensors ` + whereQuery + ` GROUP BY time(1h) ORDER BY time DESC`
+            // } else {
+            //     // check what sensor type for the user
+            //     var influxQuery = `select mean(value) as value, last(type) as type, last(value) as live from sensors ` + whereQuery + ` GROUP BY time(1h) ORDER BY time DESC`
+            // }
+
+            if (isCounter) {
+                // check what sensor type for the user
+                var influxQuery = `select sum(value) as value from sensors ` + whereQuery + ` GROUP BY time(5m) ORDER BY time DESC`
+            } else {
+                // check what sensor type for the user
+                var influxQuery = `select mean(value) as value, last(type) as type from sensors ` + whereQuery + ` GROUP BY time(5m) ORDER BY time DESC`
+            }
+
+            // select mean(value) as value from sensors where username='alexbarbu2' and county='constanta' and sensorId='sensor22' and time < now() GROUP BY time(1h) ORDER BY time DESC
+
+        } else {
+            // var whereQuery = `where county='`+req.params.county+`' and time>='`+today+`' and time<now()`
+            // var influxQuery = `select mean(value) as value, last(type) as type from sensors ` + whereQuery + ` GROUP BY time(1h) ORDER BY time DESC`
+            // // check what sensor type for the user
+            // var influxQuery = `select * from sensors ` + whereQuery + ` ORDER BY time DESC`
+            // // console.log(influxQuery)
+        }
+
+        // get sensor zone
+        // var query = "select type, zone from (select type, zone, value from sensors where sensorId='" + req.params.sensorQuery + "') limit 1"
+        var query = `SHOW TAG VALUES WITH KEY IN ("type", "zone") WHERE sensorId='` + req.params.sensorQuery + `'`
+        let sensorZoneAndType = influxReader(query).then((res) => {
+            // console.log(res)
+            return res
+        })
+
+        // console.log(query, res[0])
+        // console.log(influxQuery)
+
+        let resultInfluxDb = influxReader(influxQuery).then(async (result) => {
+
+                let sensorZoneAndType_ = await sensorZoneAndType
+                // console.log(sensorZoneAndType_)
+                // console.log(sensorZoneAndType_[0].value)
+                // console.log(sensorZoneAndType_[1].value)
+
+                if (result.length) {
+                    data.push({
+                        error: false,
+                        message: "Data found",
+                        county: req.params.county,
+                        // sensorType: sensorZoneAndType_.type,
+                        // sensorZone: sensorZoneAndType_.zone,
+                        sensorType: sensorZoneAndType_[0].value,
+                        sensorZone: sensorZoneAndType_[1].value,
+                        sensorQueried: req.params.sensorQuery,
+                        sensorReadings: result.length,
+                        user: sess.username,
+                        responseTime: new Date() - time + "ms",
+                        influxQuery,
+                        sensorAverage: []
+                    })
+                    for (var i = 0; i < result.length; i++) {
+                        data[0].sensorAverage.push({
+                            sensorValue: result[i].value,
+                            sensorTime: result[i].time
+                        })
+                    }
+                } else {
+                    data.push({
+                        error: true,
+                        message: "No data found",
+                        county: req.params.county,
+                        sensorQueried: req.params.sensorQuery,
+                        sensorType: sensorZoneAndType_.type,
+                        sensorZone: sensorZoneAndType_.zone,
+                        sensorReadings: result.length,
+                        responseTime: new Date() - time,
+                        influxQuery,
+                        user: sess.username
+                    })
+                }
+
+                return data
+
+            })
+            .then(async (result) => {
+                res.status(200).send(result)
+            }).catch((e) => {
+                res.status(404).send("Scraping sensor data from influx failed")
+                // res.status(404).send(influxQuery)
             })
 
     } else {
@@ -2869,6 +3041,32 @@ app.get("/api/socketio-access", (req, res) => {
 
 //=========================================
 // End Scale, Conveyor, Scanner API
+
+// CSV
+app.get("/api/csv", (req, res) => {
+    var query = "select mean(value) as value from sensors where sensorId='sensor22' group by time(1d) limit 100"
+    var query2 = "select time,value from sensors where sensorId='DAS001TDEMO' order by time desc limit 200"
+    var query3 = "select mean(value) as value from sensors where sensorId='DAS001TDEMO' group by time(1h)"
+    let result = influxReader(query3).then(resultQuery => {
+        // res.send(resultQuery)
+        var csvData = [
+            ["ds", "y"]
+        ]
+        resultQuery.forEach(result => {
+            var hour = result.time._nanoISO.split("T")[0] + " " + result.time._nanoISO.split("T")[1].split("Z")[0].split(".")[0]
+            if (result.value)
+                csvData.push([hour, result.value])
+        })
+        let csvContent = "";
+        csvData.forEach(function (rowArray) {
+            let row = rowArray.join(",");
+            csvContent += row + "\r\n";
+        });
+        console.log("csvContent:", csvContent.length)
+        res.send(csvContent)
+    })
+
+})
 
 
 const PORT = process.env.PORT || 3000;
