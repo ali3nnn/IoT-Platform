@@ -123,12 +123,57 @@ var editUserBox = document.querySelector('.edit-user');
 
 // $("#role_dropdown").prop("selectedIndex", 1);
 
+function eventPath(evt) {
+    var path = (evt.composedPath && evt.composedPath()) || evt.path,
+        target = evt.target;
+  
+    if (path != null) {
+        // Safari doesn't include Window, but it should.
+        return (path.indexOf(window) < 0) ? path.concat(window) : path;
+    }
+  
+    if (target === window) {
+        return [window];
+    }
+  
+    function getParents(node, memo) {
+        memo = memo || [];
+        var parentNode = node.parentNode;
+  
+        if (!parentNode) {
+            return memo;
+        }
+        else {
+            return getParents(parentNode, memo.concat(parentNode));
+        }
+    }
+  
+    return [target].concat(getParents(target), window);
+  }
+  
+
 $(document).ready(function () {
     // pop up functionality
     // Listen for all clicks on the document
     document.addEventListener('click', function (event) {
 
-        var el = event.path[0].parentNode;
+        var path = event.path || (event.composedPath && event.composedPath());
+
+        var el
+
+        if (path) {
+            // You got some path information
+
+            //Old Way
+            // var el = event.path[0].parentNode;
+
+            // New Way
+            var el = eventPath(event)[0].parentNode
+        } else {
+            // This browser doesn't supply path information
+        }
+
+        
 
         if (el.classList.contains("popup")) {
             $(".show").removeClass("show")

@@ -173,7 +173,6 @@ let lastValueOf = async (sensorId) => {
   return response.json()
 }
 
-
 var sensorDictionary
 let lastValue = []
 // var time = new Date()
@@ -184,7 +183,7 @@ if (typeof sensorId !== 'undefined') {
       json = await getSensorLocation();
     })().then(() => {
       // console.log("then1")
-      // console.log(json.result)
+      // console.log(json)
       json.result.forEach(sensor => {
         // console.log(sensorId, sensor)
         if (sensorId.includes(sensor.sensorId)) {

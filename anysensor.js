@@ -1083,13 +1083,11 @@ app.get('/api/get-data/sensorId/:county', (req, res) => {
 
 })
 
-// Get today' values of a sensor
+// Get today' values of a sensor EXPERIMENT
 app.get('/api/experiment/get-data/:county/:sensorQuery', (req, res) => {
     sess = req.session
     let data = []
     var time = new Date()
-
-    // console.log(sess.username, req.params)
 
     if (sess.username) {
 
@@ -1159,11 +1157,11 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', (req, res) => {
 
             if (isCounter) {
                 // check what sensor type for the user
-                var influxQuery = `select sum(value) as value from sensors ` + whereQuery + ` GROUP BY time(1h) ORDER BY time DESC`
+                var influxQuery = `select sum(value) as value from sensors ` + whereQuery + ` GROUP BY time(5m) ORDER BY time DESC`
             } else {
                 // check what sensor type for the user
                 // var influxQuery = `select mean(value) as value, last(type) as type from sensors ` + whereQuery + ` GROUP BY time(1h) ORDER BY time DESC`
-                var influxQueryExperiment = `select mean(value) as value, last(type) as type from sensors ` + whereQueryExperiment + ` GROUP BY time(1h) ORDER BY time DESC`
+                var influxQueryExperiment = `select mean(value) as value, last(type) as type from sensors ` + whereQueryExperiment + ` GROUP BY time(5m) ORDER BY time DESC`
             }
 
             // select mean(value) as value from sensors where username='alexbarbu2' and county='constanta' and sensorId='sensor22' and time < now() GROUP BY time(1h) ORDER BY time DESC

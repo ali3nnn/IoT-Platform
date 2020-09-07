@@ -68,6 +68,11 @@ Date.prototype.addHours = function (h) {
     return this;
 }
 
+function playSound(url) {
+    const audio = new Audio(url);
+    audio.play();
+  }
+
 // used to create the gauges
 function currentValueSvgGauge(element, currentValue = NaN, updatedAt = false, min = -20, max = 70) {
 
@@ -249,7 +254,7 @@ function updateValueSvgGauge(element, gauge, value, updatedAt = false) {
         gauge.setValue(value);
 
     // Append unit measure
-    if (Number.isInteger(value)) {
+    if (value == parseInt(value, 10)) {
         if (element.includes("source")) {
             $('#' + element + '-gauge g.text-container text').append(".0 V")
         } else {
@@ -330,16 +335,149 @@ function updateValueSvgGauge(element, gauge, value, updatedAt = false) {
     }
 }
 
+function removeElement(array, index) {
+    array.splice(index, 1)
+}
+
+function addExpandButton(sensor, ylabels, xlabels, label, graphConfig) {
+
+    $(".graph-" + sensor + " ul.pagination").prepend(`<li class="page-item">
+        <div id="expand-switch" clicked="0" ylabels="` + ylabels + `" xlabels="` + xlabels + `" class="tooltip_test graph-button" style="background: #fff;cursor: pointer;padding: 5px 10px;border: 1px solid #ccc;width: 100%;height: 32px;width: 36px;">
+            <i class="fas fa-search-plus"></i>
+            <span class="tooltiptext">Zoom in or out for today's data</span>
+        </div>
+    </li>`)
+
+    $("#expand-switch").click(function () {
+        // console.log($(".calendar-active").length)
+        if($(".calendar-active").length) {
+            addExpandButtonFlag = false
+            // console.log("zoom out", attrInt, attrInt % 2 == 0)
+            sliceFlag = false
+            var ylabels_attr = $(this).attr('ylabels').split(",")
+            var xlabels_attr = $(this).attr('xlabels').split(",")
+            var xlabels_attr_clone = []
+            xlabels_attr.forEach(item => {
+                var aux = new Date(parseInt(item))
+                // console.log(item, aux, aux.getTime())
+                xlabels_attr_clone.push(aux.getTime())
+            })
+            // console.log(ylabels_attr)
+            // console.log(xlabels_attr_clone)
+            plotData(sensor, ylabels_attr, xlabels_attr_clone, label, graphConfig)
+            
+            // Remove calendar-active class
+            $("body").removeClass("calendar-active")
+        } else {
+            var clickedAttr = $(this).attr('clicked')
+            var attrInt = parseInt(clickedAttr) + 1
+            $(this).attr('clicked', attrInt)
+            addExpandButtonFlag = false
+            if (attrInt % 2 == 1) {
+                // console.log("zoom in ", attrInt, attrInt % 2 == 0)
+                sliceFlag = true
+                plotData(sensor, ylabels, xlabels, label, graphConfig)
+            } else {
+                // console.log("zoom out", attrInt, attrInt % 2 == 0)
+                sliceFlag = false
+                var ylabels_attr = $(this).attr('ylabels').split(",")
+                var xlabels_attr = $(this).attr('xlabels').split(",")
+                var xlabels_attr_clone = []
+                xlabels_attr.forEach(item => {
+                    var aux = new Date(parseInt(item))
+                    // console.log(item, aux, aux.getTime())
+                    xlabels_attr_clone.push(aux.getTime())
+                })
+                // console.log(ylabels_attr)
+                // console.log(xlabels_attr_clone)
+                plotData(sensor, ylabels_attr, xlabels_attr_clone, label, graphConfig)
+            }
+        }
+        // console.log(xlabels)
+        // console.log(ylabels)
+
+    })
+}
+
+var sliceFlag = false
+var addExpandButtonFlag = true
+
 var plotData = async (element, ylabels, xlabels, label, graphConfig = false) => {
 
     // Check if there is data
-    console.log(element, ylabels, ylabels.length)
+    // console.log(element, ylabels, ylabels.length)
     // console.log("NEW chart for:", element, "ylabels.length", ylabels.length, ylabels)
+
+    // console.log("y", ylabels)
+    // console.log("x", xlabels)
+
+    // console.log(ylabels[0], ylabels[0] == "NaN")
+
+    var original_ylabels = ylabels.slice()
+    var original_xlabels = xlabels.slice()
+
+    // Slice NaN Data
+    // If there is no data from 00:00 to 07:00 for example - all data between will be deleted
+    // ===============================================
+    if (ylabels[0] == "NaN" && sliceFlag == true) {
+
+        removeElement(ylabels, 0)
+        removeElement(xlabels, 0)
+
+        var counterTemperature = 0;
+        var counterTimestamp = 0;
+        var nanFlag = false
+
+        while (nanFlag == false) {
+            // console.log("nanFlag", nanFlag, ylabels[0])
+            if (ylabels[0] == "NaN") {
+                // console.log("y,x:", ylabels[0], xlabels[0])
+                // console.log(ylabels.length)
+                removeElement(ylabels, 0)
+                removeElement(xlabels, 0)
+                // console.log(ylabels.length)
+            } else {
+                nanFlag = true
+            }
+        }
+
+        // console.log("RESULT")
+        // console.log("y", ylabels)
+        // console.log("x", xlabels)
+    } else if (ylabels[0] == "NaN" && sliceFlag == false) {
+
+        var counterNaN = 0
+        var indexList = 0
+
+        var nanFlag = false
+
+        while (nanFlag == false) {
+            if (ylabels[counterNaN] == "NaN") {
+                counterNaN++
+            } else {
+                nanFlag = true
+            }
+        }
+
+        var threshold = counterNaN / ylabels.length
+
+        if (threshold > 0.1 && addExpandButtonFlag) {
+            // add button to expand
+            addExpandButton(element, original_ylabels, original_xlabels, label, graphConfig)
+        }
+    }
+
+    // console.log(original_ylabels)
+    // console.log(original_xlabels)
+
+    // ===============================================
+    // END Slice NaN Data
+
 
     // AI Prediction
     // ===============================================
     // console.log("PLOT DATA:")
-    var prediction = []
+
     // for (i = 0; i < ylabels.length; i++) {
     //     prediction[i] = null;
     //     if (i == ylabels.length - 1) {
@@ -348,25 +486,26 @@ var plotData = async (element, ylabels, xlabels, label, graphConfig = false) => 
     // }
 
     // Check last datestamp
-    if (!$("body").hasClass("calendar-active")) {
-        // var xLastHour = xlabels[xlabels.length - 1]
-        var lastDatestamp = xlabels[xlabels.length - 1]
-        var convertLastDatestamp = new Date(lastDatestamp)
-        var xLastHour = convertLastDatestamp.getHours()
-        // console.log(xLastHour, xlabels.length, xlabels.length/xLastHour)
-    }
+    // if (!$("body").hasClass("calendar-active")) {
+    //     // var xLastHour = xlabels[xlabels.length - 1]
+    //     // var lastDatestamp = xlabels[xlabels.length - 1]
+    //     // var convertLastDatestamp = new Date(lastDatestamp)
+    //     // var xLastHour = convertLastDatestamp.getHours()
+    //     // console.log(xLastHour, xlabels.length, xlabels.length/xLastHour)
+    // }
 
 
     // for (var i = parseInt(xLastHour) + 1; i < 24; i++) {
     //     xlabels.push(i.toString())
     //     ylabels.push(null)
-        // prediction.push(Math.floor(Math.random() * (29 - 27 + 1)) + 27)
+    // prediction.push(Math.floor(Math.random() * (29 - 27 + 1)) + 27)
     // }
     // ===============================================
     // END AI Prediction
 
     // Get last week of this day
     // ===============================================
+    var prediction = []
     let experiment = await getSensorDataExperiment(element);
     if (!experiment[0].error)
         experiment[0].sensorAverage.forEach(item => {
@@ -392,6 +531,9 @@ var plotData = async (element, ylabels, xlabels, label, graphConfig = false) => 
 
     // Remove Loading Item
     $('.' + element + '-graph-spinner').remove()
+
+    // Remove Old Canvas if exist
+    $('#' + element + '-graph').remove()
 
     // add canvas
     $('.' + element + '-card .card-body').append(`<canvas id="` + element + `-graph"></canvas>`)
@@ -685,7 +827,7 @@ function defaultSensorView(sensorId, sensorType, sensorZone) {
                         </div>
                     </li>
                     <li class="page-item">
-                        <div id="predictor-switch" clicked="false" class="tooltip_test" style="background: #fff;cursor: pointer;padding: 5px 10px;border: 1px solid #ccc;width: 100%;height: 32px;width: 36px;">
+                        <div id="predictor-switch" clicked="false" class="tooltip_test graph-button" style="background: #fff;cursor: pointer;padding: 5px 10px;border: 1px solid #ccc;width: 100%;height: 32px;width: 36px;">
                             <i class="fas fa-history" aria-hidden="true"></i> 
                             <span class="tooltiptext">Show data for last ` + dayName.toLowerCase() + `</span>
                         </div>
@@ -764,7 +906,7 @@ function alertsAndLocationLoad() {
 
 function sensorSettingsToggle(sensorId) {
 
-    console.log("sensorSettingsToggle(" + sensorId + ")")
+    // console.log("sensorSettingsToggle(" + sensorId + ")")
 
     $(".live-card-" + sensorId + " .card-settings-button").removeClass("hidden-button")
 
@@ -1215,7 +1357,7 @@ let getSensorDataCustomInterval = async (countyName, sensor, start, end, chartLi
     const diffTime = Math.abs(date2 - date1);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     const diffHours = diffTime / 1000 / 60 / 60
-    console.log(diffHours + " hours");
+    // console.log(diffHours + " hours");
 
     if (diffDays <= 1) {
         if (diffHours <= 1) {
@@ -1239,7 +1381,7 @@ let getSensorDataCustomInterval = async (countyName, sensor, start, end, chartLi
         var step = 'dailyS'
 
     const query = "https://anysensor.dasstec.ro/api/get-interval/" + step + "?" + "county=" + countyName + "&sensorQuery=" + sensor + "&start=" + start + "&end=" + end
-    console.log(query)
+    // console.log(query)
 
     // remove graph and add loading
     $("#" + sensor + "-graph").parent().append(`<a href="#" class='spinner ` + sensor + `-graph-spinner'><span>Loading...</span></a> `)
@@ -1292,7 +1434,7 @@ let getSensorDataCustomInterval = async (countyName, sensor, start, end, chartLi
 
                 // var influxH = influxTime.split("T")[1].split(":")[0]
                 // var influxMins = influxTime.split("T")[1].split(":")[1]
-                console.log("STEP: ", step, diffDays, diffHours)
+                // console.log("STEP: ", step, diffDays, diffHours)
                 if (step == '1mins') {
                     graphConfig = 'second'
                     //     influxH = parseInt(influxH) + 1
@@ -1450,6 +1592,7 @@ let getSensorType = async (sensorId) => {
 
 var gaugeList = []
 var chartList = []
+var sensorList = []
 
 let test = (async () => {
     json = await getData();
@@ -1488,6 +1631,7 @@ let test = (async () => {
 
         const api_data = json[0]
         const sensorCounter = api_data.sensorIdListLength
+        sensorList = api_data.sensorIdList
 
         for (var i = 0; i < sensorCounter; i++) {
 
@@ -1496,7 +1640,7 @@ let test = (async () => {
                 var sensorIdToLookFor = api_data.sensorIdList[i]
                 // let sensorType = await getSensorType(api_data.sensorIdList[i])
                 let sensorData = await getSensorData(sensorIdToLookFor);
-                console.log(sensorIdToLookFor, sensorData[0])
+                // console.log(sensorIdToLookFor, sensorData[0])
 
                 // append default sensor view
                 $(".card-container").append(defaultSensorView(sensorData[0].sensorQueried, sensorData[0].sensorType, sensorData[0].sensorZone));
@@ -1848,3 +1992,19 @@ let notification = async () => {
 }
 
 // run();
+
+// Experiment get live sensor value from socket.io-mqqt bridge
+
+// Get list of sensors to watch
+
+//MQTT Broker --mqtt--> NodeJS --socket.io--> Client
+var socketChannel = 'socketChannel'
+socket.on(socketChannel, (data) => {
+    gaugeList.forEach(gauge => {
+        if (data.topic.includes(gauge[0])) {
+            // console.log(gauge[0], parseFloat(data.message).toFixed(1))
+            updateValueSvgGauge(gauge[0], gauge[1], parseFloat(data.message).toFixed(1))
+        }
+    })
+
+})
