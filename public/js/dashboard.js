@@ -71,7 +71,7 @@ Date.prototype.addHours = function (h) {
 function playSound(url) {
     const audio = new Audio(url);
     audio.play();
-  }
+}
 
 // used to create the gauges
 function currentValueSvgGauge(element, currentValue = NaN, updatedAt = false, min = -20, max = 70) {
@@ -350,7 +350,7 @@ function addExpandButton(sensor, ylabels, xlabels, label, graphConfig) {
 
     $("#expand-switch").click(function () {
         // console.log($(".calendar-active").length)
-        if($(".calendar-active").length) {
+        if ($(".calendar-active").length) {
             addExpandButtonFlag = false
             // console.log("zoom out", attrInt, attrInt % 2 == 0)
             sliceFlag = false
@@ -365,7 +365,7 @@ function addExpandButton(sensor, ylabels, xlabels, label, graphConfig) {
             // console.log(ylabels_attr)
             // console.log(xlabels_attr_clone)
             plotData(sensor, ylabels_attr, xlabels_attr_clone, label, graphConfig)
-            
+
             // Remove calendar-active class
             $("body").removeClass("calendar-active")
         } else {
@@ -505,15 +505,21 @@ var plotData = async (element, ylabels, xlabels, label, graphConfig = false) => 
 
     // Get last week of this day
     // ===============================================
-    var prediction = []
+    var prediction_y = []
+    var prediction_x = []
     let experiment = await getSensorDataExperiment(element);
+    console.log(experiment[0])
     if (!experiment[0].error)
         experiment[0].sensorAverage.forEach(item => {
-            prediction.push(item.sensorValue.toFixed(1))
+            if (item.sensorValue) {
+                prediction_y.push(item.sensorValue.toFixed(1))
+            } else {
+                prediction_y.push(null)
+            }
+            prediction_x.push(item.sensorTime)
         })
-    prediction = prediction.reverse()
-    // console.log(experiment[0].sensorAverage)
-    // console.log(prediction)
+    prediction_y = prediction_y.reverse()
+    prediction_x = prediction_x.reverse()
     // ===============================================
     // END Get last week of this day
 
@@ -659,7 +665,7 @@ var plotData = async (element, ylabels, xlabels, label, graphConfig = false) => 
         });
 
         if (!experiment[0].error)
-            switchSecondGraph(chart, element, prediction)
+            switchSecondGraph(chart, element, prediction_y, prediction_x)
         else
             disableSwitchSecondGraph(element)
 
@@ -1942,16 +1948,21 @@ async function delay(ms) {
     return await new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function switchSecondGraph(chart, sensorId, x) {
+function switchSecondGraph(chart, sensorId, y, x = null) {
+    var old_x_labels = []
     $("body:not(.calendar-active) .graph-" + sensorId + " #predictor-switch").click(function (e) {
         e.preventDefault;
         // console.log(chart)
         // console.log($(".graph-" + sensorId + " #predictor-switch").attr('clicked') == 'false')
         if ($(".graph-" + sensorId + " #predictor-switch").attr('clicked') == 'false') {
             document.querySelector(".graph-" + sensorId + " #predictor-switch").setAttribute('clicked', 'true')
+            if (x) {
+                old_x_labels = chart.config.data.labels
+                chart.config.data.labels = x
+            }
             chart.config.data.datasets.push({
                 label: 'Last ' + dayName,
-                data: x,
+                data: y,
                 // backgroundColor: 'rgba(225, 193, 7, 0.2)',
                 borderColor: 'rgba(225, 193, 7, 1)',
                 pointBorderColor: '#343a40',
@@ -1967,6 +1978,7 @@ function switchSecondGraph(chart, sensorId, x) {
         } else if ($(".graph-" + sensorId + " #predictor-switch").attr('clicked') == 'true') {
             document.querySelector(".graph-" + sensorId + " #predictor-switch").setAttribute('clicked', 'false')
             chart.config.data.datasets.pop()
+            chart.config.data.labels = old_x_labels
             chart.update()
         }
     })
