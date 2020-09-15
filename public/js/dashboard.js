@@ -1,5 +1,19 @@
 var time = new Date()
 var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+var month = new Array();
+month[0] = "January";
+month[1] = "February";
+month[2] = "March";
+month[3] = "April";
+month[4] = "May";
+month[5] = "June";
+month[6] = "July";
+month[7] = "August";
+month[8] = "September";
+month[9] = "October";
+month[10] = "November";
+month[11] = "December";
+var monthName = month[time.getMonth()];
 var dayName = days[time.getDay()];
 
 // Global Variables
@@ -339,21 +353,45 @@ function removeElement(array, index) {
     array.splice(index, 1)
 }
 
-function addExpandButton(sensor, ylabels, xlabels, label, graphConfig) {
+function addHistoryButton(sensor, x, y) {
 
-    $(".graph-" + sensor + " ul.pagination").prepend(`<li class="page-item">
-        <div id="expand-switch" clicked="0" ylabels="` + ylabels + `" xlabels="` + xlabels + `" class="tooltip_test graph-button" style="background: #fff;cursor: pointer;padding: 5px 10px;border: 1px solid #ccc;width: 100%;height: 32px;width: 36px;">
-            <i class="fas fa-search-plus"></i>
-            <span class="tooltiptext">Zoom in or out for today's data</span>
+    $(".graph-" + sensor + " ul.pagination").append(`<li class="page-item">
+        <div id="predictor-switch" xlabels="` + x + `" ylabels="` + y + `" clicked="false" class="tooltip_test graph-button" style="background: #fff;cursor: pointer;padding: 5px 10px;border: 1px solid #ccc;width: 100%;height: 32px;width: 36px;">
+            <i class="fas fa-history" aria-hidden="true"></i> 
+            <span class="tooltiptext">Show data for last ` + dayName.toLowerCase() + `</span>
         </div>
     </li>`)
 
+}
+
+function addExpandButton(nan = null, sensor, ylabels, xlabels, label = null, graphConfig = null) {
+
+    console.log(sensor)
+
+    // $(".graph-" + sensor + " ul.pagination").style.display = "none"
+
+    $(".graph-" + sensor + " ul.pagination").prepend(`<li class="page-item">
+        <div id="expand-switch" clicked="0" ylabels="` + ylabels + `" xlabels="` + xlabels + `"
+        class="tooltip_test graph-button"
+        style="background: #fff;cursor: pointer;padding: 5px 10px;border: 1px solid #ccc;width: 100%;height: 32px;width: 36px;" >
+        <i class="fas fa-search-plus"> </i> 
+        <span class="tooltiptext" > Fit the chart view </span> 
+        </div>
+        </li>`)
+
+    $(".graph-" + sensor + " #expand-switch").css("display", "none")
+
+    // if(nan==0) {
+    //     $(".graph-" + sensor + " #expand-switch").attr("enable","false")
+    //     $(".graph-" + sensor + " #expand-switch").attr("clicked","disabled")
+    // }
+
     $("#expand-switch").click(function () {
-        // console.log($(".calendar-active").length)
+        //     // console.log($(".calendar-active").length)
         if ($(".calendar-active").length) {
-            addExpandButtonFlag = false
-            // console.log("zoom out", attrInt, attrInt % 2 == 0)
-            sliceFlag = false
+            //         addExpandButtonFlag = false
+            //         // console.log("zoom out", attrInt, attrInt % 2 == 0)
+            //         sliceFlag = false
             var ylabels_attr = $(this).attr('ylabels').split(",")
             var xlabels_attr = $(this).attr('xlabels').split(",")
             var xlabels_attr_clone = []
@@ -362,39 +400,54 @@ function addExpandButton(sensor, ylabels, xlabels, label, graphConfig) {
                 // console.log(item, aux, aux.getTime())
                 xlabels_attr_clone.push(aux.getTime())
             })
-            // console.log(ylabels_attr)
-            // console.log(xlabels_attr_clone)
-            plotData(sensor, ylabels_attr, xlabels_attr_clone, label, graphConfig)
+            //         // console.log(ylabels_attr)
+            //         // console.log(xlabels_attr_clone)
 
-            // Remove calendar-active class
-            $("body").removeClass("calendar-active")
+            // plotData(sensor, ylabels_attr, xlabels_attr_clone, '', null)
+            // $(".graph-" + sensor + " #expand-switch").css("display", "none")
+
+            // var oldHtml = $("#predictor-switch .tooltiptext").attr("oldhtml")
+            // switchButtonSecondGraph(sensor, attr = 'false')
+            // $("#predictor-switch .tooltiptext").html(oldHtml)
+
+            //         // Remove calendar-active class
+            //         $("body").removeClass("calendar-active")
+
+            //         // Check history button
+            //         var isDisabled = $(".graph-" + sensorId + " #predictor-switch").attr("clicked") == 'disabled'
+            //         var isOldHtml = $(".graph-" + sensorId + " #predictor-switch .tooltiptext").attr("oldhtml")
+            //         if (isDisabled && isOldHtml) {
+            //             switchButtonSecondGraph(sensor, attr = 'false')
+            //             $(".graph-" + sensorId + " #predictor-switch .tooltiptext").html(isOldHtml)
+            //         }
+
         } else {
-            var clickedAttr = $(this).attr('clicked')
-            var attrInt = parseInt(clickedAttr) + 1
-            $(this).attr('clicked', attrInt)
-            addExpandButtonFlag = false
-            if (attrInt % 2 == 1) {
-                // console.log("zoom in ", attrInt, attrInt % 2 == 0)
-                sliceFlag = true
-                plotData(sensor, ylabels, xlabels, label, graphConfig)
-            } else {
-                // console.log("zoom out", attrInt, attrInt % 2 == 0)
-                sliceFlag = false
-                var ylabels_attr = $(this).attr('ylabels').split(",")
-                var xlabels_attr = $(this).attr('xlabels').split(",")
-                var xlabels_attr_clone = []
-                xlabels_attr.forEach(item => {
-                    var aux = new Date(parseInt(item))
-                    // console.log(item, aux, aux.getTime())
-                    xlabels_attr_clone.push(aux.getTime())
-                })
-                // console.log(ylabels_attr)
-                // console.log(xlabels_attr_clone)
-                plotData(sensor, ylabels_attr, xlabels_attr_clone, label, graphConfig)
-            }
+            //         var clickedAttr = $(this).attr('clicked')
+            //         var attrInt = parseInt(clickedAttr) + 1
+            //         $(this).attr('clicked', attrInt)
+            //         addExpandButtonFlag = false
+            //         if (attrInt % 2 == 1) {
+            //             // console.log("zoom in ", attrInt, attrInt % 2 == 0)
+            //             sliceFlag = true
+            //             plotData(sensor, ylabels, xlabels, label, graphConfig)
+            //         } else {
+            //             // console.log("zoom out", attrInt, attrInt % 2 == 0)
+            //             sliceFlag = false
+            //             var ylabels_attr = $(this).attr('ylabels').split(",")
+            //             var xlabels_attr = $(this).attr('xlabels').split(",")
+            //             var xlabels_attr_clone = []
+            //             xlabels_attr.forEach(item => {
+            //                 var aux = new Date(parseInt(item))
+            //                 // console.log(item, aux, aux.getTime())
+            //                 xlabels_attr_clone.push(aux.getTime())
+            //             })
+            //             // console.log(ylabels_attr)
+            //             // console.log(xlabels_attr_clone)
+            //             plotData(sensor, ylabels_attr, xlabels_attr_clone, label, graphConfig)
+            //         }
         }
-        // console.log(xlabels)
-        // console.log(ylabels)
+        //     // console.log(xlabels)
+        //     // console.log(ylabels)
 
     })
 }
@@ -444,11 +497,9 @@ var plotData = async (element, ylabels, xlabels, label, graphConfig = false) => 
         // console.log("RESULT")
         // console.log("y", ylabels)
         // console.log("x", xlabels)
-    } else if (ylabels[0] == "NaN" && sliceFlag == false) {
+    } else if (sliceFlag == false) {
 
         var counterNaN = 0
-        var indexList = 0
-
         var nanFlag = false
 
         while (nanFlag == false) {
@@ -461,9 +512,9 @@ var plotData = async (element, ylabels, xlabels, label, graphConfig = false) => 
 
         var threshold = counterNaN / ylabels.length
 
-        if (threshold > 0.1 && addExpandButtonFlag) {
+        if (addExpandButtonFlag) {
             // add button to expand
-            addExpandButton(element, original_ylabels, original_xlabels, label, graphConfig)
+            // addExpandButton(nan = counterNaN, element, original_ylabels, original_xlabels, label, graphConfig)
         }
     }
 
@@ -508,7 +559,7 @@ var plotData = async (element, ylabels, xlabels, label, graphConfig = false) => 
     var prediction_y = []
     var prediction_x = []
     let experiment = await getSensorDataExperiment(element);
-    console.log(experiment[0])
+    // console.log(experiment[0])
     if (!experiment[0].error)
         experiment[0].sensorAverage.forEach(item => {
             if (item.sensorValue) {
@@ -520,6 +571,11 @@ var plotData = async (element, ylabels, xlabels, label, graphConfig = false) => 
         })
     prediction_y = prediction_y.reverse()
     prediction_x = prediction_x.reverse()
+    if (!$("#predictor-switch").length) {
+        // addHistoryButton(element, prediction_x, prediction_y)
+    }
+    // console.log("prediction_y:",prediction_y)
+    // console.log("prediction_x:",prediction_x)
     // ===============================================
     // END Get last week of this day
 
@@ -605,7 +661,7 @@ var plotData = async (element, ylabels, xlabels, label, graphConfig = false) => 
                         time: {
                             unit: 'minute'
                         },
-                        // distribution: 'series',
+                        distribution: 'series',
                         gridLines: {
                             color: "rgba(0, 0, 0, 0)",
                         },
@@ -626,6 +682,44 @@ var plotData = async (element, ylabels, xlabels, label, graphConfig = false) => 
                 }
             }
         }
+
+        // var options = {
+        //     animation: false,
+        //     responsive: true,
+        //     maintainAspectRatio: false,
+        //     drawBorder: false,
+        //     // onResize: console.log("chart resize"),
+        //     legend: {
+        //         labels: {
+        //             fontColor: 'white'
+        //         }
+        //     },
+        //     scales: {
+        //         xAxes: [{
+        //             type: "time",
+        //             time: {
+        //                 unit: 'day'
+        //             },
+        //             // distribution: 'series',
+        //             gridLines: {
+        //                 color: "rgba(0, 0, 0, 0)",
+        //             },
+        //             ticks: {
+        //                 fontColor: 'white'
+        //             }
+        //         }],
+        //         yAxes: [{
+        //             ticks: {
+        //                 beginAtZero: false,
+        //                 fontColor: 'white'
+        //             },
+        //             gridLines: {
+        //                 color: "#415f7d",
+        //                 zeroLineColor: '#415f7d'
+        //             }
+        //         }]
+        //     }
+        // }
 
         var chart = new Chart(chart_canvas, {
             type: 'line',
@@ -664,10 +758,10 @@ var plotData = async (element, ylabels, xlabels, label, graphConfig = false) => 
             options
         });
 
-        if (!experiment[0].error)
-            switchSecondGraph(chart, element, prediction_y, prediction_x)
-        else
-            disableSwitchSecondGraph(element)
+        // if (!experiment[0].error)
+        // switchSecondGraph(chart, element, prediction_y, prediction_x)
+        // else
+        // switchButtonSecondGraph(element, attr = 'disabled')
 
         // return chart
 
@@ -724,8 +818,59 @@ var plotData = async (element, ylabels, xlabels, label, graphConfig = false) => 
 
     }
 
+    $('article.' + element + '-card').attr("xlabels", xlabels)
+    $('article.' + element + '-card').attr("ylabels", ylabels)
+
+    // filename = filename.split(" ")
+    // console.log(filename)
+
+    // document.getElementById("report").addEventListener("click", function (e) {
+    // $("#report").click(function (e) {
+    //     e.preventDefault();
+    //     downloadCSV({
+    //         filename,
+    //         chart
+    //     })
+    // })
+    // });
+
     return chart
 
+}
+
+function convertChartDataToCSV(args) {
+    // console.log(args.data)
+    // var result, ctr, keys, columnDelimiter, lineDelimiter, data;
+
+    // data = args.data || null;
+    // if (data == null || !data.length) {
+    //     return null;
+    // }
+
+    // columnDelimiter = args.columnDelimiter || ',';
+    // lineDelimiter = args.lineDelimiter || '\n';
+
+    // keys = Object.keys(data[0]);
+
+    // result = '';
+    // result += keys.join(columnDelimiter);
+    // result += lineDelimiter;
+
+    // data.forEach(function (item) {
+    //     ctr = 0;
+    //     keys.forEach(function (key) {
+    //         if (ctr > 0) result += columnDelimiter;
+    //         result += item[key];
+    //         ctr++;
+    //     });
+    //     result += lineDelimiter;
+    // });
+    // return result;
+}
+
+function addDataAttributeToGraph(sensorId, x, y) {
+    document.querySelector(".graph-" + sensorId + " #reportrange").setAttribute('xlabels', x)
+    document.querySelector(".graph-" + sensorId + " #reportrange").setAttribute('ylabels', y)
 }
 
 // select mean(value) as value, first(type) as type from sensors where username='alexbarbu2' and county='constanta' and sensorId='sensor22' and time>='2020-06-29T09:00:00.000000000Z' and time<'2020-07-01T17:00:00.000000000Z' GROUP BY time(1h) ORDER BY time DESC
@@ -826,18 +971,21 @@ function defaultSensorView(sensorId, sensorType, sensorZone) {
     
             <div class="card-tools">
                 <ul class="pagination pagination-sm">
+
                     <li class="page-item">
                         <div id="reportrange" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
                             <i class="fa fa-calendar"></i>&nbsp;
                             <span></span> <i class="fa fa-caret-down"></i>
                         </div>
                     </li>
+
                     <li class="page-item">
-                        <div id="predictor-switch" clicked="false" class="tooltip_test graph-button" style="background: #fff;cursor: pointer;padding: 5px 10px;border: 1px solid #ccc;width: 100%;height: 32px;width: 36px;">
-                            <i class="fas fa-history" aria-hidden="true"></i> 
-                            <span class="tooltiptext">Show data for last ` + dayName.toLowerCase() + `</span>
+                        <div id="report" class="tooltip_test" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
+                            <i class="fas fa-file-csv"></i>
+                            <span class="tooltiptext">Download CSV</span>
                         </div>
                     </li>
+
                 </ul>
             </div>
     
@@ -864,6 +1012,7 @@ function defaultSensorView(sensorId, sensorType, sensorZone) {
     }
     // stack the components
     // return currentValueView + graphView
+
 }
 
 var alertsLoadFlag = true
@@ -881,7 +1030,7 @@ let readAlerts = async () => {
 
 
 function alertsAndLocationLoad() {
-    console.log("alertsAndLocationLoad()")
+    // console.log("alertsAndLocationLoad()")
     if (alertsLoadFlag)
         (async () => {
             // alertsLoadFlag = false
@@ -911,8 +1060,6 @@ function alertsAndLocationLoad() {
 }
 
 function sensorSettingsToggle(sensorId) {
-
-    // console.log("sensorSettingsToggle(" + sensorId + ")")
 
     $(".live-card-" + sensorId + " .card-settings-button").removeClass("hidden-button")
 
@@ -1351,11 +1498,18 @@ let getLatestValueRecorded = async (sensor) => {
 // get and plot data by a specific interval
 let getSensorDataCustomInterval = async (countyName, sensor, start, end, chartList) => {
 
+    // addExpandButton(sensor)
+
     if (!$("body").hasClass("calendar-active")) {
         $("body").addClass("calendar-active")
-        // $("#predictor-switch").setAttribute('clicked','disabled')
-        disableSwitchSecondGraph(sensor)
-        $("#predictor-switch .tooltiptext").html("The functionality is disabled when calendar view is active - refresh the page")
+
+        // var oldHtml = $("#predictor-switch .tooltiptext").html()
+        // $("#predictor-switch .tooltiptext").attr("oldhtml", oldHtml)
+
+        // switchButtonSecondGraph(sensor, attr = 'disabled')
+        // $("#predictor-switch .tooltiptext").html("The functionality is disabled when calendar view is active - refresh the page")
+
+        // $(".graph-" + sensor + " #expand-switch").css("display", "block")
     }
 
     const date1 = new Date(start);
@@ -1382,7 +1536,7 @@ let getSensorDataCustomInterval = async (countyName, sensor, start, end, chartLi
         var step = '30mins'
     else if (diffDays <= 45)
         // var step = 'daily'
-        var step = 'hourly'
+        var step = 'daily'
     else
         var step = 'dailyS'
 
@@ -1535,6 +1689,7 @@ let getSensorDataCustomInterval = async (countyName, sensor, start, end, chartLi
             /* CHART JS RE-APPEND */
 
             // remove loading spinner and append graph
+            addExpandButtonFlag = false
             plotData(sensorId, ylabels_reversed, xlabels_reversed, label, graphConfig)
 
             $("#" + graphId).css("min-height", "250px")
@@ -1600,7 +1755,11 @@ var gaugeList = []
 var chartList = []
 var sensorList = []
 
-let test = (async () => {
+// This is the main loader that loads all the data on the dashboard
+// It is called by itself
+// ======================================================
+// ======================================================
+let mainLoader = (async () => {
     json = await getData();
 })().then(() => {
     // If error was returned, put 0 value for reading
@@ -1648,15 +1807,15 @@ let test = (async () => {
                 let sensorData = await getSensorData(sensorIdToLookFor);
                 // console.log(sensorIdToLookFor, sensorData[0])
 
-                // append default sensor view
+                // Append the default sensor view (current value + graph) for each sensor
                 $(".card-container").append(defaultSensorView(sensorData[0].sensorQueried, sensorData[0].sensorType, sensorData[0].sensorZone));
-                // console.log("append")
 
                 // Turn On alert sliders
                 // sliderAlerts(".live-card-" + sensorData[0].sensorQueried + " #slider-optim")
                 // sliderAlerts(".live-card-" + sensorData[0].sensorQueried + " #slider-mid")
                 // sliderAlerts(".live-card-" + sensorData[0].sensorQueried + " #slider-warning")
 
+                // Turn on toggle menu from current value for each sensor
                 sensorSettingsToggle(sensorData[0].sensorQueried)
 
                 // Append alerts
@@ -1685,6 +1844,14 @@ let test = (async () => {
 
                     // Timestamp preprocessed
                     var influxTime = sensorData[0].sensorAverage[index].sensorTime
+                    // console.log(influxTime)
+                    // var influxTimeDate = new Date(influxTime)
+                    // influxTimeDate = influxTimeDate.toLocaleString('ro-RO', {
+                    //     timeZone: 'Europe/Bucharest',
+                    //     timeStyle: "medium",
+                    //     dateStyle: "short"
+                    // })
+                    // console.log(influxTimeDate)
                     // var influxH = influxTime.split("T")[1].split(":")[0]
 
                     // // influx time is 1 hour behind of romanian time
@@ -1696,18 +1863,20 @@ let test = (async () => {
                     // // xlabels.push(parseInt(influxH)+1)
                     // console.log(influxTime)
                     var newDate = new Date(influxTime)
-                    // console.log(newDate)
+                    // console.log(influxTime)
                     var adjustedDate = newDate.setHours(newDate.getHours() - 2)
                     // console.log(adjustedDate)
                     xlabels.push(adjustedDate)
                 }
 
-
-
                 // xlabels.push(hour+1 < 10 ? "0" + String(hour+1) : String(hour+1))
 
                 const xlabels_reversed = xlabels.reverse()
                 const ylabels_reversed = ylabels.reverse()
+
+                // addDataAttributeToGraph(sensorData[0].sensorQueried, xlabels_reversed, ylabels_reversed)
+
+                // addExpandButton(null, sensorData[0].sensorQueried, ylabels_reversed, xlabels_reversed)
 
                 // var liveData = parseFloat(sensorData[0].sensorLive).toFixed(2)
 
@@ -1739,12 +1908,47 @@ let test = (async () => {
 
                 timeIntervalChanger(sensorIdToLookFor, chartList);
 
+                // Download CSV
+                // var startDateCSV = chart.data.labels[0]
+                // startDateCSV = new Date(startDateCSV)
+                // var startDateCSV_day = startDateCSV.getDate()
+                // var startDateCSV_month = month[startDateCSV.getMonth()]
+                // var startDateCSV_h = startDateCSV.getHours()
+                // var startDateCSV_m = startDateCSV.getMinutes()
+                // startDateCSV = startDateCSV_day + "_" + startDateCSV_month + "_h:" + startDateCSV_h + "_m:" + startDateCSV_m
+
+                // var endDateCSV = chart.data.labels[chart.data.labels.length - 1]
+                // endDateCSV = new Date(endDateCSV)
+                // var endDateCSV_day = endDateCSV.getDate()
+                // var endDateCSV_month = month[endDateCSV.getMonth()]
+                // var endDateCSV_h = endDateCSV.getHours()
+                // var endDateCSV_m = endDateCSV.getMinutes()
+                // endDateCSV = endDateCSV_day + "_" + endDateCSV_month + "_h:" + endDateCSV_h + "_m:" + endDateCSV_m
+
+                // var filename = "Report_from_" + startDateCSV + '_to_' + endDateCSV + '.csv'
+
+                var filename = "Report.csv"
+
+                $("article.graph-" + sensorData[0].sensorQueried + " #report").click(function (e) {
+
+                    var parent = $(this).parent().parent().parent().parent().parent()
+                    // console.log(, )
+
+                    downloadCSV({
+                        filename,
+                        xlabels: parent.attr("xlabels"),
+                        ylabels: parent.attr("ylabels")
+                    })
+
+                })
+
             })()
 
         }
 
         // Small box append
         addSmallBox('Sensors', api_data.sensorIdListLength, fontAwesome = 'fa fa-check')
+
 
     }
 
@@ -1753,6 +1957,44 @@ let test = (async () => {
     return chartList
 
 })
+// ======================================================
+// ======================================================
+// End of main loader
+
+function downloadCSV(args) {
+    var data, filename, link;
+    var csv = "";
+
+    var ylabels = args.ylabels.split(",")
+    var xlabels = args.xlabels.split(",")
+
+    for (var i = 0; i < ylabels.length; i++) {
+        var label = new Date(parseInt(xlabels[i]))
+        label = label.toLocaleString('en-US', {
+            timeZone: 'Europe/Bucharest',
+            timeStyle: "medium",
+            dateStyle: "long"
+        }).split(" ").join("_").split(",").join("")
+        console.log(label)
+        csv += label + "," + ylabels[i].toString() + "\n"
+    }
+    if (csv == null) return;
+
+    filename = args.filename || 'chart-data.csv';
+
+    if (!csv.match(/^data:text\/csv/i)) {
+        csv = 'data:text/csv;charset=utf-8,' + csv;
+    }
+
+    data = encodeURI(csv);
+    link = document.createElement('a');
+    link.setAttribute('href', data);
+    link.setAttribute('download', filename);
+    document.body.appendChild(link); // Required for FF
+    link.click();
+    document.body.removeChild(link);
+}
+
 
 function arraysEqual(a1, a2) {
     /* WARNING: arrays must not contain {objects} or behavior may be undefined */
@@ -1948,12 +2190,21 @@ async function delay(ms) {
     return await new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function switchSecondGraph(chart, sensorId, y, x = null) {
+function switchSecondGraph(chart, sensorId, y = null, x = null) {
     var old_x_labels = []
+
+    // var x = $(".graph-" + sensorId + " #predictor-switch").attr('xlabels')
+    // var y = $(".graph-" + sensorId + " #predictor-switch").attr('ylabels')
+
+    // console.log("x:",x)
+    // x = x.split(",")
+    // x.forEach((value, key) => {
+    //     x[key] = new Date(value)
+    // })
+    // console.log(x)
+
     $("body:not(.calendar-active) .graph-" + sensorId + " #predictor-switch").click(function (e) {
         e.preventDefault;
-        // console.log(chart)
-        // console.log($(".graph-" + sensorId + " #predictor-switch").attr('clicked') == 'false')
         if ($(".graph-" + sensorId + " #predictor-switch").attr('clicked') == 'false') {
             document.querySelector(".graph-" + sensorId + " #predictor-switch").setAttribute('clicked', 'true')
             if (x) {
@@ -1984,15 +2235,22 @@ function switchSecondGraph(chart, sensorId, y, x = null) {
     })
 }
 
-function disableSwitchSecondGraph(sensorId) {
-    document.querySelector(".graph-" + sensorId + " #predictor-switch").setAttribute('clicked', 'disabled')
-    $(".graph-" + sensorId + " #predictor-switch .tooltiptext").html("There is not enough data to enable this functionality")
+function switchButtonSecondGraph(sensorId, attr) {
+    try {
+        document.querySelector(".graph-" + sensorId + " #predictor-switch").setAttribute('clicked', attr)
+        if (attr = 'disabled')
+            $(".graph-" + sensorId + " #predictor-switch .tooltiptext").html("There is not enough data to enable this functionality")
+        else
+            $(".graph-" + sensorId + " #predictor-switch .tooltiptext").html($(".graph-" + sensorId + " #predictor-switch .tooltiptext").attr("oldhtml"))
+    } catch {
+        console.error("Predictor button failed!")
+    }
 }
 
 let run = async () => {
 
     while (1) {
-        updateData(await test);
+        updateData(await mainLoader);
         // test
         // notification()
         await delay(5 * 1000);

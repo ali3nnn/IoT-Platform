@@ -1,6 +1,6 @@
 // Imports
 // ==================================
-// const https = require('https') // its a default package of node.js
+const http = require('http') // its a default package of node.js
 const express = require('express')
 
 var app = require('express')();
@@ -10,7 +10,7 @@ var app = require('express')();
 var fs = require('fs');
 
 const path = require('path')
-
+const bodyParser = require('body-parser');
 const dotenv = require('dotenv')
 const cookieParser = require('cookie-parser')
 const session = require('express-session');
@@ -18,6 +18,7 @@ const hbs = require('express-handlebars');
 const bcrypt = require('bcryptjs');
 const helmet = require('helmet');
 const url = require('url');
+const axios = require('axios')
 // global.fetch = require("node-fetch");
 
 const Handlebars = require('handlebars');
@@ -238,6 +239,7 @@ app.use(session({
     resave: true,
     saveUninitialized: false
 }));
+// app.use(bodyParser);
 //parse url encoded (as sent by html forms)
 app.use(express.urlencoded({
     extended: false
@@ -1438,7 +1440,9 @@ app.get('/api/v2/get-data/:county/:sensorQuery', (req, res) => {
         // console.log(req.params)
 
         // Get the date for influx query - this day 0 to currentHour
-        var today = new Date();
+        var today = new Date(); // this is -1h romanian timezone
+        console.log("today:", today);
+
         // cannot query for today date starting at 00:00 because influx tz is -1h than romanian tz
         // set today 00:00 as yesterday 23:00
         today.setDate(today.getDate() - 1)
@@ -1450,8 +1454,8 @@ app.get('/api/v2/get-data/:county/:sensorQuery', (req, res) => {
             minimumIntegerDigits: 2,
             useGrouping: false
         })
-        // todayEnd = "'" + yyyy + '-' + mm + '-' + dd + 'T23:00:00Z' + "'";
-        todayEnd = "now()"
+        todayEnd = "'" + yyyy + '-' + mm + '-' + dd + 'T23:00:00Z' + "'";
+        // todayEnd = "now()"
 
         // console.log(">> TODAY start:",today)
 
@@ -2984,9 +2988,7 @@ app.get("/api/get-scanner-recordings", (req, res) => {
 app.get("/api/send-scanner-recordings", (req, res) => {
     sess = req.session
     if (sess.username) {
-        // console.log(">> ",req.originalUrl)
-        // console.log(">> ",req.query)
-        mysqlReader("INSERT INTO scanner_" + sess.username + " (barcode) VALUES (" + req.query.barcode + "); ")
+        mysqlReader("INSERT INTO scanner_" + sess.username + " (barcode, status) VALUES (" + req.query.barcode + ", " + req.query.status + "); ")
             .then(result => {
                 res.send({
                     url: req.originalUrl,
@@ -3039,6 +3041,21 @@ app.get("/api/socketio-access", (req, res) => {
 
 //=========================================
 // End Scale, Conveyor, Scanner API
+
+// PROXY
+//=========================================
+app.post("/proxy", (req, res) => {
+
+    axios.post(req.query.url, req.body).then(response => {
+        console.log("url:", req.query.url)
+        console.log("body:", req.body)
+        console.log("response:", response.data)
+        res.send(response.data)
+    })
+
+})
+//=========================================
+// END PROXY
 
 // CSV
 app.get("/api/csv", (req, res) => {

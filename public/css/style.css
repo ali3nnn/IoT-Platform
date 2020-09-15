@@ -1008,7 +1008,7 @@ input[type=button]:active, input[type=submit]:active, input[type=reset]:active {
 .charInput {
   background-color: #e6e6e6;
   border: none;
-  color: #cacaca;
+  color: #000000 !important;
   padding: 15px 32px;
   text-align: center;
   text-decoration: none;
@@ -1022,7 +1022,7 @@ input[type=button]:active, input[type=submit]:active, input[type=reset]:active {
   transition: all 0.2s ease-out;
   border-radius: 5px 5px 5px 5px;
   -webkit-box-shadow: 0px 0px 6px 0px transparent;
-          box-shadow: 0px 0px 6px 0px transparent;
+  box-shadow: 0px 0px 6px 0px transparent;
 }
 
 .charInput:focus {
@@ -4143,6 +4143,77 @@ div.graph-button i {
   padding: 3px 1px;
 }
 
+/* Graph Buttons */
+
+
+li.page-item > div {
+  background: var(--body-bg) !important;
+  /* border: none !important; */
+  border-radius: 3px;
+  /* border-color: #3499fe !important; */
+  -webkit-box-shadow: var(--neuro);
+          box-shadow: var(--neuro);
+  border-radius: 13px;
+  font-size: 0;
+  /* display: block; */
+  /* width: 36px !important; */
+  position: relative;
+  -webkit-transform: translate(-50%, -50%);
+      -ms-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  top: 16px;
+  left: 50%;
+  border: 0px solid transparent !important;
+  -webkit-transition: all 0.2s ease;
+  -o-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+}
+
+li.page-item > div:hover {
+  -webkit-box-shadow: var(--neuro-hover);
+          box-shadow: var(--neuro-hover);
+  border: 0px solid var(--body-bg) !important;
+  cursor: pointer;
+}
+
+li.page-item > div i {
+  font-size: initial;
+  padding: 3px 1px;
+}
+
+li.page-item > div i:hover {
+  /* box-shadow: var(--neuro-hover) */
+}
+
+/* div#predictor-switch {
+  border-radius: 3px;
+  box-shadow: var(--neuro);
+  border-radius: 13px;
+  font-size: 0;
+  position: relative;
+  transform: translate(-50%, -50%);
+  top: 16px;
+  left: 50%;
+  border: 0px solid transparent !important;
+  transition: all 0.2s ease;
+}
+
+div#predictor-switch[clicked="disabled"] {
+  box-shadow: 1px 1px 2px #adadad;
+  color: #343a3e5e;
+}
+
+div#predictor-switch:not([clicked="disabled"]):hover {
+  box-shadow: var(--neuro-hover);
+  border: 0px solid var(--body-bg) !important;
+  cursor: pointer;
+}
+
+div#predictor-switch i {
+  font-size: initial;
+  padding: 3px 1px;
+} */
+
 /* History Button */
 
 /* div#predictor-switch {
@@ -4316,45 +4387,6 @@ article[class*='graph-']:nth-child(n+6), article[class*='live-card-']:nth-child(
 
 /* Date Picker Rewrite CSS */
 
-div#reportrange {
-  background: var(--body-bg) !important;
-  /* border: none !important; */
-  border-radius: 3px;
-  /* border-color: #3499fe !important; */
-  -webkit-box-shadow: var(--neuro);
-          box-shadow: var(--neuro);
-  border-radius: 13px;
-  font-size: 0;
-  /* display: block; */
-  /* width: 36px !important; */
-  position: relative;
-  -webkit-transform: translate(-50%, -50%);
-      -ms-transform: translate(-50%, -50%);
-          transform: translate(-50%, -50%);
-  top: 16px;
-  left: 50%;
-  border: 0px solid transparent !important;
-  -webkit-transition: all 0.2s ease;
-  -o-transition: all 0.2s ease;
-  transition: all 0.2s ease;
-}
-
-div#reportrange:hover {
-  -webkit-box-shadow: var(--neuro-hover);
-          box-shadow: var(--neuro-hover);
-  border: 0px solid var(--body-bg) !important;
-  cursor: pointer;
-}
-
-div#reportrange i {
-  font-size: initial;
-  padding: 3px 1px;
-}
-
-div#reportrange i:hover {
-  /* box-shadow: var(--neuro-hover) */
-}
-
 .daterangepicker {
   -webkit-transform: translate(-50%, -50%);
       -ms-transform: translate(-50%, -50%);
@@ -4378,6 +4410,18 @@ div#reportrange i:last-child {
 }
 
 /* Dashboard Small Box */
+
+/* Disabled */
+.small-box[disabled] {
+  background:#e4e4e2
+}
+
+.small-box[disabled] i,
+.small-box[disabled] p,
+.small-box[disabled] h3 {
+  color:#343a4026 !important
+}
+/* End disabled */
 
 .small-box-container {
   padding: 1rem;
@@ -5239,6 +5283,7 @@ border-bottom: 1px dotted black; */
   display: table;
   padding: 10px 10px;
   font-size: 14px;
+  width: 158px;
 }
 
 .tooltip_test .tooltiptext::after {

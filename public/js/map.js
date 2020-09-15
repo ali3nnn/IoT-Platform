@@ -369,7 +369,7 @@ function getLocationObj() {
     return locationObj
   } else {
     // return coordinates of bucharest (lon,lat)
-    showNotification("You have no sensor assigned!", error = 4)
+    // showNotification("You have no sensor assigned!", error = 4)
     return {
       "bucharest": [44.439663, 26.096306]
     }

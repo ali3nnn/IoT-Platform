@@ -5,12 +5,15 @@
   "main": "anysensor.js",
   "scripts": {
     "dev": "nodemon anysensor.js",
-    "prod": "forever start --spinSleepTime 1000 anysensor.js"
+    "prod": "forever start --spinSleepTime 1000 anysensor.js",
+    "stop": "forever stop anysensor.js"
   },
   "author": "Alex Barbu",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.20.0",
     "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.5",
     "dotenv": "^8.2.0",
     "eventsource": "^1.0.7",

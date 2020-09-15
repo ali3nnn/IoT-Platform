@@ -3,6 +3,9 @@
 
 <head>
     {{> head}}
+    <script>
+        document.title = "SCANNER | Anysensor"
+    </script>
 </head>
 
 <body class="scanner-page">
@@ -28,9 +31,41 @@
                     <p>Packages</p>
                 </div>
                 <div class="icon">
-                    <i class="fas fa-box-open"></i>
+                    <i class="fas fa-boxes"></i>
                 </div>
             </div>
+
+            <div class="small-box bg-info correct-packages">
+                <div class="inner">
+                    <h3>0</h3>
+                    <p>Correct</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-check"></i>
+                </div>
+            </div>
+
+            <div class="small-box bg-info wrong-packages">
+                <div class="inner">
+                    <h3>0</h3>
+                    <p>Wrong</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+
+            <div class="small-box bg-info error-packages">
+                <div class="inner">
+                    <h3>0</h3>
+                    <p>Error</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-barcode"></i>
+                </div>
+            </div>
+
+            
         </div>
 
         {{!-- Table barcodes --}}
@@ -47,12 +82,13 @@
                     <tr>
                         <th scope="col"></th>
                         <th scope="col">Barcode</th>
+                        <th scope="col">Status</th>
                         <th scope="col">Time</th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    {{!-- Data appended with scale.js --}}
+                    {{!-- Data appended with scanner.js --}}
                 </tbody>
 
             </table>
