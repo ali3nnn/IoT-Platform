@@ -1,6 +1,12 @@
+// Imports
+import {
+    timeoutAsync
+} from './utils.js'
+
 // get users from mysql
 let getUsers = async () => {
     let response = await fetch("https://anysensor.dasstec.ro/api/get-users")
+    console.log(response)
     return response.json()
 }
 
@@ -11,17 +17,18 @@ let getZones = async (username) => {
 }
 
 let main = (async () => {
-    usersTable = await getUsers()
-})().then(async () => {
+    return await getUsers()
+    // console.log(usersTable)
+})().then(async (usersJson) => {
 
-    // console.log(usersTable[0])
-    const rows = usersTable[0].length
+    console.log(usersJson)
+    const rows = usersJson[0].length
     var modalBtnFlag = 0
     var currentCompany = ''
 
-    // console.log(usersTable[0])
+    // console.log(usersJson[0])
 
-    usersTable[0].forEach(row => {
+    usersJson[0].forEach(row => {
         if (row.Username == loggedInUser) {
             currentCompany = row.company
             $(".small-box-container .company").html(currentCompany)
@@ -29,39 +36,39 @@ let main = (async () => {
     })
 
     for (var i = 0; i < rows; i++) {
-        // && loggedInUser != usersTable[0][i].Username
-        if (currentCompany == usersTable[0][i].company && usersTable[0][i].User_role != 'superadmin') {
+        // && loggedInUser != usersJson[0][i].Username
+        if (currentCompany == usersJson[0][i].company && usersJson[0][i].User_role != 'superadmin') {
             (async () => {
 
                 $("body").append(`
-                <div class="modal modal-` + usersTable[0][i].Username + `" id="edit-user-` + usersTable[0][i].Username + `" aria-labelledby="edit-user-label-` + usersTable[0][i].Username + `" aria-hidden="true" tabindex="-1" role="dialog">
+                <div class="modal modal-` + usersJson[0][i].Username + `" id="edit-user-` + usersJson[0][i].Username + `" aria-labelledby="edit-user-label-` + usersJson[0][i].Username + `" aria-hidden="true" tabindex="-1" role="dialog">
                     <div class="modal-dialog fadeInModal modal-dialog-centered" role="document">
                         <div class="modal-content">
     
                             <div class="modal-header">
-                                <h5 class="modal-title" id='edit-user-label-` + usersTable[0][i].Username + `'>Edit user: ` + usersTable[0][i].Username + `</h5>
+                                <h5 class="modal-title" id='edit-user-label-` + usersJson[0][i].Username + `'>Edit user: ` + usersJson[0][i].Username + `</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
     
                             <div class="modal-body">
-                                <form action='/api/edit-user' method='GET' id="form-edit-user-` + usersTable[0][i].Username + `">
+                                <form action='/api/edit-user' method='GET' id="form-edit-user-` + usersJson[0][i].Username + `">
 
                                     <div class="form-group hidden">
-                                        <input type="text" class="form-control" name="id" value="` + usersTable[0][i].Id + `">
+                                        <input type="text" class="form-control" name="id" value="` + usersJson[0][i].Id + `">
                                     </div>
     
                                     <div class="form-group">
-                                        <input type="text" class="form-control" id="name" name="name" value="` + usersTable[0][i].Name + `">
+                                        <input type="text" class="form-control" id="name" name="name" value="` + usersJson[0][i].Name + `">
                                     </div>
     
                                     <div class="form-group">
-                                        <input type="text" class="form-control" id="username" name="username" value="` + usersTable[0][i].Username + `">
+                                        <input type="text" class="form-control" id="username" name="username" value="` + usersJson[0][i].Username + `">
                                     </div>
     
                                     <div class="form-group">
-                                        <input type="email" class="form-control" id="email" name="email" value="` + usersTable[0][i].Email + `">
+                                        <input type="email" class="form-control" id="email" name="email" value="` + usersJson[0][i].Email + `">
                                     </div>
     
                                     <div class="form-group">
@@ -81,8 +88,8 @@ let main = (async () => {
                             </div>
     
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-toggle="modal" data-target=".modal-` + usersTable[0][i].Username + `">Close</button>
-                                <button type="submit" value="Submit" form="form-edit-user-` + usersTable[0][i].Username + `" class="btn btn-primary">Save Changes</button>
+                                <button type="button" class="btn btn-secondary" data-toggle="modal" data-target=".modal-` + usersJson[0][i].Username + `">Close</button>
+                                <button type="submit" value="Submit" form="form-edit-user-` + usersJson[0][i].Username + `" class="btn btn-primary">Save Changes</button>
                             </div>
     
                         </div>
@@ -91,21 +98,21 @@ let main = (async () => {
                 `)
 
                 // set current user first in list
-                if (usersTable[0][i].Username == loggedInUser) {
+                if (usersJson[0][i].Username == loggedInUser) {
                     $(".team-container tbody").prepend(`
                     <tr class='current-user'>
                         <td class="user-col">` +
-                        usersTable[0][i].Name + `<br>` +
-                        usersTable[0][i].Username + `<br>` +
-                        usersTable[0][i].Email + `<br>` +
+                        usersJson[0][i].Name + `<br>` +
+                        usersJson[0][i].Username + `<br>` +
+                        usersJson[0][i].Email + `<br>` +
                         `</td>
-                        <td class="zones-col zones-` + usersTable[0][i].Username + `">
-                            <a href="#" class='spinner ` + usersTable[0][i].Username + `-zone-spinner'>
+                        <td class="zones-col zones-` + usersJson[0][i].Username + `">
+                            <a href="#" class='spinner ` + usersJson[0][i].Username + `-zone-spinner'>
                                 <span>Loading...</span>
                             </a>
                         </td>
                         <td class="actions-col">
-                            <button disabled type="button" class="btn btn-outline-primary edit-user-` + usersTable[0][i].Username + `">
+                            <button disabled type="button" class="btn btn-outline-primary edit-user-` + usersJson[0][i].Username + `">
                                 <i class="fal fa-edit"></i>
                                 <span>Edit User</span>
                             </button>
@@ -120,17 +127,17 @@ let main = (async () => {
                     $(".team-container tbody").append(`
                         <tr>
                             <td class="user-col">` +
-                        usersTable[0][i].Name + `<br>` +
-                        usersTable[0][i].Username + `<br>` +
-                        usersTable[0][i].Email + `<br>` +
+                        usersJson[0][i].Name + `<br>` +
+                        usersJson[0][i].Username + `<br>` +
+                        usersJson[0][i].Email + `<br>` +
                         `</td>
-                            <td class="zones-col zones-` + usersTable[0][i].Username + `">
-                                <a href="#" class='spinner ` + usersTable[0][i].Username + `-zone-spinner'>
+                            <td class="zones-col zones-` + usersJson[0][i].Username + `">
+                                <a href="#" class='spinner ` + usersJson[0][i].Username + `-zone-spinner'>
                                     <span>Loading...</span>
                                 </a>
                             </td>
                             <td class="actions-col">
-                                <button type="button" class="btn btn-outline-primary edit-user-` + usersTable[0][i].Username + `">
+                                <button type="button" class="btn btn-outline-primary edit-user-` + usersJson[0][i].Username + `">
                                     <i class="fal fa-edit"></i>
                                     <span>Edit User</span>
                                 </button>
@@ -143,10 +150,10 @@ let main = (async () => {
                     `)
                 }
 
-                zonesTable = await getZones(usersTable[0][i].Username)
+                return await getZones(usersJson[0][i].Username)
+                // return zonesTable
 
-            })().then(result => {
-
+            })().then(zonesTable => {
 
                 var currentUserZones = []
 
@@ -203,21 +210,21 @@ let main = (async () => {
 
     }
 
-    
 
-}).then(()=>{
 
-    timeout(1000, function(){
+}).then(() => {
+
+    timeoutAsync(1000, function () {
         // console.log($(".team-container tr .zones-col .zone").length)
         for (var i = 0; i < $(".team-container tr .zones-col").length; i++) {
             for (var j = 0; j < $(".team-container tr .zones-col")[i].children.length; j++) {
                 var username = $(".team-container tr .zones-col")[i].className.split(" ")[1].split('zones-')[1]
                 var zone = $(".team-container tr .zones-col")[i].children[j].innerHTML
-                if(zone!='No zone assigned')
-                    $(`.modal-` + username + ` input[id="` + zone + `"]` ).prop( "checked", true );
-                else 
-                    $(`.modal-` + username + ` input[id="` + zone + `"]` ).prop( "checked", false );
-            }   
+                if (zone != 'No zone assigned')
+                    $(`.modal-` + username + ` input[id="` + zone + `"]`).prop("checked", true);
+                else
+                    $(`.modal-` + username + ` input[id="` + zone + `"]`).prop("checked", false);
+            }
         }
     })
 })

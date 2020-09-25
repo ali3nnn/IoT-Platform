@@ -1,4 +1,15 @@
-// const { request } = require("express")
+import {
+    timeoutAsync,
+    sendMessage,
+    // delay,
+    // displayTimeoutAndVanish,
+    // liveWeight,
+    // liveGate,
+    // insertStatus,
+    // getConveyorStatus,
+    showNotification,
+    filterColumn
+} from './utils.js'
 
 var lastKey = 0
 
@@ -25,9 +36,11 @@ socket.on('socketChannel', async (data) => {
     // Live Scanner - client receives scanner data from backend
     if (data.topic.includes(username + "/scanner")) {
         // sendScannerRecordings(data.message.barcode)
-        // liveTableInsert(data.message.barcode, lastKey)
+        if(data.message.barcode)
+            liveTableInsert(data.message.barcode, lastKey)
 
         // if (data.message != 'start' && data.message != 'print' && data.message != 'push') {
+        var mqttMessage = ''
         if (['start', 'print', 'push', 'print_error'].indexOf(data.message) == -1) {
             try {
                 mqttMessage = JSON.parse(data.message)
@@ -61,6 +74,8 @@ async function getScannerConfigRequest(barcode) {
         url: '/api/request-scanner-config',
         success: function (result) {
             console.log("SEND:", result[0])
+            // var alpha = "https://alpha2.superpantofi.ro/api/wms/prepare?api_token=nvb01520!wxr1kzz"
+            // result[0].url
             if (isMobile) {
                 getAWB(result[0].method, result[0].contenttype, result[0].url, result[0].data, barcode)
             } else {
@@ -121,6 +136,7 @@ async function getAWB(type, contentType, url, data, value) {
                 }
 
                 // Show notification
+                var error
                 showNotification("AWB for barcode " + barcode + " is printing", error = 2)
 
                 // Live table update correct packages
@@ -139,10 +155,12 @@ async function getAWB(type, contentType, url, data, value) {
                     sendScannerRecordings(barcode, status)
                 } else {
                     // Show notification
+                    var error
                     showNotification("Order pushed: " + value, error = 1)
                 }
 
                 // Show notification
+                var error
                 showNotification("Order pushed: " + value, error = 1)
 
                 // Live table update wrong packages
@@ -154,6 +172,7 @@ async function getAWB(type, contentType, url, data, value) {
             //     topic: username + "/scanner",
             //     message: "print_error"
             // })
+            var error
             showNotification("AWB printing error: " + value, error = 1)
             console.log("Can’t access " + url + " response. Blocked by browser?")
         })
@@ -177,8 +196,14 @@ function liveTableInsert(barcode, status) {
             dateStyle: "long"
         })
     }
+
+    if (status)
+        var elClass = 'last-row-animation-good'
+    else
+        var elClass = 'last-row-animation-bad'
+
     // console.log(value.timestamp)
-    tbody.prepend(`<tr timestamp="` + value.timestamp + `" barcode="` + value.barcode + `">
+    tbody.prepend(`<tr class="` + elClass + `" timestamp="` + value.timestamp + `" barcode="` + value.barcode + `">
                             <th scope="row">` + index + `</th>
                             <td>` + value.barcode + `</td>
                             <td>` + status + `</td>
@@ -218,8 +243,10 @@ function openInNewTab(url, barcode) {
 
     // check if mobile
     if (isMobile) {
+        var error
         showNotification("On mobile you can't send print command", error = 2)
     } else {
+        // var error
         // showNotification("AWB for barcode " + barcode + " is printing", error = 2)
         // console.log(">>>> URL TO PRINT:",url)
         // var url = url.split("&")[0] + "&" + url.split("&")[1]
@@ -233,49 +260,10 @@ function openInNewTab(url, barcode) {
 
 }
 
-function showNotification(message, error = 0) {
-
-    if (error == 0)
-        $("notification").append(`<div class="messages hideMe">
-                                    <div class="alert alert-info mt-3 mb-0" role="alert">
-                                    <i class="fas fa-barcode"></i>
-                                        <background></background>
-                                        ` + message + `
-                                    </div>
-                                </div>`).show('slow');
-    else if (error == 1)
-        $("notification").append(`<div class="messages hideMe">
-                                    <div class="alert alert-danger mt-3 mb-0" role="alert">
-                                        <i class="fas fa-exclamation-triangle"></i>
-                                        <background></background>
-                                        ` + message + `
-                                    </div>
-                                </div>`).show('slow');
-
-    else if (error == 2)
-        $("notification").append(`<div class="messages hideMe">
-                                        <div class="alert alert-success mt-3 mb-0" role="alert">
-                                            <i class="fas fa-print"></i>
-                                            <background></background>
-                                            ` + message + `
-                                        </div>
-                                </div>`).show('slow');
-
-    else if (error == 3)
-        $("notification").append(`<div class="messages hideMe">
-                                        <div class="alert alert-info mt-3 mb-0" role="alert">
-                                            <i class="fas fa-times-circle"></i>
-                                            <background></background>
-                                            ` + message + `
-                                        </div>
-                                </div>`).show('slow');
-
-}
-
-function sendMessage(topic, msg) {
-    // send a status message to get the gate status
-    socket.emit(topic, msg)
-}
+// function sendMessage(topic, msg) {
+//     // send a status message to get the gate status
+//     socket.emit(topic, msg)
+// }
 
 let getScannerRecordings = async () => {
     let response = await fetch("https://anysensor.dasstec.ro/api/get-scanner-recordings")
@@ -286,6 +274,11 @@ let sendScannerRecordings = async (barcode, status) => {
     let response = await fetch("https://anysensor.dasstec.ro/api/send-scanner-recordings?barcode='" + barcode + "'&status='" + status + "'")
     return response.json()
 }
+
+// Filter on keyup
+$("#scannerInput").keyup(function () {
+    filterColumn('scannerInput', 'scannerTable', 0)
+});
 
 function scannerInput() {
     // Declare variables
@@ -321,14 +314,14 @@ function scannerInput() {
 // }
 
 let run = (async () => {
-    json = await getScannerRecordings();
-})().then(() => {
+    return await getScannerRecordings();
+})().then((json) => {
     var tbody = $(".table-wrapper table tbody")
     if (json.length) {
         for (var [key, value] of Object.entries(json)) {
 
             var date = new Date(value.timestamp)
-            date.setHours(date.getHours() - 2); //mysql is 2 hours later than romanian timezone
+            date.setHours(date.getHours() - 2); //mysql is 2 hours ahead of romanian timezone
             value.timestamp = date.toLocaleString('en-US', {
                 timeZone: 'Europe/Bucharest',
                 timeStyle: "medium",
@@ -353,12 +346,11 @@ let run = (async () => {
                 $(".error-packages h3").html(parseInt(currentIndex) + 1)
             }
 
-
             tbody.prepend(`<tr timestamp="` + value.timestamp + `" barcode="` + value.barcode + `" status="` + value.status + `">
                             <th scope="row">` + (parseInt(key) + 1) + `</th>
                             <td>` + value.barcode + `</td>
                             <td>` + value.status + `</td>
-                            <td>` + value.timestamp.split(", ")[0] + ` at ` + value.timestamp.split(", ")[1] + `</td>
+                            <td>` + value.timestamp.split(", ")[0] + `, ` + value.timestamp.split(", ")[1] + `</td>
                         </tr>`)
             lastKey = (parseInt(key) + 1)
         }

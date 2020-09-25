@@ -90,10 +90,14 @@ function playSound(url) {
 // used to create the gauges
 function currentValueSvgGauge(element, currentValue = NaN, updatedAt = false, min = -20, max = 70) {
 
+    // If there are no alerts min and max == NaN
+    // console.log("Alerts:",min,max)
+
     var isCounter = false
     // element.split('-')[1] == 'c' ? isCounter = true : isCounter = false
     // console.log(element, isCounter)
 
+    // Remove loader
     if (isCounter) {
         $('.' + element + '-newItem-spinner').remove()
     } else {
@@ -113,10 +117,25 @@ function currentValueSvgGauge(element, currentValue = NaN, updatedAt = false, mi
             // here can be improved by showing the latest read value
             // and showing the time when last value was read
             // and maybe a small info that the info is not very recent
-            $(".live-card-" + element + " .card-settings-button").addClass("hidden-element")
-            $("#" + element + "-gauge").parent().prepend("No value recorded today")
-            $("#" + element + "-gauge").parent().attr("no-value", 'true')
-            return [NaN, NaN]
+            // $(".live-card-" + element + " .card-settings-button").addClass("hidden-element")
+
+            // new way
+            var gauge = $('#' + element + '-gauge .currentValue')
+            // $('#' + element + '-gauge .currentValue').remove()
+            // $('#' + element + '-gauge').append(gauge)
+            // gauge.html("No value recorded today")
+
+            timeoutAsync(500, function () {
+                $("#" + element + "-gauge .currentValue").html("<span class='no-value'>No value recorded today</span>")
+            })
+
+            $("#" + element + "-gauge .currentValue").attr("no-value", 'true')
+
+            // old way
+            // $("#" + element + "-gauge").parent().prepend("No value recorded today")
+            // $("#" + element + "-gauge").parent().attr("no-value", 'true')
+
+            return gauge
         }
 
     } else {
@@ -127,51 +146,69 @@ function currentValueSvgGauge(element, currentValue = NaN, updatedAt = false, mi
             // pulse effect already appended
         } else {
             // console.log("else gauge")
-            var gauge = Gauge(
-                document.getElementById(element + '-gauge'), {
-                    min: min,
-                    max: max,
-                    dialStartAngle: 180,
-                    dialEndAngle: 0,
-                    value: currentValue,
-                    label: function (value) {
-                        return (Math.round(value * 10) / 10);
-                    },
-                    viewBox: "0 0 100 57",
-                    // valueDialClass: "valueDial",
-                    // valueClass: "valueText",
-                    // dialClass: "dial",
-                    // gaugeClass: "gauge",
-                    showValue: true,
-                    color: function (value) {
-                        if (value < 20) {
-                            return "#5ee432";
-                        } else if (value < 40) {
-                            return "#fffa50";
-                        } else if (value < 60) {
-                            return "#f7aa38";
-                        } else if (value == 0) {
-                            return "gray";
-                        } else {
-                            return "#ef4655";
-                        }
-                    }
-                }
-            );
+
+            // experimental way - show the numbers
+            // $('#' + element + '-gauge').append(`<span class="currentValue" value="` + currentValue + `">` + currentValue + `</span>`)
+            var gauge = $('#' + element + '-gauge .currentValue')
+            gauge.html(currentValue)
+
+            // old way - transform element in gauge
+            // var gauge = Gauge(
+            //     document.getElementById(element + '-gauge'), {
+            //         min: min,
+            //         max: max,
+            //         dialStartAngle: 180,
+            //         dialEndAngle: 0,
+            //         value: currentValue,
+            //         label: function (value) {
+            //             return (Math.round(value * 10) / 10);
+            //         },
+            //         viewBox: "0 0 100 57",
+            //         // valueDialClass: "valueDial",
+            //         // valueClass: "valueText",
+            //         // dialClass: "dial",
+            //         // gaugeClass: "gauge",
+            //         showValue: true,
+            //         color: function (value) {
+            //             if (value < 20) {
+            //                 return "#5ee432";
+            //             } else if (value < 40) {
+            //                 return "#fffa50";
+            //             } else if (value < 60) {
+            //                 return "#f7aa38";
+            //             } else if (value == 0) {
+            //                 return "gray";
+            //             } else {
+            //                 return "#ef4655";
+            //             }
+            //         }
+            //     }
+            // );
         }
 
         // console.log(updatedAt)
 
         if (updatedAt) {
+
+            var updatedTime = Date.parse(updatedAt)
+            updatedTime = new Date(updatedTime)
+            updatedTime = updatedTime.addHours(-2)
+            updatedTime = updatedTime.toLocaleString('en-US', {
+                timeZone: 'Europe/Bucharest',
+                timeStyle: "medium",
+                dateStyle: "long"
+            })
+            // console.log(">> ",updatedTime)
+
             // current date
-            var date = new Date()
+            // var date = new Date()
 
             // updatedAt is at best 1 hour behind current date 
-            var hour = date.getHours()
+            // var hour = date.getHours()
 
             // dateLatestValue add two hours to updatedAt
-            var dateLatestValue = updatedAt.split("T")[0].split("-")
-            var hourLatestValue = updatedAt.split("T")[1].split(":").slice(0, 2)
+            // var dateLatestValue = updatedAt.split("T")[0].split("-")
+            // var hourLatestValue = updatedAt.split("T")[1].split(":").slice(0, 2)
 
             // -1 to match with hour from graph
             // var hourLatestValue = dateLatestValue.getHours() - 1
@@ -180,11 +217,12 @@ function currentValueSvgGauge(element, currentValue = NaN, updatedAt = false, mi
             // console.log("date",date)
             // console.log("dateLatestValue",dateLatestValue,hourLatestValue)
 
-            var influxTime = new Date(dateLatestValue[0], dateLatestValue[1] - 1, dateLatestValue[2], hourLatestValue[0], hourLatestValue[1])
+            // var influxTime = new Date(dateLatestValue[0], dateLatestValue[1] - 1, dateLatestValue[2], hourLatestValue[0], hourLatestValue[1])
             // console.log(influxTime)
-            influxTime = influxTime.addHours(1)
-            influxTime = String(influxTime).split(" ").slice(1, 5)
-            updatedTime = influxTime[0] + " " + influxTime[1] + " " + influxTime[2] + " " + influxTime[3]
+            // influxTime = influxTime.addHours(1)
+            // influxTime = String(influxTime).split(" ").slice(1, 5)
+            // updatedTime = influxTime[0] + " " + influxTime[1] + " " + influxTime[2] + " " + influxTime[3]
+
             // console.log(influxTime)
             // var dif = date - dateLatestValue
             // var difMin = dif/1000/60
@@ -260,12 +298,20 @@ function currentValueAdd(element, liveData) {
 // used for updating the gauges
 function updateValueSvgGauge(element, gauge, value, updatedAt = false) {
 
+    // Reset no-value attribute
+    $("#" + element + "-gauge .currentValue").removeAttr("no-value")
+
     var isCounter = false
     element.split('-')[1] == 'c' ? isCounter = true : isCounter = false
 
     // Update the value
-    if (!isNaN(value) && !isCounter)
-        gauge.setValue(value);
+    if (!isNaN(value) && !isCounter) {
+        try {
+            gauge.setValue(value);
+        } catch {
+            gauge.html(value)
+        }
+    }
 
     // Append unit measure
     if (value == parseInt(value, 10)) {
@@ -292,12 +338,13 @@ function updateValueSvgGauge(element, gauge, value, updatedAt = false) {
         var date = new Date()
 
         // updatedAt is at best 1 hour behind current date 
-        var hour = date.getHours()
+        // var hour = date.getHours()
 
         // dateLatestValue add two hours to updatedAt
-        var dateLatestValue = updatedAt.split("T")[0].split("-")
-        var hourLatestValue = updatedAt.split("T")[1].split(":").slice(0, 3)
+        // var dateLatestValue = updatedAt.split("T")[0].split("-")
+        // var hourLatestValue = updatedAt.split("T")[1].split(":").slice(0, 3)
         // console.log(updatedAt.split("T")[1].split(":"))
+        updatedTime = updatedAt
 
         // -1 to match with hour from graph
         // var hourLatestValue = dateLatestValue.getHours() - 1
@@ -306,11 +353,12 @@ function updateValueSvgGauge(element, gauge, value, updatedAt = false) {
         // console.log("date",date)
         // console.log("dateLatestValue",dateLatestValue,hourLatestValue)
 
-        var influxTime = new Date(dateLatestValue[0], dateLatestValue[1] - 1, dateLatestValue[2], hourLatestValue[0], hourLatestValue[1], hourLatestValue[2].split(".")[0])
+        // var influxTime = new Date(dateLatestValue[0], dateLatestValue[1] - 1, dateLatestValue[2], hourLatestValue[0], hourLatestValue[1], hourLatestValue[2].split(".")[0])
         // console.log(influxTime)
-        influxTime = influxTime.addHours(1)
-        influxTime = String(influxTime).split(" ").slice(1, 6)
-        updatedTime = influxTime[0] + " " + influxTime[1] + " " + influxTime[2] + " " + influxTime[3]
+        // influxTime = influxTime.addHours(1)
+        // influxTime = String(influxTime).split(" ").slice(1, 6)
+        // updatedTime = influxTime[0] + " " + influxTime[1] + " " + influxTime[2] + " " + influxTime[3]
+
         // console.log(influxTime)
         // var dif = date - dateLatestValue
         // var difMin = dif/1000/60
@@ -454,6 +502,7 @@ function addExpandButton(nan = null, sensor, ylabels, xlabels, label = null, gra
 
 var sliceFlag = false
 var addExpandButtonFlag = true
+var chartList2 = []
 
 var plotData = async (element, ylabels, xlabels, label, graphConfig = false) => {
 
@@ -834,6 +883,7 @@ var plotData = async (element, ylabels, xlabels, label, graphConfig = false) => 
     // })
     // });
 
+    chartList2.push(chart)
     return chart
 
 }
@@ -901,7 +951,7 @@ function defaultSensorView(sensorId, sensorType, sensorZone) {
                 <span>Loading...</span>
             </a>
             <div id="` + sensorId + `-gauge" class="gauge-container two hidden-element">
-                
+                <span class="currentValue"></span>
             </div>
         </div>
     </div>
@@ -1010,8 +1060,6 @@ function defaultSensorView(sensorId, sensorType, sensorZone) {
     } else {
         return currentValueView + graphView
     }
-    // stack the components
-    // return currentValueView + graphView
 
 }
 
@@ -1028,13 +1076,13 @@ let readAlerts = async () => {
 //     return alerts.json()
 // }
 
-
 function alertsAndLocationLoad() {
     // console.log("alertsAndLocationLoad()")
-    if (alertsLoadFlag)
+    if (alertsLoadFlag) {
         (async () => {
             // alertsLoadFlag = false
-            let alerts = await readAlerts() //this returns all the alerts in mysql - it should return only the  alerts of this user
+            let alerts = await readAlerts() //this returns all the alerts in mysql - it should return only the alerts of this user
+            // console.log(alerts)
             for (var i = 0; i < alerts.result.length; i++) {
                 var sensorId = alerts.result[i].sensorId
 
@@ -1042,20 +1090,35 @@ function alertsAndLocationLoad() {
                 $(`.live-card-` + sensorId + ` .input-min`).attr("value", alerts.result[i].min)
                 $(`.live-card-` + sensorId + ` .input-max`).attr("value", alerts.result[i].max)
 
-                // load locations into inputs value
-                try {
-                    var locationObj = getLocationObj()
-                    if (locationObj[sensorId] != undefined) {
-                        // console.log(locationObj, locationObj[sensorId])
-                        $("article[class*='live'][sensorid='" + sensorId + "'] .input-lat").attr("value", locationObj[sensorId][0])
-                        $("article[class*='live'][sensorid='" + sensorId + "'] .input-long").attr("value", locationObj[sensorId][1])
-                    }
-                } catch {
-                    $("article[class*='live'][sensorid='" + sensorId + "'] .input-lat").attr("value", "not set")
-                    $("article[class*='live'][sensorid='" + sensorId + "'] .input-long").attr("value", "not set")
-                }
             }
+
+            // load locations into inputs value
+            // console.log(getLocationObj())
+            var locationObj = getLocationObj()
+            for (var item in locationObj) {
+                // console.log(item, locationObj[item])
+                $("article[class*='live'][sensorid='" + item + "'] .input-lat").attr("value", locationObj[item][0])
+                $("article[class*='live'][sensorid='" + item + "'] .input-long").attr("value", locationObj[item][1])
+            }
+            // try {
+            //     var locationObj = getLocationObj()
+            //     console.log(locationObj,sensorId)
+            //     if (locationObj[sensorId] != undefined) {
+            //         // console.log(locationObj, locationObj[sensorId])
+            //         // console.log($("article[class*='live'][sensorid='" + sensorId + "'] .input-lat").length)
+            //         // $("article[class*='live'][sensorid='" + sensorId + "'] .input-lat").val(locationObj[sensorId][0])
+            //         // $("article[class*='live'][sensorid='" + sensorId + "'] .input-long").val(locationObj[sensorId][1])
+            //         // console.log(sensorId, $("article[class*='live'][sensorid='" + sensorId + "'] .input-lat").val())
+            //         $("article[class*='live'][sensorid='" + sensorId + "'] .input-lat").attr("value", locationObj[sensorId][0])
+            //         $("article[class*='live'][sensorid='" + sensorId + "'] .input-long").attr("value", locationObj[sensorId][1])
+            //     }
+            // } catch {
+            //     $("article[class*='live'][sensorid='" + sensorId + "'] .input-lat").attr("value", "not set")
+            //     $("article[class*='live'][sensorid='" + sensorId + "'] .input-long").attr("value", "not set")
+            // }
+
         })()
+    }
 
 }
 
@@ -1078,11 +1141,11 @@ function sensorSettingsToggle(sensorId) {
     })
 
     $(".live-card-" + sensorId + " .card-settings-button-update").click(function () {
+        // these two should use promises and call one after another
         updateSensorSettings(sensorId)
-        appendAlertsToHTML(sensorId)
+        // appendAlertsToHTML(sensorId)
     })
 }
-
 
 let saveSensorSettings = async (sensorId, minVal, maxVal, lat, long, sensorType = null) => {
     // let response = await fetch("https://anysensor.dasstec.ro/api/set-alerts/?sensorId='" + sensorId + "'&min=" + minVal + "&max=" + maxVal + "&lat=" + lat + "&long=" + long)
@@ -1110,6 +1173,9 @@ async function updateSensorSettings(sensorId) {
     const lat = $(".live-card-" + sensorId + " .settings-wrapper .input-lat").val()
     const long = $(".live-card-" + sensorId + " .settings-wrapper .input-long").val()
     const sensorType = $("article[class*='graph-'][sensorid='" + sensorId + "']").attr("sensortype")
+
+    $("article[class*='live'][sensorid='" + sensorId + "'] .gauge-container .minAlertGauge").html("min: " + minVal)
+    $("article[class*='live'][sensorid='" + sensorId + "'] .gauge-container .maxAlertGauge").html("max: " + maxVal)
 
     await saveSensorSettings(sensorId, minVal, maxVal, lat, long, sensorType)
 
@@ -1362,6 +1428,7 @@ function fontAwesomeClassGenerator(type) {
     // return faClass
 }
 
+// append min and max after the alerts are modified (not always)
 function appendAlertsToHTML(sensorId_) {
 
     (async () => {
@@ -1389,19 +1456,9 @@ function appendAlertsToHTML(sensorId_) {
 
             if (sensorId_ == alert[0]) {
 
-                $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .minAlertGauge").remove()
-                $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .maxAlertGauge").remove()
-                $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container").prepend(`<span class='minAlertGauge' value='` + alert[1] + `' sensortype='` + alert[3] + `'>` + alert[1] + `</span><span class='maxAlertGauge' value='` + alert[2] + `' sensortype='` + alert[3] + `'>` + alert[2] + `</span>`)
-                // if sensortype = voltage add .alert-type-voltage class
-                if (alert[3] == "voltage") {
-                    $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .minAlertGauge").addClass("alert-type-voltage")
-                    $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .maxAlertGauge").addClass("alert-type-voltage")
-                }
-                // if sensortype = temperature add .alert-type-temperature
-                if (alert[3] == "temperature") {
-                    $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .minAlertGauge").addClass("alert-type-temperature")
-                    $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .maxAlertGauge").addClass("alert-type-temperature")
-                }
+                $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .minAlertGauge").html(alert[1])
+                $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .axAlertGauge").html(alert[2])
+
             }
 
         })
@@ -1409,7 +1466,7 @@ function appendAlertsToHTML(sensorId_) {
     })()
 }
 
-// append alerts test
+// append alerts initially
 async function appendAlertsToHTMLAsync(sensorId_) {
 
     // console.log("called for", sensorId_)
@@ -1432,8 +1489,8 @@ async function appendAlertsToHTMLAsync(sensorId_) {
 
     // bodyEl.prepend(`<alerts style="display:none">` + JSON.stringify(alertsDict) + `</alerts>`)
 
-    var min_ = 0;
-    var max_ = 0;
+    var min_ = NaN;
+    var max_ = NaN;
 
     alertsDict.forEach(alert => {
         // console.log(alert, sensorId_)
@@ -1445,20 +1502,26 @@ async function appendAlertsToHTMLAsync(sensorId_) {
 
             $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .minAlertGauge").remove()
             $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .maxAlertGauge").remove()
-            $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container").prepend(`<span class='minAlertGauge' value='` + alert[1] + `' sensortype='` + alert[3] + `'>` + alert[1] + `</span><span class='maxAlertGauge' value='` + alert[2] + `' sensortype='` + alert[3] + `'>` + alert[2] + `</span>`)
+            $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container").prepend(`<span class='minAlertGauge' value='` + alert[1] + `' sensortype='` + alert[3] + `'>min: ` + alert[1] + `</span><span class='maxAlertGauge' value='` + alert[2] + `' sensortype='` + alert[3] + `'>max: ` + alert[2] + `</span>`)
             // if sensortype = voltage add .alert-type-voltage class
             if (alert[3] == "voltage") {
+                $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .currentValue").addClass("alert-type-voltage")
                 $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .minAlertGauge").addClass("alert-type-voltage")
                 $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .maxAlertGauge").addClass("alert-type-voltage")
             }
             // if sensortype = temperature add .alert-type-temperature
             if (alert[3] == "temperature") {
+                $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .currentValue").addClass("alert-type-temperature")
                 $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .minAlertGauge").addClass("alert-type-temperature")
                 $("article[class*='live'][sensorid='" + sensorId_ + "'] .gauge-container .maxAlertGauge").addClass("alert-type-temperature")
+
+                // console.log($("#" + sensorId_ + "-gauge span").length)
             }
         }
 
     })
+
+    // console.log(min_, max_)
 
     return [min_, max_]
 }
@@ -1544,6 +1607,7 @@ let getSensorDataCustomInterval = async (countyName, sensor, start, end, chartLi
     // console.log(query)
 
     // remove graph and add loading
+    $("#" + sensor + "-graph").parent().parent().attr("calendar", "on")
     $("#" + sensor + "-graph").parent().append(`<a href="#" class='spinner ` + sensor + `-graph-spinner'><span>Loading...</span></a> `)
     $("#" + sensor + "-graph").remove() //remove existing graph
 
@@ -1803,9 +1867,16 @@ let mainLoader = (async () => {
             (async () => {
 
                 var sensorIdToLookFor = api_data.sensorIdList[i]
-                // let sensorType = await getSensorType(api_data.sensorIdList[i])
+                var sensorZone = api_data.sensorZoneList[i]
+                var sensorType = api_data.sensorTypeList[i]
                 let sensorData = await getSensorData(sensorIdToLookFor);
-                // console.log(sensorIdToLookFor, sensorData[0])
+
+                // get sensor TYPE and ZONE of sensorIdToLookFor if there is no data
+                // console.log(sensorIdToLookFor, sensorData[0].error, sensorZone, sensorType)
+                if (sensorData[0].error) {
+                    sensorData[0].sensorType = sensorType
+                    sensorData[0].sensorZone = sensorZone
+                }
 
                 // Append the default sensor view (current value + graph) for each sensor
                 $(".card-container").append(defaultSensorView(sensorData[0].sensorQueried, sensorData[0].sensorType, sensorData[0].sensorZone));
@@ -1995,13 +2066,13 @@ function downloadCSV(args) {
     document.body.removeChild(link);
 }
 
-
 function arraysEqual(a1, a2) {
     /* WARNING: arrays must not contain {objects} or behavior may be undefined */
     return JSON.stringify(a1) == JSON.stringify(a2);
 }
 
 function addData(chart, label, data) {
+    // console.log(chart)
     // console.log("oldLabel:",chart.data.labels)
     // console.log("newLabel:",label)
 
@@ -2064,8 +2135,15 @@ function updateData(chartList) {
                     for (var i = 0; i < sensorData[0].sensorReadings; i++) {
 
                         ylabels.push(parseFloat(sensorData[0].sensorAverage[i].sensorValue).toFixed(2))
+
                         var influxTime = sensorData[0].sensorAverage[i].sensorTime
-                        var influxH = influxTime.split("T")[1].split(":")[0]
+
+                        var newDate = new Date(influxTime)
+                        // console.log(influxTime)
+                        var adjustedDate = newDate.setHours(newDate.getHours() - 2)
+
+
+                        // var influxH = influxTime.split("T")[1].split(":")[0]
 
                         // influx time is 1 hour ahead of romanian time
                         // increment influx with 2 because:
@@ -2073,9 +2151,10 @@ function updateData(chartList) {
                         // and all the values between 9 to 10 (ro timezone) and (8 to 9 - influx timezone) is displayed as mean at 10h (ro rimezone)
                         // that's why is incremented with 2
 
-                        var hour = parseInt(influxH) + 1
-                        xlabels.push(hour < 10 ? "0" + String(hour) : (hour == 24 ? "00" : String(hour)))
-                        // xlabels.push(parseInt(influxH)+1)
+                        // var hour = parseInt(influxH) + 1
+                        // xlabels.push(hour < 10 ? "0" + String(hour) : (hour == 24 ? "00" : String(hour)))
+
+                        xlabels.push(adjustedDate)
                     }
 
                     const xlabels_reversed = xlabels.reverse()
@@ -2087,23 +2166,23 @@ function updateData(chartList) {
                     // var liveData = parseFloat(sensorData[0].sensorLive).toFixed(2)
                     // var nanFlag = 0
                     // if(isNaN(liveData)) {
-                    let lastValue = await getLatestValueRecorded(sensorIdToLookFor).then((resLast) => {
-                        liveData = resLast[0].lastValue.value
-                        liveDataTime = resLast[0].lastValue.time
-                        nanFlag = 1
-                    })
+                    // let lastValue = await getLatestValueRecorded(sensorIdToLookFor).then((resLast) => {
+                    //     liveData = resLast[0].lastValue.value
+                    //     liveDataTime = resLast[0].lastValue.time
+                    //     nanFlag = 1
+                    // })
                     // }
 
                     // currentValueAdd(sensorIdToLookFor, liveData)
 
                     // Loop through gauge list and when a gauge id match the sensorIdToLookFor
                     // Do the update
-                    gaugeList.forEach((element) => {
-                        if (sensorIdToLookFor == element[0]) {
-                            // console.log("Update", element[0], "with", liveData, "at", liveDataTime)
-                            updateValueSvgGauge(element[0], element[1], liveData, liveDataTime)
-                        }
-                    })
+                    // gaugeList.forEach((element) => {
+                    //     if (sensorIdToLookFor == element[0]) {
+                    //         // console.log("Update", element[0], "with", liveData, "at", liveDataTime)
+                    //         updateValueSvgGauge(element[0], element[1], liveData, liveDataTime)
+                    //     }
+                    // })
 
 
                     // currentValueSvgGauge(sensorIdToLookFor + '-gauge', liveData)
@@ -2112,17 +2191,26 @@ function updateData(chartList) {
                     let reloadThePage = 0
                     chartList.forEach((chart) => {
                         if (chart != undefined) {
-                            // chart[0] == sensorIdToLookFor ? console.log(chart[0],chart[1],ylabels_reversed) : 0
-                            if (chart[0] == sensorIdToLookFor && chart[1] != undefined) {
-                                // console.log("chart:",chart[1])
-                                // console.log("sent data:",ylabels_reversed)
 
-                                addData(chart[1], xlabels_reversed, ylabels_reversed)
-                            } else if (chart[0] == sensorIdToLookFor && !isNaN(ylabels_reversed[ylabels_reversed.length - 1])) {
-                                // plotData(String(sensorIdToLookFor), ylabels_reversed, xlabels_reversed, label)
-                                // addData(chart[1], xlabels_reversed, ylabels_reversed)
-                                reloadThePage++; //page is reloaded 
+                            var canvasId = chart.canvas.id.split("-graph")[0]
+
+                            if ($("#" + canvasId + "-graph").parent().parent().attr("calendar") == "on") {
+                                // Do not make update
+                                
+                            } else {
+                                // chart[0] == sensorIdToLookFor ? console.log(chart[0],chart[1],ylabels_reversed) : 0
+                                if (canvasId == sensorIdToLookFor) {
+                                    // console.log("chart:",chart[1])
+                                    // console.log("updated:",xlabels_reversed,ylabels_reversed)
+                                    addData(chart, xlabels_reversed, ylabels_reversed)
+                                } else if (canvasId == sensorIdToLookFor && !isNaN(ylabels_reversed[ylabels_reversed.length - 1])) {
+                                    // plotData(String(sensorIdToLookFor), ylabels_reversed, xlabels_reversed, label)
+                                    // addData(chart[1], xlabels_reversed, ylabels_reversed)
+                                    reloadThePage++; //page is reloaded 
+                                }
                             }
+
+
                         }
                         // chartIndex++
                     })
@@ -2250,7 +2338,7 @@ function switchButtonSecondGraph(sensorId, attr) {
 let run = async () => {
 
     while (1) {
-        updateData(await mainLoader);
+        updateData(chartList2);
         // test
         // notification()
         await delay(5 * 1000);
@@ -2261,7 +2349,7 @@ let notification = async () => {
     fetch('/api/notification-test?message=Updating the sensor gauge')
 }
 
-// run();
+run();
 
 // Experiment get live sensor value from socket.io-mqqt bridge
 
@@ -2269,11 +2357,23 @@ let notification = async () => {
 
 //MQTT Broker --mqtt--> NodeJS --socket.io--> Client
 var socketChannel = 'socketChannel'
-socket.on(socketChannel, (data) => {
+socket.on(socketChannel, async (data) => {
+
+    var liveDate = new Date()
+
     gaugeList.forEach(gauge => {
         if (data.topic.includes(gauge[0])) {
             // console.log(gauge[0], parseFloat(data.message).toFixed(1))
-            updateValueSvgGauge(gauge[0], gauge[1], parseFloat(data.message).toFixed(1))
+            liveDate = liveDate.toLocaleString('en-US', {
+                timeZone: 'Europe/Bucharest',
+                timeStyle: "medium",
+                dateStyle: "long"
+            })
+
+            // Update Current Value when message is received by the broker
+            updateValueSvgGauge(gauge[0], gauge[1], parseFloat(data.message).toFixed(1), updatedAt = liveDate)
+            var sensorId = gauge[1][0].parentElement.id.split("-")[0]
+            $("article[sensorId='" + sensorId + "']").attr("topic", data.topic)
         }
     })
 

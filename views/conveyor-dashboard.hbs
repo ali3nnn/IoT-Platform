@@ -37,8 +37,7 @@
             <div class="small-box bg-info box-shadow-5 switch-box">
                 <div class="inner">
                     <div class="switch-conveyor-toggle">
-                        <input onclick="switchConveyor()" type="checkbox" id="switch-conveyor"
-                            class='switch-conveyor' />
+                        <input type="checkbox" id="switch-conveyor" class='switch-conveyor' />
                         <label for="switch-conveyor" class='switch-label'>Toggle</label>
                     </div>
                     <h3>Switch</h3>
@@ -50,9 +49,9 @@
 
             <div class="small-box bg-info box-shadow-5 send-command">
                 <div class="inner">
-                    <h3>Reset</h3>
+                    <h3>Send</h3>
                 </div>
-                <div class="send-command-button" onclick="sendCommand()"></div>
+                <div class="send-command-button"></div>
                 <div class="icon">
                     <i class="fas fa-terminal"></i>
                 </div>
@@ -68,6 +67,7 @@
                 </div>
             </div>
 
+            {{#if isScaleAvailable.tableExist}}
             <div class="small-box bg-info scale-info">
                 <div class="inner">
                     <h3>0g</h3>
@@ -77,6 +77,8 @@
                     <i class="fas fa-balance-scale"></i>
                 </div>
             </div>
+            {{/if}}
+
 
             <div class="small-box bg-dark supply-1">
                 <div class="inner">
@@ -104,6 +106,8 @@
         <div class="conveyor-wrapper">
             <img id='conveyor-img' src="" alt="">
         </div>
+
+        <notification></notification>
 
         <script>
             var username = JSON.parse('{{{json username}}}');

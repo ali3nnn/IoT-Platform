@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon anysensor.js",
     "prod": "forever start --spinSleepTime 1000 anysensor.js",
-    "stop": "forever stop anysensor.js"
+    "stop": "forever stop anysensor.js",
+    "build": "webpack --config webpack.config.js --mode=development"
   },
   "author": "Alex Barbu",
   "license": "ISC",
@@ -14,13 +15,18 @@
     "axios": "^0.20.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
+    "bootstrap": "^4.5.0",
+    "chart.js": "^2.9.3",
+    "chartjs": "^0.3.24",
     "cookie-parser": "^1.4.5",
+    "daterangepicker": "^3.1.0",
     "dotenv": "^8.2.0",
     "eventsource": "^1.0.7",
     "express": "^4.17.1",
     "express-handlebars": "^4.0.4",
     "express-session": "^1.17.1",
     "express-sse": "^0.5.3",
+    "fontawesome": "^5.6.3",
     "forever": "^2.0.0",
     "forever-monitor": "^3.0.1",
     "handlebars": "^4.7.6",
@@ -28,18 +34,29 @@
     "hbs": "^4.1.1",
     "helmet": "^3.22.1",
     "influx": "^5.5.2",
+    "jquery": "^3.5.1",
     "jscharting": "^2.9.0-9",
     "jsonwebtoken": "^8.5.1",
+    "moment": "^2.29.0",
     "mqtt": "^4.2.0",
     "mqtt-connection": "^4.0.0",
     "mysql": "^2.18.1",
-    "ol": "^6.3.1",
+    "mysupercreativeanduniqueapp": "^1.9.0",
+    "ol": "^6.4.3",
     "paho-mqtt": "^1.1.0",
     "promise-mysql": "^4.1.3",
     "socket.io": "^2.3.0",
     "socketio-wildcard": "^2.0.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.3"
+    "css-loader": "^4.3.0",
+    "node-sass": "^4.14.1",
+    "nodemon": "^2.0.3",
+    "sass": "^1.26.11",
+    "sass-loader": "^10.0.2",
+    "style-loader": "^1.2.1",
+    "webpack": "^4.44.2",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
   }
 }

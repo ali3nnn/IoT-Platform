@@ -416,7 +416,9 @@ app.post('/register', authRegister, (req, res) => {
 
 // get and post request to /login page
 app.get('/login', (req, res) => {
-    res.render('login')
+    res.render('login', {
+        username: null
+    })
 });
 
 app.post('/login', authLogin, (req, res) => {
@@ -851,6 +853,7 @@ app.get('/api/get-data/type/:sensorId', (req, res) => {
     }
 })
 
+// Get all distinct sensorIds from a requested county
 app.get('/api/v2/get-data/sensorId/:county', (req, res) => {
     var data = []
     var time = new Date()
@@ -895,12 +898,21 @@ app.get('/api/v2/get-data/sensorId/:county', (req, res) => {
                     // console.log("after fetch", new Date() - time)
 
                     // get sensor type
-                    // var sensorTypeList = []
                     var sensorIdList = []
+                    var sensorTypeList = []
+                    var sensorZoneList = []
                     // var sensorIdListAux = []
 
                     for (var i = 0; i < result.length; i++) {
                         sensorIdList.push(result[i].key.split('sensorId=')[1].split(',type')[0])
+                    }
+
+                    for (var i = 0; i < result.length; i++) {
+                        sensorTypeList.push(result[i].key.split('type=')[1].split(',username')[0])
+                    }
+
+                    for (var i = 0; i < result.length; i++) {
+                        sensorZoneList.push(result[i].key.split(',zone=')[1])
                     }
 
                     // build the output
@@ -911,7 +923,9 @@ app.get('/api/v2/get-data/sensorId/:county', (req, res) => {
                             county: req.params.county,
                             user: sess.username,
                             sensorIdListLength: sensorIdList.length,
-                            sensorIdList: sensorIdList,
+                            sensorIdList,
+                            sensorTypeList,
+                            sensorZoneList,
                             influxResponse: new Date() - time + "ms",
                             mysqlResponse: mysqlTime + "ms",
                             influxQuery
@@ -945,7 +959,7 @@ app.get('/api/v2/get-data/sensorId/:county', (req, res) => {
     }
 })
 
-// Get all distinct sensorIds from a requested county
+// Get all distinct sensorIds from a requested county - not used
 app.get('/api/get-data/sensorId/:county', (req, res) => {
 
     var time = new Date()
@@ -990,6 +1004,9 @@ app.get('/api/get-data/sensorId/:county', (req, res) => {
             // // console.log(influxQuery)
         }
 
+        // select (distinct sensorId), type from ( select sensorId, type, value from sensors where username='demo' and county='bucuresti') group by sensorId
+
+
         // get sensor access from mysql
         const query = "SELECT * FROM sensors WHERE username='" + sess.username + "'"
         mysqlReader(query).then(async (rows) => {
@@ -1018,7 +1035,7 @@ app.get('/api/get-data/sensorId/:county', (req, res) => {
 
 
                 var whereQuery = `where username='` + sess.username + `' and county='` + req.params.county + `'`
-                var influxQuery = `select distinct(sensorId) as sensorId from ( select sensorId, value from sensors ` + whereQuery + ` )`
+                var influxQuery = `select distinct(sensorId) as sensorId from ( select sensorId, type, value from sensors ` + whereQuery + ` )`
 
             }
 
@@ -2963,11 +2980,45 @@ app.get("/api/get-scale-recordings", (req, res) => {
     sess = req.session
     if (sess.username) {
         if (sess.isScaleAvailable.tableExist) {
-            mysqlReader("SELECT * FROM scale_" + sess.username + "")
+            // var query = "select * from scale_" + sess.username + " where date(timestamp) = CURDATE()"
+            var query = "SELECT * FROM scale_" + sess.username + " where date(timestamp) = CURDATE()"
+            mysqlReader(query)
                 .then(result => {
                     res.send(result)
                 })
         }
+    }
+})
+
+// insert scale recording without login
+app.get("/api/v2/send-scale-recordings", (req, res) => {
+    // var sqlQuery = "INSERT INTO scale_" + req.query.username + " (barcode, value, wms) VALUES (" + req.query.barcode + ", " + req.query.weight + ", " + req.query.wms + "); "
+    var sqlQuery = "INSERT INTO scale_" + req.query.username + " (barcode, value, wms) VALUES (" + req.query.barcode + ", " + req.query.weight + ", 0); "
+    mysqlReader(sqlQuery)
+        .then(result => {
+            res.send({
+                url: req.originalUrl,
+                result
+            })
+        })
+})
+
+// insert scale recording
+app.get("/api/send-scale-recordings", (req, res) => {
+    sess = req.session
+    if (sess.username) {
+        if (req.query.wms) {
+            var sqlQuery = "INSERT INTO scale_" + sess.username + " (barcode, value, wms) VALUES (" + req.query.barcode + ", " + req.query.weight + ", " + req.query.wms + "); "
+        } else {
+            var sqlQuery = "INSERT INTO scale_" + sess.username + " (barcode, value) VALUES (" + req.query.barcode + ", " + req.query.weight + "); "
+        }
+        mysqlReader(sqlQuery)
+            .then(result => {
+                res.send({
+                    url: req.originalUrl,
+                    result
+                })
+            })
     }
 })
 
@@ -2985,6 +3036,7 @@ app.get("/api/get-scanner-recordings", (req, res) => {
     }
 })
 
+// insert scanner recordings
 app.get("/api/send-scanner-recordings", (req, res) => {
     sess = req.session
     if (sess.username) {

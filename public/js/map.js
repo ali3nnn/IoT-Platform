@@ -311,11 +311,14 @@ function getZoomOfMap() {
   if(coordToCalc.length == 2)
     var dist = getDistanceFromLatLon(coordToCalc[0][1],coordToCalc[0][0],coordToCalc[1][1],coordToCalc[1][0])
   else if(coordToCalc.length == 1)
-    var dist = 1000
+    var dist = 2000
   else if (coordToCalc.length >= 3) 
-    var dist = 1000
+    var dist = 2000
 
-  if(dist < 500)
+  
+  console.log("getZoomOfMap:", coordToCalc.length, dist)
+
+  if(dist < 1500)
     return 17
   else 
     return 6
@@ -341,7 +344,7 @@ function getCenterOfMap() {
   longAvg = longAvg / contor
 
   // getPerfectZoomForMap(longAvg, latAvg)
-
+  console.log("center of map", longAvg, latAvg)
   return [longAvg, latAvg]
 }
 
