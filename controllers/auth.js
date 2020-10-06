@@ -188,9 +188,13 @@ const authRegister = (req, res, next) => {
         passwordConfirm)
 
     // password do not match
-    if (password != passwordConfirm) return res.render('register', {
-        alert: "Passwords do not match!"
-    })
+    if (password != passwordConfirm) {
+        return res.render('register', {
+            alert: "Passwords do not match!"
+        })
+
+        // console.log("Password do not match!")
+    }
 
     // all fields required
     const allField = allTrue({
@@ -202,67 +206,21 @@ const authRegister = (req, res, next) => {
         passwordConfirm
     })
 
-    if (!allField) return res.render('register', {
-        alert: 'All fields are required!'
-    })
+    if (!allField) {
+        return res.render('register', {
+            alert: 'All fields are required!'
+        })
+    }
 
-    // Database.execute(config_db,
-    //     // check duplicate username - new way
-    //     database => database.query("SELECT username FROM users WHERE Username = '"+username+"' ")
-    //     .then(result => {
-    //         res.render('register', {
-    //             alert: 'That username is in use'
-    //         })
-    //     })
-    //     //check duplicate email - new way
-    //     .then(result => {
-    //         return database.query("SELECT email FROM users WHERE Email = '"+email+"' ")
-    //     })
-    //     .then(result => {
-    //         res.render('register', {
-    //             alert: 'That email is in use!'
-    //         })
-    //     }).then((result) => {
-    //         // Register if mail isn't duplicate
-
-    //         // encrypt the pasword
-    //         let hashedPassword = bcrypt.hash(password, 10)
-
-    //         console.log("New user registration")
-    //         console.log(name, username, email, password, '\r\n')
-
-    //         //register the user into db
-    //         return database.query("INSERT INTO users (name, username, email, password, user_role) VALUES ('"+name+"', '"+username+"', '"+email+"', '"+hashedPassword+"', 'basic')")
-
-    //     })
-    //     .then(result => {
-    //         next()
-    //     })
-    // )
 
     // check duplicate username - old way
-    db.query("SELECT username FROM users WHERE username = ?", [username], (err, result) => {
+    db.query("SELECT username FROM users WHERE username = ?", [username], async (err, result) => {
         // console.log("result:",result)
         if (err) console.log("There is a problem authRegister 1", err)
         else if (result.length) return res.render('register', {
             alert: 'That username is in use'
         })
-    })
 
-    //check duplicate email - old way
-    db.query("SELECT email FROM users WHERE Email = ?", [email], async (err, result) => {
-
-        if (err) console.log("There is a problem authRegister 2")
-        else if (result.length) return res.render('register', {
-            alert: 'That email is in use!'
-        })
-        else if (password != passwordConfirm) return res.render('register', {
-            alert: "Passwords do not match!"
-        })
-
-        // Register if mail isn't duplicate
-
-        // encrypt the pasword
         let hashedPassword = await bcrypt.hash(password, 10)
 
         //register the user into db
@@ -273,6 +231,7 @@ const authRegister = (req, res, next) => {
             company: company,
             password: hashedPassword,
             user_role: 'basic'
+            // user_role: 'admin'
         }, (err) => {
             if (err) console.log("Problem with insert ", err)
             else {
@@ -283,6 +242,41 @@ const authRegister = (req, res, next) => {
         })
 
     })
+
+    //check duplicate email - old way
+    // db.query("SELECT email FROM users WHERE Email = ?", [email], async (err, result) => {
+
+    //     if (err) console.log("There is a problem authRegister 2")
+    //     else if (result.length) return res.render('register', {
+    //         alert: 'That email is in use!'
+    //     })
+    //     else if (password != passwordConfirm) return res.render('register', {
+    //         alert: "Passwords do not match!"
+    //     })
+
+    //     // Register if mail isn't duplicate
+
+    //     // encrypt the pasword
+    //     let hashedPassword = await bcrypt.hash(password, 10)
+
+    //     //register the user into db
+    //     db.query("INSERT INTO users SET ?", {
+    //         name: name,
+    //         username: username,
+    //         email: email,
+    //         company: company,
+    //         password: hashedPassword,
+    //         user_role: 'basic'
+    //     }, (err) => {
+    //         if (err) console.log("Problem with insert ", err)
+    //         else {
+    //             console.log("New user registration")
+    //             console.log(name, username, email, company, password, '\r\n')
+    //             next()
+    //         }
+    //     })
+
+    // })
 
     // res.send("form submitted")
 }
@@ -386,10 +380,17 @@ const authDashboard = (req, res, next) => {
     // console.log("authDashboard")
     // console.log(sess.counties)
 
+    // var url = req.originalUrl
+
+    // if(url="/admin") {
+    //     next()
+    // }
+
     if (sess.username) {
         next()
     } else res.render("login", {
-        alert: "You are not logged in"
+        alert: "You are not logged in",
+        admin: true
     })
 }
 

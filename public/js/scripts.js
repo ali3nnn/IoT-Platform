@@ -1,5 +1,31 @@
 console.log("script.js added")
 
+// Start imports
+import {
+    allTrue
+} from './utils.js'
+var Checker = require('password-checker');
+var checker = new Checker();
+// End Imports
+
+// Password Checker Config
+checker.min_length = 6;
+checker.max_length = 20;
+checker.requireLetters(true);
+checker.requireNumbers(true);
+checker.requireSymbols(false);
+checker.checkLetters(true);
+checker.checkNumbers(true);
+checker.checkSymbols(true);
+// Change the letters that are allowed
+// Default is: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+// checker.allowed_letters = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghkmnpqrstuvwxyz';
+// Default is: 0123456789
+// checker.allowed_numbers = '1234567890';
+// Default is: _- !\"?$%^&*()+={}[]:;@'~#|<>,.?\\/
+checker.allowed_symbols = '-.';
+// End Password Checker Config
+
 // var passwordField = document.querySelector('.login-container .charInput:nth-child(4)');
 // var otherPasswordFields = document.querySelectorAll('.login-container .charInput:not(:nth-child(4))');
 // var registerButton = document.querySelector('.login-container input:last-child');
@@ -12,13 +38,40 @@ console.log("script.js added")
 // var password8Char = document.querySelector('.login-container .passwordRules li:nth-child(4)');
 
 var passwordField = document.querySelector('.login-container .charInput[name="password"]');
+var passwordConfirm = document.querySelector('.login-container .charInput[name="passwordConfirm"]');
 var otherPasswordFields = document.querySelectorAll('.login-container .charInput[name="password"]');
 var registerButton = document.querySelector('.login-container input[name="register"]');
+
 var passwordRules = document.querySelector('.login-container .passwordRules');
 var passwordUpperCase = document.querySelector('.login-container .passwordRules li:first-child');
 var passwordLowerCase = document.querySelector('.login-container .passwordRules li:nth-child(2)');
 var passwordDigit = document.querySelector('.login-container .passwordRules li:nth-child(3)');
 var password8Char = document.querySelector('.login-container .passwordRules li:nth-child(4)');
+
+// Input Values
+let allInputs = () => {
+
+    let formName = $('.login-container input[name="name"]').val()
+    let formCompany = $('.login-container input[name="company"]').val()
+    let formUsername = $('.login-container input[name="username"]').val()
+    let formEmail = $('.login-container input[name="email"]').val()
+    let formPassword = $('.login-container input[name="password"]').val()
+    let formConfirm = $('.login-container input[name="passwordConfirm"]').val()
+
+    // console.log(formName)
+
+    let obj = {
+        formName,
+        formCompany,
+        formUsername,
+        formEmail,
+        formPassword,
+        formConfirm
+    }
+
+    return [obj, allTrue(obj)]
+}
+
 
 // Time Helper Debug
 function timeDebug(str) {
@@ -28,93 +81,94 @@ function timeDebug(str) {
 }
 
 //hide the rules
-if (passwordRules)
-    passwordRules.classList.add('hideRules');
+if (registerButton) {
+    registerButton.value = "Fill the inputs"
+    registerButton.disabled = true
+}
 
-//show the rules when field is clicked
-if (passwordField)
-    passwordField.addEventListener('click', function (e) {
-        e.preventDefault();
-        console.log('password input clicked');
-        console.log(passwordRules.classList)
-        passwordRules.classList.remove('hideRules');
-        console.log(passwordRules.classList)
-    });
+var initialPassword = ''
 
-if (passwordField)
-    //show the rules when typing and check strongness
-    passwordField.addEventListener('input', function (e) {
-        e.preventDefault();
-        // console.log("string:", this.value)
-        passwordCheck = {
-            lowercase: false,
-            uppercase: false,
-            digit: false,
-            _8char: false
-        }
-
-        //check uppercase lowercase digit
-        function checkPasswordString(str) {
-            if (/[a-z]/.test(str)) passwordCheck.lowercase = true
-            else passwordCheck.lowercase = false
-
-            if (/[A-Z]/.test(str)) passwordCheck.uppercase = true
-            else passwordCheck.uppercase = false
-
-            if (/[0-9]/.test(str)) passwordCheck.digit = true
-            else passwordCheck.digit = false
-
-            if (str.length >= 8) passwordCheck._8char = true
-            else passwordCheck._8char = false
-        }
-        checkPasswordString(this.value)
-
-        //make li's green if condition if met
-        if (passwordCheck.lowercase) passwordLowerCase.style.color = "green"
-        else passwordLowerCase.style.color = "red"
-
-        if (passwordCheck.uppercase) passwordUpperCase.style.color = "green"
-        else passwordUpperCase.style.color = "red"
-
-        if (passwordCheck.digit) passwordDigit.style.color = "green"
-        else passwordDigit.style.color = "red";
-
-        if (passwordCheck._8char) password8Char.style.color = "green"
-        else password8Char.style.color = "red";
-
-        //enable register button if all li's are green
-        function allTrue(obj) {
-            for (var o in obj)
-                if (!obj[o]) return false;
-            return true;
-        }
-
-        // console.log(allTrue(passwordCheck))
-
-        if (allTrue(passwordCheck)) {
+$('.login-container input').keyup(function (elem) {
+    let attrName = $(this)[0].name
+    console.log(attrName, allInputs()[1])
+    if (attrName != 'password' && attrName != 'passwordConfirm') {
+        if (allInputs()[1]) {
             registerButton.value = "Register"
             registerButton.disabled = false
         } else {
-            registerButton.value = "Try a stronger password"
+            registerButton.value = "Fill the inputs"
             registerButton.disabled = true
         }
-        // console.log("test",passwordCheck,allTrue(passwordCheck))
+    } else if (attrName == 'password') {
+        var passwordMessage = ''
+        if (!checker.check(this.value)) {
+            passwordMessage = checker.errors[0].message
+            registerButton.value = passwordMessage
+            registerButton.disabled = true
+            registerButton.disabled__custom = false
+        } else {
+            registerButton.value = "Confirm the password"
+            registerButton.disabled = true
+            initialPassword = this.value
+        }
+    } else if (attrName == 'passwordConfirm') {
+        if (initialPassword == this.value) {
+            // console.log(initialPassword, this.value)
 
+            if (allInputs()[1]) {
+                registerButton.value = "Register"
+                registerButton.disabled = false
+            } else {
+                registerButton.value = "Fill the inputs"
+                registerButton.disabled = true
+            }
 
-        //show the password rules
-        passwordRules.classList.remove('hideRules');
+        } else {
+            registerButton.value = "Confirm the password"
+            registerButton.disabled = true
+        }
+    }
+
+})
+
+if (passwordField) {
+
+    //show the rules when typing and check strongness
+    passwordField.addEventListener('input', function (e) {
+        e.preventDefault();
+
+        // var passwordMessage = ''
+        // if (!checker.check(this.value)) {
+        //     passwordMessage = checker.errors[0].message
+        //     registerButton.value = passwordMessage
+        //     registerButton.disabled = true
+        //     registerButton.disabled__custom = false
+        // } else {
+        //     registerButton.value = "Confirm the password"
+        //     registerButton.disabled = true
+        //     initialPassword = this.value
+        // }
+
     });
 
-for (let i = 0; i < otherPasswordFields.length; i++) {
-    otherPasswordFields[i].addEventListener('click', function (e) {
+    //show the rules when typing and check strongness
+    passwordConfirm.addEventListener('input', function (e) {
         e.preventDefault();
-        // console.log('click in another input');
-        passwordRules.classList.add('hideRules');
-    });
-    otherPasswordFields[i].addEventListener('input', function (e) {
-        e.preventDefault();
-        // console.log('input in another field');
-        passwordRules.classList.add('hideRules');
+        // if (initialPassword == this.value) {
+        //     // console.log(initialPassword, this.value)
+
+        //     if (allInputs()[1]) {
+        //         registerButton.value = "Register"
+        //         registerButton.disabled = false
+        //     } else {
+        //         registerButton.value = "Fill the inputs"
+        //         registerButton.disabled = true
+        //     }
+
+        // } else {
+        //     registerButton.value = "Confirm the password"
+        //     registerButton.disabled = true
+        // }
     });
 }
 
@@ -126,31 +180,30 @@ var editUserBox = document.querySelector('.edit-user');
 function eventPath(evt) {
     var path = (evt.composedPath && evt.composedPath()) || evt.path,
         target = evt.target;
-  
+
     if (path != null) {
         // Safari doesn't include Window, but it should.
         return (path.indexOf(window) < 0) ? path.concat(window) : path;
     }
-  
+
     if (target === window) {
         return [window];
     }
-  
+
     function getParents(node, memo) {
         memo = memo || [];
         var parentNode = node.parentNode;
-  
+
         if (!parentNode) {
             return memo;
-        }
-        else {
+        } else {
             return getParents(parentNode, memo.concat(parentNode));
         }
     }
-  
+
     return [target].concat(getParents(target), window);
-  }
-  
+}
+
 
 $(document).ready(function () {
     // pop up functionality
@@ -173,7 +226,7 @@ $(document).ready(function () {
             // This browser doesn't supply path information
         }
 
-        
+
 
         if (el.classList.contains("popup")) {
             $(".show").removeClass("show")

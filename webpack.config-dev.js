@@ -18,5 +18,6 @@ module.exports = {
                 "sass-loader" // convert sass to css
             ]
         }]
-    }
+    },
+    watch: true
 };

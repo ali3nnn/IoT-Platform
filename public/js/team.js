@@ -1,60 +1,77 @@
 // Imports
 import {
-    timeoutAsync
+    timeoutAsync,
+    passwordChecker
 } from './utils.js'
+const bcrypt = require('bcryptjs');
+// End Imports
+
+// Config BcryptJS
+const saltRounds = 1;
+const salt = bcrypt.genSaltSync(saltRounds);
+// End config
 
 // get users from mysql
 let getUsers = async () => {
-    let response = await fetch("https://anysensor.dasstec.ro/api/get-users")
-    console.log(response)
+    let response = await fetch("/api/get-users")
+    // console.log(response)
     return response.json()
 }
 
 // get zones assigned to each user
 let getZones = async (username) => {
-    let response = await fetch("https://anysensor.dasstec.ro/api/v2/sensors-access?username=" + username)
+    let response = await fetch("/api/v2/sensors-access?username=" + username)
     return response.json()
 }
+
+var test_ = new Date()
 
 let main = (async () => {
     return await getUsers()
     // console.log(usersTable)
 })().then(async (usersJson) => {
 
-    console.log(usersJson)
+    // console.log("usersJson", usersJson)
+    console.log(new Date() - test_)
+
     const rows = usersJson[0].length
     var modalBtnFlag = 0
     var currentCompany = ''
 
     // console.log(usersJson[0])
 
+    // Small box info
     usersJson[0].forEach(row => {
         if (row.Username == loggedInUser) {
             currentCompany = row.company
-            $(".small-box-container .company").html(currentCompany)
+            $(".small-box-container .company").html(currentCompany) // add company to smallbox info
+            $("#form-add-user input[name='company']").val(currentCompany) // add company to add-user form
         }
     })
 
+    // Append the users
     for (var i = 0; i < rows; i++) {
         // && loggedInUser != usersJson[0][i].Username
         if (currentCompany == usersJson[0][i].company && usersJson[0][i].User_role != 'superadmin') {
             (async () => {
 
+                var usernameConverted = "user" + usersJson[0][i].Username.replace(".", "_")
+                // console.log("usernameConverted", usernameConverted)
+
                 $("body").append(`
-                <div class="modal modal-` + usersJson[0][i].Username + `" id="edit-user-` + usersJson[0][i].Username + `" aria-labelledby="edit-user-label-` + usersJson[0][i].Username + `" aria-hidden="true" tabindex="-1" role="dialog">
+                <div class="modal modal-` + usernameConverted + `" id="edit-user-` + usernameConverted + `" aria-labelledby="edit-user-label-` + usernameConverted + `" aria-hidden="true" tabindex="-1" role="dialog">
                     <div class="modal-dialog fadeInModal modal-dialog-centered" role="document">
                         <div class="modal-content">
     
                             <div class="modal-header">
-                                <h5 class="modal-title" id='edit-user-label-` + usersJson[0][i].Username + `'>Edit user: ` + usersJson[0][i].Username + `</h5>
+                                <h5 class="modal-title" id='edit-user-label-` + usernameConverted + `'>Edit user: ` + usersJson[0][i].Username + `</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
     
                             <div class="modal-body">
-                                <form action='/api/edit-user' method='GET' id="form-edit-user-` + usersJson[0][i].Username + `">
-
+                                <form action='/api/edit-user' method='GET' id="form-edit-user-` + usernameConverted + `">
                                     <div class="form-group hidden">
                                         <input type="text" class="form-control" name="id" value="` + usersJson[0][i].Id + `">
                                     </div>
@@ -88,8 +105,8 @@ let main = (async () => {
                             </div>
     
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-toggle="modal" data-target=".modal-` + usersJson[0][i].Username + `">Close</button>
-                                <button type="submit" value="Submit" form="form-edit-user-` + usersJson[0][i].Username + `" class="btn btn-primary">Save Changes</button>
+                                <button type="button" class="btn btn-secondary" data-toggle="modal" data-target=".modal-` + usernameConverted + `">Close</button>
+                                <button type="submit" value="Submit" form="form-edit-user-` + usernameConverted + `" class="btn btn-primary">Save Changes</button>
                             </div>
     
                         </div>
@@ -100,23 +117,23 @@ let main = (async () => {
                 // set current user first in list
                 if (usersJson[0][i].Username == loggedInUser) {
                     $(".team-container tbody").prepend(`
-                    <tr class='current-user'>
+                    <tr class='current-user' username="` + usersJson[0][i].Username + `">
                         <td class="user-col">` +
                         usersJson[0][i].Name + `<br>` +
                         usersJson[0][i].Username + `<br>` +
                         usersJson[0][i].Email + `<br>` +
                         `</td>
-                        <td class="zones-col zones-` + usersJson[0][i].Username + `">
-                            <a href="#" class='spinner ` + usersJson[0][i].Username + `-zone-spinner'>
+                        <td class="zones-col zones-` + usernameConverted + `">
+                            <a href="#" class='spinner ` + usernameConverted + `-zone-spinner'>
                                 <span>Loading...</span>
                             </a>
                         </td>
                         <td class="actions-col">
-                            <button disabled type="button" class="btn btn-outline-primary edit-user-` + usersJson[0][i].Username + `">
+                            <button type="button" class="btn btn-outline-primary edit-user-` + usernameConverted + `">
                                 <i class="fal fa-edit"></i>
                                 <span>Edit User</span>
                             </button>
-                            <button disabled type="button" class="btn btn-danger remove-user">
+                            <button type="button" class="btn btn-danger remove-user-` + usernameConverted + `">
                                 <i class="fal fa-user-minus"></i>
                                 <span>Remove User</span>
                             </button>
@@ -131,17 +148,17 @@ let main = (async () => {
                         usersJson[0][i].Username + `<br>` +
                         usersJson[0][i].Email + `<br>` +
                         `</td>
-                            <td class="zones-col zones-` + usersJson[0][i].Username + `">
-                                <a href="#" class='spinner ` + usersJson[0][i].Username + `-zone-spinner'>
+                            <td class="zones-col zones-` + usernameConverted + `">
+                                <a href="#" class='spinner ` + usernameConverted + `-zone-spinner'>
                                     <span>Loading...</span>
                                 </a>
                             </td>
                             <td class="actions-col">
-                                <button type="button" class="btn btn-outline-primary edit-user-` + usersJson[0][i].Username + `">
+                                <button type="button" class="btn btn-outline-primary edit-user-` + usernameConverted + `">
                                     <i class="fal fa-edit"></i>
                                     <span>Edit User</span>
                                 </button>
-                                <button type="button" class="btn btn-danger remove-user">
+                                <button type="button" class="btn btn-danger remove-user-` + usernameConverted + `">
                                     <i class="fal fa-user-minus"></i>
                                     <span>Remove User</span>
                                 </button>
@@ -149,6 +166,8 @@ let main = (async () => {
                         </tr>
                     `)
                 }
+
+                turnOnClick(usernameConverted)
 
                 return await getZones(usersJson[0][i].Username)
                 // return zonesTable
@@ -175,33 +194,19 @@ let main = (async () => {
                         `)
                     }
 
-                    turnOnClick(element.query)
+                    var usernameConverted = "user" + element.query.replace(".", "_")
 
-                    $(".team-container ." + element.query + "-zone-spinner").remove()
+                    // turnOnClick(usernameConverted)
+
+                    $(".team-container ." + usernameConverted + "-zone-spinner").remove()
 
                     if (element.error)
-                        $(".team-container .zones-" + element.query).append(`<span class="no-zone">` + element.error + `</span>`)
+                        $(".team-container .zones-" + usernameConverted).append(`<span class="no-zone">` + element.error + `</span>`)
                     else {
-                        $(".team-container .zones-" + element.query).append(`<span class="zone" belongsTo="` + element.belongsTo + `">` + element.zone + `</span>`)
+                        $(".team-container .zones-" + usernameConverted).append(`<span class="zone" belongsTo="` + element.belongsTo + `">` + element.zone + `</span>`)
                     }
 
-                    // console.log($(".modal-"+element.query+" .form-zones-container input[id='"+element.zone+"']"))
-                    // $("input[id='"+element.zone+"']").addClass("test")
-                    // $("input[id='"+element.zone+"']").prop( "checked", true );
-
                 })
-
-                // check zones in modal
-                // zonesTable.data.forEach(element => {
-                //     if(currentUserZones.includes(element.zone) && element.zone != undefined) {
-                //         // console.log($(".modal-"+element.query+" .form-zones-container input[id='"+element.zone+"']"), currentUserZones, element.zone)
-                //         console.log($(".modal-"+element.query+" .form-zones-container input[id='"+element.zone+"']"))
-                //         $(".modal-"+element.query+" .form-zones-container input[id='"+element.zone+"']").prop( "checked", true );
-                //     }
-                //         // $(".modal-"+element.query+" .form-zones-container .form-check-input[id='"+element.zone+"']").attr("checked")
-                // })
-
-
 
             }).then(() => {
 
@@ -229,8 +234,6 @@ let main = (async () => {
     })
 })
 
-
-
 function turnOnClick(user) {
 
     $(`.edit-user-` + user + ``).click(function () {
@@ -239,22 +242,49 @@ function turnOnClick(user) {
         });
     });
 
+    $(`.add-user`).click(function () {
+        $(`#add-user`).modal({
+            backdrop: 'static'
+        });
+    });
 
-    // callback when modal shows
-    // $('.modal-' + user + '').on('shown.bs.modal', function (e) {
-    //     console.log("shown")
+    console.log("turnOnClick("+user+")")
+    $(`.remove-user-` + user + ``).on('click', function (e) {
+        e.preventDefault();
+        var thisEl = $(this)
+        var ask = confirm("Do you want to REMOVE the user ?")
+        if (ask) {
+            var userReconverted = user.replace("_", ".").split('user')[1]
+            fetch('/api/remove-user?username=' + userReconverted).then(() => {
+                thisEl.parent().parent().remove()
+            })
+        } else {
+            // if user clicks cancel
+            console.log("canceled")
+        }
 
-    //     // $(".main-overlay").addClass("force-show-overlay")
-    //     // $('#main').addClass("blur4")
-    //     // $('#mySidenav').addClass("blur4")
-    // })
+    })
 
-    // // callback when modal hides
-    // $('.modal-' + user + '').on('hide.bs.modal', function (e) {
-    //     console.log("hide")
-    //     // $(".main-overlay").removeClass("force-show-overlay")
-    //     // $('#main').removeClass("blur4")
-    //     // $('#mySidenav').removeClass("blur4")
-    // })
+}
 
+
+
+// Check password in modal-add-user
+if ($(".modal-add-user input[name='password']").length) {
+    $(".modal-add-user button[type='submit']").attr('disabled', true)
+    document.querySelector('.modal-add-user input#password').addEventListener('input', function (e) {
+        e.preventDefault();
+        if (passwordChecker(this.value)) {
+            $('.modal-add-user input#password').addClass("wrong-password")
+            $('.modal-add-user input#password').removeClass("correct-password")
+            $(".modal-add-user button[type='submit']").attr('disabled', true)
+            // $(".password-message").remove()
+            // $(".modal-add-user button[type='submit']").insertAfter(`<p class="password-message">`+passwordChecker(this.value)+`</p>`)
+        } else {
+            $('.modal-add-user input#password').addClass("correct-password")
+            $('.modal-add-user input#password').removeClass("wrong-password")
+            $(".modal-add-user button[type='submit']").attr('disabled', false)
+            // $(".modal-add-user button[type='submit']").html("Add new user")
+        }
+    })
 }

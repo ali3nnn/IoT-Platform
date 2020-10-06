@@ -150,13 +150,13 @@ h2 {
 }
 
 .spinner {
-  position: relative;
-  /* left: 50%; */
+  position: absolute;
+  left: 50%;
   top: 50%;
-  /* transform: translateX(-50%); */
-  display: table;
-  /* height: 100%; */
-  margin: 0 auto;
+  transform: translate(-50%, -50%);
+  display: block;
+  /* height: 100%;
+  margin: 0 auto;*/
 }
 
 .spinner span {
@@ -258,9 +258,11 @@ h2 {
   0% {
     /* height: 100vh; */
   }
+
   30% {
     /* height: 120px; */
   }
+
   100% {
     /* height: 0vh; */
   }
@@ -270,9 +272,11 @@ h2 {
   0% {
     /* height: 100vh; */
   }
+
   30% {
     /* height: 120px; */
   }
+
   100% {
     /* height: 0vh; */
   }
@@ -311,6 +315,7 @@ h2 {
   .hidden-text-on-mobile span {
     display: none;
   }
+
   .hidden-text-on-mobile i {
     padding-right: 0 !important;
   }
@@ -397,7 +402,9 @@ h2.active {
   padding: 15px 50px !important;
 }
 
-input[type=button], input[type=submit], input[type=reset] {
+input[type=button],
+input[type=submit],
+input[type=reset] {
   background-color: #56baed;
   border: none;
   color: white;
@@ -420,7 +427,9 @@ input[type=button], input[type=submit], input[type=reset] {
 background-color: #39ace7;
 } */
 
-input[type=button]:hover, input[type=submit]:hover, input[type=reset]:hover {
+input[type=button]:hover,
+input[type=submit]:hover,
+input[type=reset]:hover {
   background-color: #4aa7d6;
   cursor: pointer;
   -webkit-transform: scale(0.97);
@@ -428,7 +437,9 @@ input[type=button]:hover, input[type=submit]:hover, input[type=reset]:hover {
   transform: scale(0.97);
 }
 
-input[type=button]:active, input[type=submit]:active, input[type=reset]:active {
+input[type=button]:active,
+input[type=submit]:active,
+input[type=reset]:active {
   -webkit-transform: scale(0.97);
   -ms-transform: scale(0.97);
   transform: scale(0.97);
@@ -475,16 +486,17 @@ input[type=button]:active, input[type=submit]:active, input[type=reset]:active {
   border-radius: 5px 5px 5px 5px;
   -webkit-box-shadow: 0px 0px 6px 0px transparent;
   box-shadow: 0px 0px 6px 0px transparent;
+
 }
 
 .charInput:focus {
   background-color: #fff;
-  border-bottom: 2px solid #5fbae9;
+  border-bottom: 2px solid var(--nav-bg);
 }
 
-.charInput:placeholder {
-  color: #cccccc;
-}
+// &:placeholder {
+//   color: #cccccc;
+// }
 
 /* ANIMATIONS */
 
@@ -506,6 +518,7 @@ input[type=button]:active, input[type=submit]:active, input[type=reset]:active {
     -webkit-transform: translate3d(0, -100%, 0);
     transform: translate3d(0, -100%, 0);
   }
+
   100% {
     opacity: 1;
     -webkit-transform: none;
@@ -519,6 +532,7 @@ input[type=button]:active, input[type=submit]:active, input[type=reset]:active {
     -webkit-transform: translate3d(0, -100%, 0);
     transform: translate3d(0, -100%, 0);
   }
+
   100% {
     opacity: 1;
     -webkit-transform: none;
@@ -532,6 +546,7 @@ input[type=button]:active, input[type=submit]:active, input[type=reset]:active {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -541,6 +556,7 @@ input[type=button]:active, input[type=submit]:active, input[type=reset]:active {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -744,6 +760,19 @@ h1 {
 
 .hideRules {
   display: none;
+}
+
+// Register Button
+input[name="register"][disabled] {
+  background: var(--red) !important
+}
+
+input[name=register][disabled][value="Confirm the password"] {
+  background: var(--yellow) !important
+}
+
+input[name=register][value="Register"] {
+  background: var(--success) !important
 }
 
 /* Edit User Container */
@@ -950,7 +979,9 @@ h2.active {
   padding: 15px 50px !important;
 }
 
-input[type=button], input[type=submit], input[type=reset] {
+input[type=button],
+input[type=submit],
+input[type=reset] {
   background-color: #56baed;
   border: none;
   color: white;
@@ -973,7 +1004,9 @@ input[type=button], input[type=submit], input[type=reset] {
 background-color: #39ace7;
 } */
 
-input[type=button]:hover, input[type=submit]:hover, input[type=reset]:hover {
+input[type=button]:hover,
+input[type=submit]:hover,
+input[type=reset]:hover {
   background-color: #4aa7d6;
   cursor: pointer;
   -webkit-transform: scale(0.97);
@@ -981,7 +1014,9 @@ input[type=button]:hover, input[type=submit]:hover, input[type=reset]:hover {
   transform: scale(0.97);
 }
 
-input[type=button]:active, input[type=submit]:active, input[type=reset]:active {
+input[type=button]:active,
+input[type=submit]:active,
+input[type=reset]:active {
   -webkit-transform: scale(0.97);
   -ms-transform: scale(0.97);
   transform: scale(0.97);
@@ -1059,6 +1094,7 @@ input[type=button]:active, input[type=submit]:active, input[type=reset]:active {
     -webkit-transform: translate3d(0, -100%, 0);
     transform: translate3d(0, -100%, 0);
   }
+
   100% {
     opacity: 1;
     -webkit-transform: none;
@@ -1072,6 +1108,7 @@ input[type=button]:active, input[type=submit]:active, input[type=reset]:active {
     -webkit-transform: translate3d(0, -100%, 0);
     transform: translate3d(0, -100%, 0);
   }
+
   100% {
     opacity: 1;
     -webkit-transform: none;
@@ -1085,6 +1122,7 @@ input[type=button]:active, input[type=submit]:active, input[type=reset]:active {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -1094,6 +1132,7 @@ input[type=button]:active, input[type=submit]:active, input[type=reset]:active {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -1405,7 +1444,8 @@ form.update-container>input[type=submit] {
 
 /* side navigation */
 
-.hidden-button, .hidden-element {
+.hidden-button,
+.hidden-element {
   display: none;
 }
 
@@ -1474,6 +1514,7 @@ form.update-container>input[type=submit] {
   .sidenav-opened {
     width: 80%;
   }
+
   .sidenav-wrapper {
     /* left: 0px */
   }
@@ -1527,6 +1568,7 @@ form.update-container>input[type=submit] {
   .sidenav {
     /* padding-top: 15px; */
   }
+
   .sidenav a {
     font-size: 18px;
   }
@@ -1693,7 +1735,9 @@ img.img-circle {
   font-weight: 500;
 }
 
-.basic-items a:hover, .admin-items a:hover, .settings-items a:hover {
+.basic-items a:hover,
+.admin-items a:hover,
+.settings-items a:hover {
   /* color: var(--sidenav-link-color-hover); */
   /* background: var(--sidenav-link-background-hover); */
   color: var(--navbar-bg) !important;
@@ -1774,7 +1818,8 @@ padding-bottom: 5px
   background-color: #007bff
 }
 
-.card-primary:not(.card-outline)>.card-header, .card-primary:not(.card-outline)>.card-header a {
+.card-primary:not(.card-outline)>.card-header,
+.card-primary:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -1794,28 +1839,48 @@ padding-bottom: 5px
   border-top: 3px solid #007bff
 }
 
-.bg-gradient-primary .btn-tool, .bg-primary .btn-tool, .card-primary:not(.card-outline) .btn-tool {
+.bg-gradient-primary .btn-tool,
+.bg-primary .btn-tool,
+.card-primary:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-gradient-primary .btn-tool:hover, .bg-primary .btn-tool:hover, .card-primary:not(.card-outline) .btn-tool:hover {
+.bg-gradient-primary .btn-tool:hover,
+.bg-primary .btn-tool:hover,
+.card-primary:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-gradient-primary .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-primary .bootstrap-datetimepicker-widget .table th, .card.bg-primary .bootstrap-datetimepicker-widget .table td, .card.bg-primary .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-primary .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-primary .bootstrap-datetimepicker-widget .table th,
+.card.bg-primary .bootstrap-datetimepicker-widget .table td,
+.card.bg-primary .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-primary .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-primary .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-primary .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-primary .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-primary .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-primary .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-primary .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-primary .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-primary .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-primary .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-primary .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-primary .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-primary .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-primary .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-primary .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-primary .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-primary .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-primary .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-primary .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-primary .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #0067d6;
   color: #fff
 }
 
-.card.bg-gradient-primary .bootstrap-datetimepicker-widget table td.today::before, .card.bg-primary .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-primary .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-primary .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-gradient-primary .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-primary .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-primary .bootstrap-datetimepicker-widget table td.active, .card.bg-primary .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-primary .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-primary .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-primary .bootstrap-datetimepicker-widget table td.active,
+.card.bg-primary .bootstrap-datetimepicker-widget table td.active:hover {
   background: #3395ff;
   color: #fff
 }
@@ -1824,7 +1889,8 @@ padding-bottom: 5px
   background-color: #6c757d
 }
 
-.card-secondary:not(.card-outline)>.card-header, .card-secondary:not(.card-outline)>.card-header a {
+.card-secondary:not(.card-outline)>.card-header,
+.card-secondary:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -1844,28 +1910,48 @@ padding-bottom: 5px
   border-top: 3px solid #6c757d
 }
 
-.bg-gradient-secondary .btn-tool, .bg-secondary .btn-tool, .card-secondary:not(.card-outline) .btn-tool {
+.bg-gradient-secondary .btn-tool,
+.bg-secondary .btn-tool,
+.card-secondary:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-gradient-secondary .btn-tool:hover, .bg-secondary .btn-tool:hover, .card-secondary:not(.card-outline) .btn-tool:hover {
+.bg-gradient-secondary .btn-tool:hover,
+.bg-secondary .btn-tool:hover,
+.card-secondary:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-gradient-secondary .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-secondary .bootstrap-datetimepicker-widget .table th, .card.bg-secondary .bootstrap-datetimepicker-widget .table td, .card.bg-secondary .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-secondary .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-secondary .bootstrap-datetimepicker-widget .table th,
+.card.bg-secondary .bootstrap-datetimepicker-widget .table td,
+.card.bg-secondary .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-secondary .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-secondary .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-secondary .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-secondary .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-secondary .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-secondary .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-secondary .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-secondary .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-secondary .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-secondary .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-secondary .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-secondary .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-secondary .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-secondary .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-secondary .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-secondary .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-secondary .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-secondary .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-secondary .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-secondary .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #596167;
   color: #fff
 }
 
-.card.bg-gradient-secondary .bootstrap-datetimepicker-widget table td.today::before, .card.bg-secondary .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-secondary .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-secondary .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-gradient-secondary .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-secondary .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-secondary .bootstrap-datetimepicker-widget table td.active, .card.bg-secondary .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-secondary .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-secondary .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-secondary .bootstrap-datetimepicker-widget table td.active,
+.card.bg-secondary .bootstrap-datetimepicker-widget table td.active:hover {
   background: #868e96;
   color: #fff
 }
@@ -1874,7 +1960,8 @@ padding-bottom: 5px
   background-color: #28a745
 }
 
-.card-success:not(.card-outline)>.card-header, .card-success:not(.card-outline)>.card-header a {
+.card-success:not(.card-outline)>.card-header,
+.card-success:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -1894,28 +1981,48 @@ padding-bottom: 5px
   border-top: 3px solid #28a745
 }
 
-.bg-gradient-success .btn-tool, .bg-success .btn-tool, .card-success:not(.card-outline) .btn-tool {
+.bg-gradient-success .btn-tool,
+.bg-success .btn-tool,
+.card-success:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-gradient-success .btn-tool:hover, .bg-success .btn-tool:hover, .card-success:not(.card-outline) .btn-tool:hover {
+.bg-gradient-success .btn-tool:hover,
+.bg-success .btn-tool:hover,
+.card-success:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-gradient-success .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-success .bootstrap-datetimepicker-widget .table th, .card.bg-success .bootstrap-datetimepicker-widget .table td, .card.bg-success .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-success .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-success .bootstrap-datetimepicker-widget .table th,
+.card.bg-success .bootstrap-datetimepicker-widget .table td,
+.card.bg-success .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-success .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-success .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-success .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-success .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-success .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-success .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-success .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-success .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-success .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-success .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-success .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-success .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-success .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-success .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-success .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-success .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-success .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-success .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-success .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-success .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #208637;
   color: #fff
 }
 
-.card.bg-gradient-success .bootstrap-datetimepicker-widget table td.today::before, .card.bg-success .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-success .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-success .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-gradient-success .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-success .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-success .bootstrap-datetimepicker-widget table td.active, .card.bg-success .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-success .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-success .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-success .bootstrap-datetimepicker-widget table td.active,
+.card.bg-success .bootstrap-datetimepicker-widget table td.active:hover {
   background: #34ce57;
   color: #fff
 }
@@ -1924,7 +2031,8 @@ padding-bottom: 5px
   background-color: #17a2b8
 }
 
-.card-info:not(.card-outline)>.card-header, .card-info:not(.card-outline)>.card-header a {
+.card-info:not(.card-outline)>.card-header,
+.card-info:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -1944,28 +2052,48 @@ padding-bottom: 5px
   border-top: 3px solid #17a2b8
 }
 
-.bg-gradient-info .btn-tool, .bg-info .btn-tool, .card-info:not(.card-outline) .btn-tool {
+.bg-gradient-info .btn-tool,
+.bg-info .btn-tool,
+.card-info:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-gradient-info .btn-tool:hover, .bg-info .btn-tool:hover, .card-info:not(.card-outline) .btn-tool:hover {
+.bg-gradient-info .btn-tool:hover,
+.bg-info .btn-tool:hover,
+.card-info:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-gradient-info .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-info .bootstrap-datetimepicker-widget .table th, .card.bg-info .bootstrap-datetimepicker-widget .table td, .card.bg-info .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-info .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-info .bootstrap-datetimepicker-widget .table th,
+.card.bg-info .bootstrap-datetimepicker-widget .table td,
+.card.bg-info .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-info .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-info .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-info .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-info .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-info .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-info .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-info .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-info .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-info .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-info .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-info .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-info .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-info .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-info .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-info .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-info .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-info .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-info .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-info .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-info .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #128294;
   color: #fff
 }
 
-.card.bg-gradient-info .bootstrap-datetimepicker-widget table td.today::before, .card.bg-info .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-info .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-info .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-gradient-info .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-info .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-info .bootstrap-datetimepicker-widget table td.active, .card.bg-info .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-info .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-info .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-info .bootstrap-datetimepicker-widget table td.active,
+.card.bg-info .bootstrap-datetimepicker-widget table td.active:hover {
   background: #1fc8e3;
   color: #fff
 }
@@ -1974,7 +2102,8 @@ padding-bottom: 5px
   background-color: #ffc107
 }
 
-.card-warning:not(.card-outline)>.card-header, .card-warning:not(.card-outline)>.card-header a {
+.card-warning:not(.card-outline)>.card-header,
+.card-warning:not(.card-outline)>.card-header a {
   color: #1f2d3d
 }
 
@@ -1994,28 +2123,48 @@ padding-bottom: 5px
   border-top: 3px solid #ffc107
 }
 
-.bg-gradient-warning .btn-tool, .bg-warning .btn-tool, .card-warning:not(.card-outline) .btn-tool {
+.bg-gradient-warning .btn-tool,
+.bg-warning .btn-tool,
+.card-warning:not(.card-outline) .btn-tool {
   color: rgba(31, 45, 61, .8)
 }
 
-.bg-gradient-warning .btn-tool:hover, .bg-warning .btn-tool:hover, .card-warning:not(.card-outline) .btn-tool:hover {
+.bg-gradient-warning .btn-tool:hover,
+.bg-warning .btn-tool:hover,
+.card-warning:not(.card-outline) .btn-tool:hover {
   color: #1f2d3d
 }
 
-.card.bg-gradient-warning .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-warning .bootstrap-datetimepicker-widget .table th, .card.bg-warning .bootstrap-datetimepicker-widget .table td, .card.bg-warning .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-warning .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-warning .bootstrap-datetimepicker-widget .table th,
+.card.bg-warning .bootstrap-datetimepicker-widget .table td,
+.card.bg-warning .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-warning .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-warning .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-warning .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-warning .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-warning .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-warning .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-warning .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-warning .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-warning .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-warning .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-warning .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-warning .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-warning .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-warning .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-warning .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-warning .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-warning .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-warning .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-warning .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-warning .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #dda600;
   color: #1f2d3d
 }
 
-.card.bg-gradient-warning .bootstrap-datetimepicker-widget table td.today::before, .card.bg-warning .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-warning .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-warning .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #1f2d3d
 }
 
-.card.bg-gradient-warning .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-warning .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-warning .bootstrap-datetimepicker-widget table td.active, .card.bg-warning .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-warning .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-warning .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-warning .bootstrap-datetimepicker-widget table td.active,
+.card.bg-warning .bootstrap-datetimepicker-widget table td.active:hover {
   background: #ffce3a;
   color: #1f2d3d
 }
@@ -2024,7 +2173,8 @@ padding-bottom: 5px
   background-color: #dc3545
 }
 
-.card-danger:not(.card-outline)>.card-header, .card-danger:not(.card-outline)>.card-header a {
+.card-danger:not(.card-outline)>.card-header,
+.card-danger:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -2044,28 +2194,48 @@ padding-bottom: 5px
   border-top: 3px solid #dc3545
 }
 
-.bg-danger .btn-tool, .bg-gradient-danger .btn-tool, .card-danger:not(.card-outline) .btn-tool {
+.bg-danger .btn-tool,
+.bg-gradient-danger .btn-tool,
+.card-danger:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-danger .btn-tool:hover, .bg-gradient-danger .btn-tool:hover, .card-danger:not(.card-outline) .btn-tool:hover {
+.bg-danger .btn-tool:hover,
+.bg-gradient-danger .btn-tool:hover,
+.card-danger:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-danger .bootstrap-datetimepicker-widget .table td, .card.bg-danger .bootstrap-datetimepicker-widget .table th, .card.bg-gradient-danger .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-danger .bootstrap-datetimepicker-widget .table th {
+.card.bg-danger .bootstrap-datetimepicker-widget .table td,
+.card.bg-danger .bootstrap-datetimepicker-widget .table th,
+.card.bg-gradient-danger .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-danger .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-danger .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-danger .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-danger .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-danger .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-danger .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-gradient-danger .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-danger .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-danger .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-danger .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-danger .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-danger .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-danger .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-danger .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-danger .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-danger .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-gradient-danger .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-danger .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-danger .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-danger .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-danger .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #c62232;
   color: #fff
 }
 
-.card.bg-danger .bootstrap-datetimepicker-widget table td.today::before, .card.bg-gradient-danger .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-danger .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-gradient-danger .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-danger .bootstrap-datetimepicker-widget table td.active, .card.bg-danger .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-gradient-danger .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-danger .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-danger .bootstrap-datetimepicker-widget table td.active,
+.card.bg-danger .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-gradient-danger .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-danger .bootstrap-datetimepicker-widget table td.active:hover {
   background: #e4606d;
   color: #fff
 }
@@ -2074,7 +2244,8 @@ padding-bottom: 5px
   background-color: #f8f9fa
 }
 
-.card-light:not(.card-outline)>.card-header, .card-light:not(.card-outline)>.card-header a {
+.card-light:not(.card-outline)>.card-header,
+.card-light:not(.card-outline)>.card-header a {
   color: #1f2d3d
 }
 
@@ -2094,28 +2265,48 @@ padding-bottom: 5px
   border-top: 3px solid #f8f9fa
 }
 
-.bg-gradient-light .btn-tool, .bg-light .btn-tool, .card-light:not(.card-outline) .btn-tool {
+.bg-gradient-light .btn-tool,
+.bg-light .btn-tool,
+.card-light:not(.card-outline) .btn-tool {
   color: rgba(31, 45, 61, .8)
 }
 
-.bg-gradient-light .btn-tool:hover, .bg-light .btn-tool:hover, .card-light:not(.card-outline) .btn-tool:hover {
+.bg-gradient-light .btn-tool:hover,
+.bg-light .btn-tool:hover,
+.card-light:not(.card-outline) .btn-tool:hover {
   color: #1f2d3d
 }
 
-.card.bg-gradient-light .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-light .bootstrap-datetimepicker-widget .table th, .card.bg-light .bootstrap-datetimepicker-widget .table td, .card.bg-light .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-light .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-light .bootstrap-datetimepicker-widget .table th,
+.card.bg-light .bootstrap-datetimepicker-widget .table td,
+.card.bg-light .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-light .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-light .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-light .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-light .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-light .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-light .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-light .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-light .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-light .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-light .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-light .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-light .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-light .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-light .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-light .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-light .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-light .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-light .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-light .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-light .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #e0e5e9;
   color: #1f2d3d
 }
 
-.card.bg-gradient-light .bootstrap-datetimepicker-widget table td.today::before, .card.bg-light .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-light .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-light .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #1f2d3d
 }
 
-.card.bg-gradient-light .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-light .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-light .bootstrap-datetimepicker-widget table td.active, .card.bg-light .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-light .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-light .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-light .bootstrap-datetimepicker-widget table td.active,
+.card.bg-light .bootstrap-datetimepicker-widget table td.active:hover {
   background: #fff;
   color: #1f2d3d
 }
@@ -2124,7 +2315,8 @@ padding-bottom: 5px
   background-color: #343a40
 }
 
-.card-dark:not(.card-outline)>.card-header, .card-dark:not(.card-outline)>.card-header a {
+.card-dark:not(.card-outline)>.card-header,
+.card-dark:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -2144,28 +2336,48 @@ padding-bottom: 5px
   border-top: 3px solid #343a40
 }
 
-.bg-dark .btn-tool, .bg-gradient-dark .btn-tool, .card-dark:not(.card-outline) .btn-tool {
+.bg-dark .btn-tool,
+.bg-gradient-dark .btn-tool,
+.card-dark:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-dark .btn-tool:hover, .bg-gradient-dark .btn-tool:hover, .card-dark:not(.card-outline) .btn-tool:hover {
+.bg-dark .btn-tool:hover,
+.bg-gradient-dark .btn-tool:hover,
+.card-dark:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-dark .bootstrap-datetimepicker-widget .table td, .card.bg-dark .bootstrap-datetimepicker-widget .table th, .card.bg-gradient-dark .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-dark .bootstrap-datetimepicker-widget .table th {
+.card.bg-dark .bootstrap-datetimepicker-widget .table td,
+.card.bg-dark .bootstrap-datetimepicker-widget .table th,
+.card.bg-gradient-dark .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-dark .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-dark .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-dark .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-dark .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-dark .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-dark .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-gradient-dark .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-dark .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-dark .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-dark .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-dark .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-dark .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-dark .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-dark .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-dark .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-dark .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-gradient-dark .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-dark .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-dark .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-dark .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-dark .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #222629;
   color: #fff
 }
 
-.card.bg-dark .bootstrap-datetimepicker-widget table td.today::before, .card.bg-gradient-dark .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-dark .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-gradient-dark .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-dark .bootstrap-datetimepicker-widget table td.active, .card.bg-dark .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-gradient-dark .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-dark .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-dark .bootstrap-datetimepicker-widget table td.active,
+.card.bg-dark .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-gradient-dark .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-dark .bootstrap-datetimepicker-widget table td.active:hover {
   background: #4b545c;
   color: #fff
 }
@@ -2174,7 +2386,8 @@ padding-bottom: 5px
   background-color: #3c8dbc
 }
 
-.card-lightblue:not(.card-outline)>.card-header, .card-lightblue:not(.card-outline)>.card-header a {
+.card-lightblue:not(.card-outline)>.card-header,
+.card-lightblue:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -2194,28 +2407,48 @@ padding-bottom: 5px
   border-top: 3px solid #3c8dbc
 }
 
-.bg-gradient-lightblue .btn-tool, .bg-lightblue .btn-tool, .card-lightblue:not(.card-outline) .btn-tool {
+.bg-gradient-lightblue .btn-tool,
+.bg-lightblue .btn-tool,
+.card-lightblue:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-gradient-lightblue .btn-tool:hover, .bg-lightblue .btn-tool:hover, .card-lightblue:not(.card-outline) .btn-tool:hover {
+.bg-gradient-lightblue .btn-tool:hover,
+.bg-lightblue .btn-tool:hover,
+.card-lightblue:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-gradient-lightblue .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-lightblue .bootstrap-datetimepicker-widget .table th, .card.bg-lightblue .bootstrap-datetimepicker-widget .table td, .card.bg-lightblue .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-lightblue .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-lightblue .bootstrap-datetimepicker-widget .table th,
+.card.bg-lightblue .bootstrap-datetimepicker-widget .table td,
+.card.bg-lightblue .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-lightblue .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-lightblue .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-lightblue .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-lightblue .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-lightblue .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-lightblue .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-lightblue .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-lightblue .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-lightblue .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-lightblue .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-lightblue .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-lightblue .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-lightblue .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-lightblue .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-lightblue .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-lightblue .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-lightblue .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-lightblue .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-lightblue .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-lightblue .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #32769d;
   color: #fff
 }
 
-.card.bg-gradient-lightblue .bootstrap-datetimepicker-widget table td.today::before, .card.bg-lightblue .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-lightblue .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-lightblue .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-gradient-lightblue .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-lightblue .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-lightblue .bootstrap-datetimepicker-widget table td.active, .card.bg-lightblue .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-lightblue .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-lightblue .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-lightblue .bootstrap-datetimepicker-widget table td.active,
+.card.bg-lightblue .bootstrap-datetimepicker-widget table td.active:hover {
   background: #5fa4cc;
   color: #fff
 }
@@ -2224,7 +2457,8 @@ padding-bottom: 5px
   background-color: #001f3f
 }
 
-.card-navy:not(.card-outline)>.card-header, .card-navy:not(.card-outline)>.card-header a {
+.card-navy:not(.card-outline)>.card-header,
+.card-navy:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -2244,28 +2478,48 @@ padding-bottom: 5px
   border-top: 3px solid #001f3f
 }
 
-.bg-gradient-navy .btn-tool, .bg-navy .btn-tool, .card-navy:not(.card-outline) .btn-tool {
+.bg-gradient-navy .btn-tool,
+.bg-navy .btn-tool,
+.card-navy:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-gradient-navy .btn-tool:hover, .bg-navy .btn-tool:hover, .card-navy:not(.card-outline) .btn-tool:hover {
+.bg-gradient-navy .btn-tool:hover,
+.bg-navy .btn-tool:hover,
+.card-navy:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-gradient-navy .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-navy .bootstrap-datetimepicker-widget .table th, .card.bg-navy .bootstrap-datetimepicker-widget .table td, .card.bg-navy .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-navy .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-navy .bootstrap-datetimepicker-widget .table th,
+.card.bg-navy .bootstrap-datetimepicker-widget .table td,
+.card.bg-navy .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-navy .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-navy .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-navy .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-navy .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-navy .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-navy .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-navy .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-navy .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-navy .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-navy .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-navy .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-navy .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-navy .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-navy .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-navy .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-navy .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-navy .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-navy .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-navy .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-navy .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #000b16;
   color: #fff
 }
 
-.card.bg-gradient-navy .bootstrap-datetimepicker-widget table td.today::before, .card.bg-navy .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-navy .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-navy .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-gradient-navy .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-navy .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-navy .bootstrap-datetimepicker-widget table td.active, .card.bg-navy .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-navy .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-navy .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-navy .bootstrap-datetimepicker-widget table td.active,
+.card.bg-navy .bootstrap-datetimepicker-widget table td.active:hover {
   background: #003872;
   color: #fff
 }
@@ -2274,7 +2528,8 @@ padding-bottom: 5px
   background-color: #3d9970
 }
 
-.card-olive:not(.card-outline)>.card-header, .card-olive:not(.card-outline)>.card-header a {
+.card-olive:not(.card-outline)>.card-header,
+.card-olive:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -2294,28 +2549,48 @@ padding-bottom: 5px
   border-top: 3px solid #3d9970
 }
 
-.bg-gradient-olive .btn-tool, .bg-olive .btn-tool, .card-olive:not(.card-outline) .btn-tool {
+.bg-gradient-olive .btn-tool,
+.bg-olive .btn-tool,
+.card-olive:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-gradient-olive .btn-tool:hover, .bg-olive .btn-tool:hover, .card-olive:not(.card-outline) .btn-tool:hover {
+.bg-gradient-olive .btn-tool:hover,
+.bg-olive .btn-tool:hover,
+.card-olive:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-gradient-olive .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-olive .bootstrap-datetimepicker-widget .table th, .card.bg-olive .bootstrap-datetimepicker-widget .table td, .card.bg-olive .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-olive .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-olive .bootstrap-datetimepicker-widget .table th,
+.card.bg-olive .bootstrap-datetimepicker-widget .table td,
+.card.bg-olive .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-olive .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-olive .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-olive .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-olive .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-olive .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-olive .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-olive .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-olive .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-olive .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-olive .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-olive .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-olive .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-olive .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-olive .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-olive .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-olive .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-olive .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-olive .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-olive .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-olive .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #317c5b;
   color: #fff
 }
 
-.card.bg-gradient-olive .bootstrap-datetimepicker-widget table td.today::before, .card.bg-olive .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-olive .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-olive .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-gradient-olive .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-olive .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-olive .bootstrap-datetimepicker-widget table td.active, .card.bg-olive .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-olive .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-olive .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-olive .bootstrap-datetimepicker-widget table td.active,
+.card.bg-olive .bootstrap-datetimepicker-widget table td.active:hover {
   background: #50b98a;
   color: #fff
 }
@@ -2324,7 +2599,8 @@ padding-bottom: 5px
   background-color: #01ff70
 }
 
-.card-lime:not(.card-outline)>.card-header, .card-lime:not(.card-outline)>.card-header a {
+.card-lime:not(.card-outline)>.card-header,
+.card-lime:not(.card-outline)>.card-header a {
   color: #1f2d3d
 }
 
@@ -2344,28 +2620,48 @@ padding-bottom: 5px
   border-top: 3px solid #01ff70
 }
 
-.bg-gradient-lime .btn-tool, .bg-lime .btn-tool, .card-lime:not(.card-outline) .btn-tool {
+.bg-gradient-lime .btn-tool,
+.bg-lime .btn-tool,
+.card-lime:not(.card-outline) .btn-tool {
   color: rgba(31, 45, 61, .8)
 }
 
-.bg-gradient-lime .btn-tool:hover, .bg-lime .btn-tool:hover, .card-lime:not(.card-outline) .btn-tool:hover {
+.bg-gradient-lime .btn-tool:hover,
+.bg-lime .btn-tool:hover,
+.card-lime:not(.card-outline) .btn-tool:hover {
   color: #1f2d3d
 }
 
-.card.bg-gradient-lime .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-lime .bootstrap-datetimepicker-widget .table th, .card.bg-lime .bootstrap-datetimepicker-widget .table td, .card.bg-lime .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-lime .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-lime .bootstrap-datetimepicker-widget .table th,
+.card.bg-lime .bootstrap-datetimepicker-widget .table td,
+.card.bg-lime .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-lime .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-lime .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-lime .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-lime .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-lime .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-lime .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-lime .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-lime .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-lime .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-lime .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-lime .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-lime .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-lime .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-lime .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-lime .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-lime .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-lime .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-lime .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-lime .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-lime .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #00d75e;
   color: #1f2d3d
 }
 
-.card.bg-gradient-lime .bootstrap-datetimepicker-widget table td.today::before, .card.bg-lime .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-lime .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-lime .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #1f2d3d
 }
 
-.card.bg-gradient-lime .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-lime .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-lime .bootstrap-datetimepicker-widget table td.active, .card.bg-lime .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-lime .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-lime .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-lime .bootstrap-datetimepicker-widget table td.active,
+.card.bg-lime .bootstrap-datetimepicker-widget table td.active:hover {
   background: #34ff8d;
   color: #1f2d3d
 }
@@ -2374,7 +2670,8 @@ padding-bottom: 5px
   background-color: #f012be
 }
 
-.card-fuchsia:not(.card-outline)>.card-header, .card-fuchsia:not(.card-outline)>.card-header a {
+.card-fuchsia:not(.card-outline)>.card-header,
+.card-fuchsia:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -2394,28 +2691,48 @@ padding-bottom: 5px
   border-top: 3px solid #f012be
 }
 
-.bg-fuchsia .btn-tool, .bg-gradient-fuchsia .btn-tool, .card-fuchsia:not(.card-outline) .btn-tool {
+.bg-fuchsia .btn-tool,
+.bg-gradient-fuchsia .btn-tool,
+.card-fuchsia:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-fuchsia .btn-tool:hover, .bg-gradient-fuchsia .btn-tool:hover, .card-fuchsia:not(.card-outline) .btn-tool:hover {
+.bg-fuchsia .btn-tool:hover,
+.bg-gradient-fuchsia .btn-tool:hover,
+.card-fuchsia:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-fuchsia .bootstrap-datetimepicker-widget .table td, .card.bg-fuchsia .bootstrap-datetimepicker-widget .table th, .card.bg-gradient-fuchsia .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-fuchsia .bootstrap-datetimepicker-widget .table th {
+.card.bg-fuchsia .bootstrap-datetimepicker-widget .table td,
+.card.bg-fuchsia .bootstrap-datetimepicker-widget .table th,
+.card.bg-gradient-fuchsia .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-fuchsia .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-fuchsia .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-fuchsia .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-fuchsia .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-fuchsia .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-fuchsia .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-gradient-fuchsia .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-fuchsia .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-fuchsia .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-fuchsia .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-fuchsia .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-fuchsia .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-fuchsia .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-fuchsia .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-fuchsia .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-fuchsia .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-gradient-fuchsia .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-fuchsia .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-fuchsia .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-fuchsia .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-fuchsia .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #cc0da1;
   color: #fff
 }
 
-.card.bg-fuchsia .bootstrap-datetimepicker-widget table td.today::before, .card.bg-gradient-fuchsia .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-fuchsia .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-gradient-fuchsia .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-fuchsia .bootstrap-datetimepicker-widget table td.active, .card.bg-fuchsia .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-gradient-fuchsia .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-fuchsia .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-fuchsia .bootstrap-datetimepicker-widget table td.active,
+.card.bg-fuchsia .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-gradient-fuchsia .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-fuchsia .bootstrap-datetimepicker-widget table td.active:hover {
   background: #f342cb;
   color: #fff
 }
@@ -2424,7 +2741,8 @@ padding-bottom: 5px
   background-color: #d81b60
 }
 
-.card-maroon:not(.card-outline)>.card-header, .card-maroon:not(.card-outline)>.card-header a {
+.card-maroon:not(.card-outline)>.card-header,
+.card-maroon:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -2444,28 +2762,48 @@ padding-bottom: 5px
   border-top: 3px solid #d81b60
 }
 
-.bg-gradient-maroon .btn-tool, .bg-maroon .btn-tool, .card-maroon:not(.card-outline) .btn-tool {
+.bg-gradient-maroon .btn-tool,
+.bg-maroon .btn-tool,
+.card-maroon:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-gradient-maroon .btn-tool:hover, .bg-maroon .btn-tool:hover, .card-maroon:not(.card-outline) .btn-tool:hover {
+.bg-gradient-maroon .btn-tool:hover,
+.bg-maroon .btn-tool:hover,
+.card-maroon:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-gradient-maroon .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-maroon .bootstrap-datetimepicker-widget .table th, .card.bg-maroon .bootstrap-datetimepicker-widget .table td, .card.bg-maroon .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-maroon .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-maroon .bootstrap-datetimepicker-widget .table th,
+.card.bg-maroon .bootstrap-datetimepicker-widget .table td,
+.card.bg-maroon .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-maroon .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-maroon .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-maroon .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-maroon .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-maroon .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-maroon .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-maroon .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-maroon .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-maroon .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-maroon .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-maroon .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-maroon .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-maroon .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-maroon .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-maroon .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-maroon .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-maroon .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-maroon .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-maroon .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-maroon .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #b41650;
   color: #fff
 }
 
-.card.bg-gradient-maroon .bootstrap-datetimepicker-widget table td.today::before, .card.bg-maroon .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-maroon .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-maroon .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-gradient-maroon .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-maroon .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-maroon .bootstrap-datetimepicker-widget table td.active, .card.bg-maroon .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-maroon .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-maroon .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-maroon .bootstrap-datetimepicker-widget table td.active,
+.card.bg-maroon .bootstrap-datetimepicker-widget table td.active:hover {
   background: #e73f7c;
   color: #fff
 }
@@ -2474,7 +2812,8 @@ padding-bottom: 5px
   background-color: #007bff
 }
 
-.card-blue:not(.card-outline)>.card-header, .card-blue:not(.card-outline)>.card-header a {
+.card-blue:not(.card-outline)>.card-header,
+.card-blue:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -2494,28 +2833,48 @@ padding-bottom: 5px
   border-top: 3px solid #007bff
 }
 
-.bg-blue .btn-tool, .bg-gradient-blue .btn-tool, .card-blue:not(.card-outline) .btn-tool {
+.bg-blue .btn-tool,
+.bg-gradient-blue .btn-tool,
+.card-blue:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-blue .btn-tool:hover, .bg-gradient-blue .btn-tool:hover, .card-blue:not(.card-outline) .btn-tool:hover {
+.bg-blue .btn-tool:hover,
+.bg-gradient-blue .btn-tool:hover,
+.card-blue:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-blue .bootstrap-datetimepicker-widget .table td, .card.bg-blue .bootstrap-datetimepicker-widget .table th, .card.bg-gradient-blue .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-blue .bootstrap-datetimepicker-widget .table th {
+.card.bg-blue .bootstrap-datetimepicker-widget .table td,
+.card.bg-blue .bootstrap-datetimepicker-widget .table th,
+.card.bg-gradient-blue .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-blue .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-blue .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-blue .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-blue .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-blue .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-blue .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-gradient-blue .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-blue .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-blue .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-blue .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-blue .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-blue .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-blue .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-blue .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-blue .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-blue .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-gradient-blue .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-blue .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-blue .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-blue .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-blue .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #0067d6;
   color: #fff
 }
 
-.card.bg-blue .bootstrap-datetimepicker-widget table td.today::before, .card.bg-gradient-blue .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-blue .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-gradient-blue .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-blue .bootstrap-datetimepicker-widget table td.active, .card.bg-blue .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-gradient-blue .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-blue .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-blue .bootstrap-datetimepicker-widget table td.active,
+.card.bg-blue .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-gradient-blue .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-blue .bootstrap-datetimepicker-widget table td.active:hover {
   background: #3395ff;
   color: #fff
 }
@@ -2524,7 +2883,8 @@ padding-bottom: 5px
   background-color: #6610f2
 }
 
-.card-indigo:not(.card-outline)>.card-header, .card-indigo:not(.card-outline)>.card-header a {
+.card-indigo:not(.card-outline)>.card-header,
+.card-indigo:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -2544,28 +2904,48 @@ padding-bottom: 5px
   border-top: 3px solid #6610f2
 }
 
-.bg-gradient-indigo .btn-tool, .bg-indigo .btn-tool, .card-indigo:not(.card-outline) .btn-tool {
+.bg-gradient-indigo .btn-tool,
+.bg-indigo .btn-tool,
+.card-indigo:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-gradient-indigo .btn-tool:hover, .bg-indigo .btn-tool:hover, .card-indigo:not(.card-outline) .btn-tool:hover {
+.bg-gradient-indigo .btn-tool:hover,
+.bg-indigo .btn-tool:hover,
+.card-indigo:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-gradient-indigo .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-indigo .bootstrap-datetimepicker-widget .table th, .card.bg-indigo .bootstrap-datetimepicker-widget .table td, .card.bg-indigo .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-indigo .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-indigo .bootstrap-datetimepicker-widget .table th,
+.card.bg-indigo .bootstrap-datetimepicker-widget .table td,
+.card.bg-indigo .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-indigo .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-indigo .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-indigo .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-indigo .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-indigo .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-indigo .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-indigo .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-indigo .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-indigo .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-indigo .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-indigo .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-indigo .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-indigo .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-indigo .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-indigo .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-indigo .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-indigo .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-indigo .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-indigo .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-indigo .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #550bce;
   color: #fff
 }
 
-.card.bg-gradient-indigo .bootstrap-datetimepicker-widget table td.today::before, .card.bg-indigo .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-indigo .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-indigo .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-gradient-indigo .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-indigo .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-indigo .bootstrap-datetimepicker-widget table td.active, .card.bg-indigo .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-indigo .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-indigo .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-indigo .bootstrap-datetimepicker-widget table td.active,
+.card.bg-indigo .bootstrap-datetimepicker-widget table td.active:hover {
   background: #8540f5;
   color: #fff
 }
@@ -2574,7 +2954,8 @@ padding-bottom: 5px
   background-color: #6f42c1
 }
 
-.card-purple:not(.card-outline)>.card-header, .card-purple:not(.card-outline)>.card-header a {
+.card-purple:not(.card-outline)>.card-header,
+.card-purple:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -2594,28 +2975,48 @@ padding-bottom: 5px
   border-top: 3px solid #6f42c1
 }
 
-.bg-gradient-purple .btn-tool, .bg-purple .btn-tool, .card-purple:not(.card-outline) .btn-tool {
+.bg-gradient-purple .btn-tool,
+.bg-purple .btn-tool,
+.card-purple:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-gradient-purple .btn-tool:hover, .bg-purple .btn-tool:hover, .card-purple:not(.card-outline) .btn-tool:hover {
+.bg-gradient-purple .btn-tool:hover,
+.bg-purple .btn-tool:hover,
+.card-purple:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-gradient-purple .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-purple .bootstrap-datetimepicker-widget .table th, .card.bg-purple .bootstrap-datetimepicker-widget .table td, .card.bg-purple .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-purple .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-purple .bootstrap-datetimepicker-widget .table th,
+.card.bg-purple .bootstrap-datetimepicker-widget .table td,
+.card.bg-purple .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-purple .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-purple .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-purple .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-purple .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-purple .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-purple .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-purple .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-purple .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-purple .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-purple .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-purple .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-purple .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-purple .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-purple .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-purple .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-purple .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-purple .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-purple .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-purple .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-purple .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #5d36a4;
   color: #fff
 }
 
-.card.bg-gradient-purple .bootstrap-datetimepicker-widget table td.today::before, .card.bg-purple .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-purple .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-purple .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-gradient-purple .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-purple .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-purple .bootstrap-datetimepicker-widget table td.active, .card.bg-purple .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-purple .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-purple .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-purple .bootstrap-datetimepicker-widget table td.active,
+.card.bg-purple .bootstrap-datetimepicker-widget table td.active:hover {
   background: #8c68ce;
   color: #fff
 }
@@ -2624,7 +3025,8 @@ padding-bottom: 5px
   background-color: #e83e8c
 }
 
-.card-pink:not(.card-outline)>.card-header, .card-pink:not(.card-outline)>.card-header a {
+.card-pink:not(.card-outline)>.card-header,
+.card-pink:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -2644,28 +3046,48 @@ padding-bottom: 5px
   border-top: 3px solid #e83e8c
 }
 
-.bg-gradient-pink .btn-tool, .bg-pink .btn-tool, .card-pink:not(.card-outline) .btn-tool {
+.bg-gradient-pink .btn-tool,
+.bg-pink .btn-tool,
+.card-pink:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-gradient-pink .btn-tool:hover, .bg-pink .btn-tool:hover, .card-pink:not(.card-outline) .btn-tool:hover {
+.bg-gradient-pink .btn-tool:hover,
+.bg-pink .btn-tool:hover,
+.card-pink:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-gradient-pink .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-pink .bootstrap-datetimepicker-widget .table th, .card.bg-pink .bootstrap-datetimepicker-widget .table td, .card.bg-pink .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-pink .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-pink .bootstrap-datetimepicker-widget .table th,
+.card.bg-pink .bootstrap-datetimepicker-widget .table td,
+.card.bg-pink .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-pink .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-pink .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-pink .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-pink .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-pink .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-pink .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-pink .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-pink .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-pink .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-pink .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-pink .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-pink .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-pink .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-pink .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-pink .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-pink .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-pink .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-pink .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-pink .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-pink .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #e21b76;
   color: #fff
 }
 
-.card.bg-gradient-pink .bootstrap-datetimepicker-widget table td.today::before, .card.bg-pink .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-pink .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-pink .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-gradient-pink .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-pink .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-pink .bootstrap-datetimepicker-widget table td.active, .card.bg-pink .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-pink .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-pink .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-pink .bootstrap-datetimepicker-widget table td.active,
+.card.bg-pink .bootstrap-datetimepicker-widget table td.active:hover {
   background: #ed6ca7;
   color: #fff
 }
@@ -2674,7 +3096,8 @@ padding-bottom: 5px
   background-color: #dc3545
 }
 
-.card-red:not(.card-outline)>.card-header, .card-red:not(.card-outline)>.card-header a {
+.card-red:not(.card-outline)>.card-header,
+.card-red:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -2694,28 +3117,48 @@ padding-bottom: 5px
   border-top: 3px solid #dc3545
 }
 
-.bg-gradient-red .btn-tool, .bg-red .btn-tool, .card-red:not(.card-outline) .btn-tool {
+.bg-gradient-red .btn-tool,
+.bg-red .btn-tool,
+.card-red:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-gradient-red .btn-tool:hover, .bg-red .btn-tool:hover, .card-red:not(.card-outline) .btn-tool:hover {
+.bg-gradient-red .btn-tool:hover,
+.bg-red .btn-tool:hover,
+.card-red:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-gradient-red .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-red .bootstrap-datetimepicker-widget .table th, .card.bg-red .bootstrap-datetimepicker-widget .table td, .card.bg-red .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-red .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-red .bootstrap-datetimepicker-widget .table th,
+.card.bg-red .bootstrap-datetimepicker-widget .table td,
+.card.bg-red .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-red .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-red .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-red .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-red .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-red .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-red .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-red .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-red .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-red .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-red .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-red .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-red .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-red .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-red .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-red .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-red .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-red .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-red .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-red .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-red .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #c62232;
   color: #fff
 }
 
-.card.bg-gradient-red .bootstrap-datetimepicker-widget table td.today::before, .card.bg-red .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-red .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-red .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-gradient-red .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-red .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-red .bootstrap-datetimepicker-widget table td.active, .card.bg-red .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-red .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-red .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-red .bootstrap-datetimepicker-widget table td.active,
+.card.bg-red .bootstrap-datetimepicker-widget table td.active:hover {
   background: #e4606d;
   color: #fff
 }
@@ -2724,7 +3167,8 @@ padding-bottom: 5px
   background-color: #fd7e14
 }
 
-.card-orange:not(.card-outline)>.card-header, .card-orange:not(.card-outline)>.card-header a {
+.card-orange:not(.card-outline)>.card-header,
+.card-orange:not(.card-outline)>.card-header a {
   color: #1f2d3d
 }
 
@@ -2744,28 +3188,48 @@ padding-bottom: 5px
   border-top: 3px solid #fd7e14
 }
 
-.bg-gradient-orange .btn-tool, .bg-orange .btn-tool, .card-orange:not(.card-outline) .btn-tool {
+.bg-gradient-orange .btn-tool,
+.bg-orange .btn-tool,
+.card-orange:not(.card-outline) .btn-tool {
   color: rgba(31, 45, 61, .8)
 }
 
-.bg-gradient-orange .btn-tool:hover, .bg-orange .btn-tool:hover, .card-orange:not(.card-outline) .btn-tool:hover {
+.bg-gradient-orange .btn-tool:hover,
+.bg-orange .btn-tool:hover,
+.card-orange:not(.card-outline) .btn-tool:hover {
   color: #1f2d3d
 }
 
-.card.bg-gradient-orange .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-orange .bootstrap-datetimepicker-widget .table th, .card.bg-orange .bootstrap-datetimepicker-widget .table td, .card.bg-orange .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-orange .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-orange .bootstrap-datetimepicker-widget .table th,
+.card.bg-orange .bootstrap-datetimepicker-widget .table td,
+.card.bg-orange .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-orange .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-orange .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-orange .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-orange .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-orange .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-orange .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-orange .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-orange .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-orange .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-orange .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-orange .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-orange .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-orange .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-orange .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-orange .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-orange .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-orange .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-orange .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-orange .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-orange .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #e66a02;
   color: #1f2d3d
 }
 
-.card.bg-gradient-orange .bootstrap-datetimepicker-widget table td.today::before, .card.bg-orange .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-orange .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-orange .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #1f2d3d
 }
 
-.card.bg-gradient-orange .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-orange .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-orange .bootstrap-datetimepicker-widget table td.active, .card.bg-orange .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-orange .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-orange .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-orange .bootstrap-datetimepicker-widget table td.active,
+.card.bg-orange .bootstrap-datetimepicker-widget table td.active:hover {
   background: #fd9a47;
   color: #1f2d3d
 }
@@ -2774,7 +3238,8 @@ padding-bottom: 5px
   background-color: #ffc107
 }
 
-.card-yellow:not(.card-outline)>.card-header, .card-yellow:not(.card-outline)>.card-header a {
+.card-yellow:not(.card-outline)>.card-header,
+.card-yellow:not(.card-outline)>.card-header a {
   color: #1f2d3d
 }
 
@@ -2794,28 +3259,48 @@ padding-bottom: 5px
   border-top: 3px solid #ffc107
 }
 
-.bg-gradient-yellow .btn-tool, .bg-yellow .btn-tool, .card-yellow:not(.card-outline) .btn-tool {
+.bg-gradient-yellow .btn-tool,
+.bg-yellow .btn-tool,
+.card-yellow:not(.card-outline) .btn-tool {
   color: rgba(31, 45, 61, .8)
 }
 
-.bg-gradient-yellow .btn-tool:hover, .bg-yellow .btn-tool:hover, .card-yellow:not(.card-outline) .btn-tool:hover {
+.bg-gradient-yellow .btn-tool:hover,
+.bg-yellow .btn-tool:hover,
+.card-yellow:not(.card-outline) .btn-tool:hover {
   color: #1f2d3d
 }
 
-.card.bg-gradient-yellow .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-yellow .bootstrap-datetimepicker-widget .table th, .card.bg-yellow .bootstrap-datetimepicker-widget .table td, .card.bg-yellow .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-yellow .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-yellow .bootstrap-datetimepicker-widget .table th,
+.card.bg-yellow .bootstrap-datetimepicker-widget .table td,
+.card.bg-yellow .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-yellow .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-yellow .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-yellow .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-yellow .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-yellow .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-yellow .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-yellow .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-yellow .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-yellow .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-yellow .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-yellow .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-yellow .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-yellow .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-yellow .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-yellow .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-yellow .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-yellow .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-yellow .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-yellow .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-yellow .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #dda600;
   color: #1f2d3d
 }
 
-.card.bg-gradient-yellow .bootstrap-datetimepicker-widget table td.today::before, .card.bg-yellow .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-yellow .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-yellow .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #1f2d3d
 }
 
-.card.bg-gradient-yellow .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-yellow .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-yellow .bootstrap-datetimepicker-widget table td.active, .card.bg-yellow .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-yellow .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-yellow .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-yellow .bootstrap-datetimepicker-widget table td.active,
+.card.bg-yellow .bootstrap-datetimepicker-widget table td.active:hover {
   background: #ffce3a;
   color: #1f2d3d
 }
@@ -2824,7 +3309,8 @@ padding-bottom: 5px
   background-color: #28a745
 }
 
-.card-green:not(.card-outline)>.card-header, .card-green:not(.card-outline)>.card-header a {
+.card-green:not(.card-outline)>.card-header,
+.card-green:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -2844,28 +3330,48 @@ padding-bottom: 5px
   border-top: 3px solid #28a745
 }
 
-.bg-gradient-green .btn-tool, .bg-green .btn-tool, .card-green:not(.card-outline) .btn-tool {
+.bg-gradient-green .btn-tool,
+.bg-green .btn-tool,
+.card-green:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-gradient-green .btn-tool:hover, .bg-green .btn-tool:hover, .card-green:not(.card-outline) .btn-tool:hover {
+.bg-gradient-green .btn-tool:hover,
+.bg-green .btn-tool:hover,
+.card-green:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-gradient-green .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-green .bootstrap-datetimepicker-widget .table th, .card.bg-green .bootstrap-datetimepicker-widget .table td, .card.bg-green .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-green .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-green .bootstrap-datetimepicker-widget .table th,
+.card.bg-green .bootstrap-datetimepicker-widget .table td,
+.card.bg-green .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-green .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-green .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-green .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-green .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-green .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-green .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-green .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-green .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-green .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-green .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-green .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-green .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-green .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-green .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-green .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-green .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-green .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-green .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-green .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-green .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #208637;
   color: #fff
 }
 
-.card.bg-gradient-green .bootstrap-datetimepicker-widget table td.today::before, .card.bg-green .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-green .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-green .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-gradient-green .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-green .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-green .bootstrap-datetimepicker-widget table td.active, .card.bg-green .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-green .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-green .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-green .bootstrap-datetimepicker-widget table td.active,
+.card.bg-green .bootstrap-datetimepicker-widget table td.active:hover {
   background: #34ce57;
   color: #fff
 }
@@ -2874,7 +3380,8 @@ padding-bottom: 5px
   background-color: #20c997
 }
 
-.card-teal:not(.card-outline)>.card-header, .card-teal:not(.card-outline)>.card-header a {
+.card-teal:not(.card-outline)>.card-header,
+.card-teal:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -2894,28 +3401,48 @@ padding-bottom: 5px
   border-top: 3px solid #20c997
 }
 
-.bg-gradient-teal .btn-tool, .bg-teal .btn-tool, .card-teal:not(.card-outline) .btn-tool {
+.bg-gradient-teal .btn-tool,
+.bg-teal .btn-tool,
+.card-teal:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-gradient-teal .btn-tool:hover, .bg-teal .btn-tool:hover, .card-teal:not(.card-outline) .btn-tool:hover {
+.bg-gradient-teal .btn-tool:hover,
+.bg-teal .btn-tool:hover,
+.card-teal:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-gradient-teal .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-teal .bootstrap-datetimepicker-widget .table th, .card.bg-teal .bootstrap-datetimepicker-widget .table td, .card.bg-teal .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-teal .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-teal .bootstrap-datetimepicker-widget .table th,
+.card.bg-teal .bootstrap-datetimepicker-widget .table td,
+.card.bg-teal .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-teal .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-teal .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-teal .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-teal .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-teal .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-teal .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-teal .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-teal .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-teal .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-teal .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-teal .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-teal .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-teal .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-teal .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-teal .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-teal .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-teal .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-teal .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-teal .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-teal .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #1aa67d;
   color: #fff
 }
 
-.card.bg-gradient-teal .bootstrap-datetimepicker-widget table td.today::before, .card.bg-teal .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-teal .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-teal .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-gradient-teal .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-teal .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-teal .bootstrap-datetimepicker-widget table td.active, .card.bg-teal .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-teal .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-teal .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-teal .bootstrap-datetimepicker-widget table td.active,
+.card.bg-teal .bootstrap-datetimepicker-widget table td.active:hover {
   background: #3ce0af;
   color: #fff
 }
@@ -2924,7 +3451,8 @@ padding-bottom: 5px
   background-color: #17a2b8
 }
 
-.card-cyan:not(.card-outline)>.card-header, .card-cyan:not(.card-outline)>.card-header a {
+.card-cyan:not(.card-outline)>.card-header,
+.card-cyan:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -2944,28 +3472,48 @@ padding-bottom: 5px
   border-top: 3px solid #17a2b8
 }
 
-.bg-cyan .btn-tool, .bg-gradient-cyan .btn-tool, .card-cyan:not(.card-outline) .btn-tool {
+.bg-cyan .btn-tool,
+.bg-gradient-cyan .btn-tool,
+.card-cyan:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-cyan .btn-tool:hover, .bg-gradient-cyan .btn-tool:hover, .card-cyan:not(.card-outline) .btn-tool:hover {
+.bg-cyan .btn-tool:hover,
+.bg-gradient-cyan .btn-tool:hover,
+.card-cyan:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-cyan .bootstrap-datetimepicker-widget .table td, .card.bg-cyan .bootstrap-datetimepicker-widget .table th, .card.bg-gradient-cyan .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-cyan .bootstrap-datetimepicker-widget .table th {
+.card.bg-cyan .bootstrap-datetimepicker-widget .table td,
+.card.bg-cyan .bootstrap-datetimepicker-widget .table th,
+.card.bg-gradient-cyan .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-cyan .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-cyan .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-cyan .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-cyan .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-cyan .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-cyan .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-gradient-cyan .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-cyan .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-cyan .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-cyan .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-cyan .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-cyan .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-cyan .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-cyan .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-cyan .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-cyan .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-gradient-cyan .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-cyan .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-cyan .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-cyan .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-cyan .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #128294;
   color: #fff
 }
 
-.card.bg-cyan .bootstrap-datetimepicker-widget table td.today::before, .card.bg-gradient-cyan .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-cyan .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-gradient-cyan .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-cyan .bootstrap-datetimepicker-widget table td.active, .card.bg-cyan .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-gradient-cyan .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-cyan .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-cyan .bootstrap-datetimepicker-widget table td.active,
+.card.bg-cyan .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-gradient-cyan .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-cyan .bootstrap-datetimepicker-widget table td.active:hover {
   background: #1fc8e3;
   color: #fff
 }
@@ -2974,7 +3522,8 @@ padding-bottom: 5px
   background-color: #fff
 }
 
-.card-white:not(.card-outline)>.card-header, .card-white:not(.card-outline)>.card-header a {
+.card-white:not(.card-outline)>.card-header,
+.card-white:not(.card-outline)>.card-header a {
   color: #1f2d3d
 }
 
@@ -2994,28 +3543,48 @@ padding-bottom: 5px
   border-top: 3px solid #fff
 }
 
-.bg-gradient-white .btn-tool, .bg-white .btn-tool, .card-white:not(.card-outline) .btn-tool {
+.bg-gradient-white .btn-tool,
+.bg-white .btn-tool,
+.card-white:not(.card-outline) .btn-tool {
   color: rgba(31, 45, 61, .8)
 }
 
-.bg-gradient-white .btn-tool:hover, .bg-white .btn-tool:hover, .card-white:not(.card-outline) .btn-tool:hover {
+.bg-gradient-white .btn-tool:hover,
+.bg-white .btn-tool:hover,
+.card-white:not(.card-outline) .btn-tool:hover {
   color: #1f2d3d
 }
 
-.card.bg-gradient-white .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-white .bootstrap-datetimepicker-widget .table th, .card.bg-white .bootstrap-datetimepicker-widget .table td, .card.bg-white .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-white .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-white .bootstrap-datetimepicker-widget .table th,
+.card.bg-white .bootstrap-datetimepicker-widget .table td,
+.card.bg-white .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-white .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-white .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-white .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-white .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-white .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-white .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-white .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-white .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-white .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-white .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-white .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-white .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-white .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-white .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-white .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-white .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-white .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-white .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-white .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-white .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #ebebeb;
   color: #1f2d3d
 }
 
-.card.bg-gradient-white .bootstrap-datetimepicker-widget table td.today::before, .card.bg-white .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-white .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-white .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #1f2d3d
 }
 
-.card.bg-gradient-white .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-white .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-white .bootstrap-datetimepicker-widget table td.active, .card.bg-white .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-white .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-white .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-white .bootstrap-datetimepicker-widget table td.active,
+.card.bg-white .bootstrap-datetimepicker-widget table td.active:hover {
   background: #fff;
   color: #1f2d3d
 }
@@ -3024,7 +3593,8 @@ padding-bottom: 5px
   background-color: #6c757d
 }
 
-.card-gray:not(.card-outline)>.card-header, .card-gray:not(.card-outline)>.card-header a {
+.card-gray:not(.card-outline)>.card-header,
+.card-gray:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -3044,28 +3614,48 @@ padding-bottom: 5px
   border-top: 3px solid #6c757d
 }
 
-.bg-gradient-gray .btn-tool, .bg-gray .btn-tool, .card-gray:not(.card-outline) .btn-tool {
+.bg-gradient-gray .btn-tool,
+.bg-gray .btn-tool,
+.card-gray:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-gradient-gray .btn-tool:hover, .bg-gray .btn-tool:hover, .card-gray:not(.card-outline) .btn-tool:hover {
+.bg-gradient-gray .btn-tool:hover,
+.bg-gray .btn-tool:hover,
+.card-gray:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-gradient-gray .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-gray .bootstrap-datetimepicker-widget .table th, .card.bg-gray .bootstrap-datetimepicker-widget .table td, .card.bg-gray .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-gray .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-gray .bootstrap-datetimepicker-widget .table th,
+.card.bg-gray .bootstrap-datetimepicker-widget .table td,
+.card.bg-gray .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-gray .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-gray .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-gray .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-gray .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-gray .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-gray .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gray .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gray .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gray .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gray .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-gray .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-gray .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-gray .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-gray .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-gray .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-gray .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gray .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gray .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gray .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gray .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #596167;
   color: #fff
 }
 
-.card.bg-gradient-gray .bootstrap-datetimepicker-widget table td.today::before, .card.bg-gray .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-gray .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-gray .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-gradient-gray .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-gray .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-gray .bootstrap-datetimepicker-widget table td.active, .card.bg-gray .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-gray .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-gray .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-gray .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gray .bootstrap-datetimepicker-widget table td.active:hover {
   background: #868e96;
   color: #fff
 }
@@ -3074,7 +3664,8 @@ padding-bottom: 5px
   background-color: #343a40
 }
 
-.card-gray-dark:not(.card-outline)>.card-header, .card-gray-dark:not(.card-outline)>.card-header a {
+.card-gray-dark:not(.card-outline)>.card-header,
+.card-gray-dark:not(.card-outline)>.card-header a {
   color: #fff
 }
 
@@ -3094,28 +3685,48 @@ padding-bottom: 5px
   border-top: 3px solid #343a40
 }
 
-.bg-gradient-gray-dark .btn-tool, .bg-gray-dark .btn-tool, .card-gray-dark:not(.card-outline) .btn-tool {
+.bg-gradient-gray-dark .btn-tool,
+.bg-gray-dark .btn-tool,
+.card-gray-dark:not(.card-outline) .btn-tool {
   color: rgba(255, 255, 255, .8)
 }
 
-.bg-gradient-gray-dark .btn-tool:hover, .bg-gray-dark .btn-tool:hover, .card-gray-dark:not(.card-outline) .btn-tool:hover {
+.bg-gradient-gray-dark .btn-tool:hover,
+.bg-gray-dark .btn-tool:hover,
+.card-gray-dark:not(.card-outline) .btn-tool:hover {
   color: #fff
 }
 
-.card.bg-gradient-gray-dark .bootstrap-datetimepicker-widget .table td, .card.bg-gradient-gray-dark .bootstrap-datetimepicker-widget .table th, .card.bg-gray-dark .bootstrap-datetimepicker-widget .table td, .card.bg-gray-dark .bootstrap-datetimepicker-widget .table th {
+.card.bg-gradient-gray-dark .bootstrap-datetimepicker-widget .table td,
+.card.bg-gradient-gray-dark .bootstrap-datetimepicker-widget .table th,
+.card.bg-gray-dark .bootstrap-datetimepicker-widget .table td,
+.card.bg-gray-dark .bootstrap-datetimepicker-widget .table th {
   border: none
 }
 
-.card.bg-gradient-gray-dark .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gradient-gray-dark .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gradient-gray-dark .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gradient-gray-dark .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gradient-gray-dark .bootstrap-datetimepicker-widget table thead tr:first-child th:hover, .card.bg-gray-dark .bootstrap-datetimepicker-widget table td.day:hover, .card.bg-gray-dark .bootstrap-datetimepicker-widget table td.hour:hover, .card.bg-gray-dark .bootstrap-datetimepicker-widget table td.minute:hover, .card.bg-gray-dark .bootstrap-datetimepicker-widget table td.second:hover, .card.bg-gray-dark .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+.card.bg-gradient-gray-dark .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gradient-gray-dark .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gradient-gray-dark .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gradient-gray-dark .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gradient-gray-dark .bootstrap-datetimepicker-widget table thead tr:first-child th:hover,
+.card.bg-gray-dark .bootstrap-datetimepicker-widget table td.day:hover,
+.card.bg-gray-dark .bootstrap-datetimepicker-widget table td.hour:hover,
+.card.bg-gray-dark .bootstrap-datetimepicker-widget table td.minute:hover,
+.card.bg-gray-dark .bootstrap-datetimepicker-widget table td.second:hover,
+.card.bg-gray-dark .bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
   background: #222629;
   color: #fff
 }
 
-.card.bg-gradient-gray-dark .bootstrap-datetimepicker-widget table td.today::before, .card.bg-gray-dark .bootstrap-datetimepicker-widget table td.today::before {
+.card.bg-gradient-gray-dark .bootstrap-datetimepicker-widget table td.today::before,
+.card.bg-gray-dark .bootstrap-datetimepicker-widget table td.today::before {
   border-bottom-color: #fff
 }
 
-.card.bg-gradient-gray-dark .bootstrap-datetimepicker-widget table td.active, .card.bg-gradient-gray-dark .bootstrap-datetimepicker-widget table td.active:hover, .card.bg-gray-dark .bootstrap-datetimepicker-widget table td.active, .card.bg-gray-dark .bootstrap-datetimepicker-widget table td.active:hover {
+.card.bg-gradient-gray-dark .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gradient-gray-dark .bootstrap-datetimepicker-widget table td.active:hover,
+.card.bg-gray-dark .bootstrap-datetimepicker-widget table td.active,
+.card.bg-gray-dark .bootstrap-datetimepicker-widget table td.active:hover {
   background: #4b545c;
   color: #fff
 }
@@ -3155,34 +3766,37 @@ padding-bottom: 5px
   border-color: #383f45
 }
 
-.card.bg-dark, .card.bg-dark .card-body {
+.card.bg-dark,
+.card.bg-dark .card-body {
   color: #fff
 }
 
 .card.maximized-card {
-  height: 100%!important;
+  height: 100% !important;
   left: 0;
-  max-height: 100%!important;
-  max-width: 100%!important;
+  max-height: 100% !important;
+  max-width: 100% !important;
   position: fixed;
   top: 0;
-  width: 100%!important;
+  width: 100% !important;
   z-index: 9999
 }
 
 .card.maximized-card.was-collapsed .card-body {
-  display: block!important
+  display: block !important
 }
 
 .card.maximized-card [data-widget=collapse] {
   display: none
 }
 
-.card.maximized-card .card-footer, .card.maximized-card .card-header {
-  border-radius: 0!important
+.card.maximized-card .card-footer,
+.card.maximized-card .card-header {
+  border-radius: 0 !important
 }
 
-.card.collapsed-card .card-body, .card.collapsed-card .card-footer {
+.card.collapsed-card .card-body,
+.card.collapsed-card .card-footer {
   display: none
 }
 
@@ -3337,7 +3951,9 @@ html.maximized-card {
   overflow: hidden
 }
 
-.card-body::after, .card-footer::after, .card-header::after {
+.card-body::after,
+.card-footer::after,
+.card-header::after {
   display: block;
   clear: both;
   content: ""
@@ -3370,7 +3986,9 @@ html.maximized-card {
   margin-right: -.625rem
 }
 
-.card-header>.card-tools .input-group, .card-header>.card-tools .nav, .card-header>.card-tools .pagination {
+.card-header>.card-tools .input-group,
+.card-header>.card-tools .nav,
+.card-header>.card-tools .pagination {
   margin-bottom: -.3rem;
   margin-top: -.3rem
 }
@@ -3387,7 +4005,8 @@ html.maximized-card {
   color: #343a3f;
 }
 
-span.card-settings-button, .card-settings-button-inner {
+span.card-settings-button,
+.card-settings-button-inner {
   float: right;
   -webkit-box-shadow: var(--neuro);
   box-shadow: var(--neuro);
@@ -3467,11 +4086,15 @@ span.card-settings-button-alert:hover {
   cursor: pointer;
 }
 
-span.card-settings-button i, .card-settings-button-inner i, .card-settings-button-update i, .card-settings-button-alert i {
+span.card-settings-button i,
+.card-settings-button-inner i,
+.card-settings-button-update i,
+.card-settings-button-alert i {
   float: left;
 }
 
-span.card-settings-button:hover, .card-settings-button-inner:hover {
+span.card-settings-button:hover,
+.card-settings-button-inner:hover {
   -webkit-box-shadow: var(--neuro-hover);
   box-shadow: var(--neuro-hover);
   cursor: pointer;
@@ -3508,20 +4131,23 @@ span[class*='AlertGauge'] {
   }
 }
 
-div[no-value='true'] span.minAlertGauge, div[no-value='true'] span.maxAlertGauge {
+// Current Value Box - When No value
+
+div[no-value='true'] span.minAlertGauge,
+div[no-value='true'] span.maxAlertGauge {
   display: none;
 }
 
 span.currentValue[no-value*="true"] {
   font-size: 22px;
   text-align: center;
-  /* height: 100%; */
-  /* padding-top: 30px; */
 }
 
 span.currentValue[no-value*="true"]:after {
-  content: "";
+  content: "" !important;
 }
+
+// End Current Value Box - When No value
 
 span.currentValue {
   display: block;
@@ -3565,18 +4191,38 @@ span.maxAlertGauge {
   /* transform: translateX(-50%); */
 }
 
-/* span[class*='AlertGauge']:after {
-content: "°C";
-} */
-
-.alert-type-temperature:after {
-  content: "°C";
-  /* font-size: 12px; */
+// Unit Measure
+article[sensortype='temperature'] {
+  .currentValue:after,
+  .minAlertGauge:after,
+  .maxAlertGauge:after {
+    content: "°C";
+    /* font-size: 12px; */
+  }
 }
 
-.alert-type-voltage:after {
-  content: " V";
+article[sensortype='voltage'] {
+  .currentValue:after,
+  .minAlertGauge:after,
+  .maxAlertGauge:after {
+    content: " V";
+    /* font-size: 12px; */
+  }
 }
+
+// article[sensortype='temperature'] .currentValue:after,
+// .alert-type-temperature:after {
+//   content: "°C";
+//   /* font-size: 12px; */
+// }
+
+// article[sensortype='voltage'] .currentValue:after .alert-type-voltage:after {
+//   content: " V";
+// }
+
+
+
+// End Unit Measure
 
 .blur0 {
   /* Add the blur effect */
@@ -3626,55 +4272,69 @@ content: "°C";
   /* text-align: center; */
 }
 
-.settings-wrapper input.input {
-  background: transparent;
-  border: none;
-  border-left: 3px solid black;
-  /* max-width: 80%; */
-  /* margin: 10px; */
-  /* display: table; */
-  color: black;
-  /* font-size: 12px; */
-  font-size: var(--sidenav-font-size);
-  font-family: var(--sidenav-font-family);
-  font-weight: 500;
-  /* padding: 10px; */
-  /* border-radius: 13px; */
-  /* border-top-left-radius: 0px; */
-  /* border-bottom-left-radius: 0px; */
-}
+.settings-wrapper {
 
-.settings-wrapper>div {
-  display: -ms-grid;
-  display: grid;
-  -ms-grid-columns: 0.25fr 1fr;
-  grid-template-columns: 0.25fr 1fr;
-  grid-row-gap: 0.4rem;
-  -ms-flex-line-pack: center;
-  align-content: center;
-  max-width: 80%;
-  /* margin: 0 auto; */
-  margin-top: 10px;
+  p {
+    /* font-size: 14px; */
+    font-size: var(--sidenav-font-size);
+    font-family: var(--sidenav-font-family);
+    font-weight: 500;
+    padding: 10px;
+    border-bottom: 1px solid black;
+    /* padding: 30px; */
+  }
+
+  input.input {
+    background: transparent;
+    // border: 1px solid black;
+    border: none;
+    border-bottom: 1px solid black;
+    // border-left: 3px solid black;
+    width: 100%;
+    padding: 10px;
+    /* margin: 10px; */
+    /* display: table; */
+    color: black;
+    /* font-size: 12px; */
+    font-size: var(--sidenav-font-size);
+    font-family: var(--sidenav-font-family);
+    font-weight: 500;
+    /* padding: 10px; */
+    /* border-radius: 13px; */
+    /* border-top-left-radius: 0px; */
+    /* border-bottom-left-radius: 0px; */
+  }
+
+  &>div {
+    display: -ms-grid;
+    display: grid;
+    -ms-grid-columns: 0.25fr 1fr;
+    grid-template-columns: 0.25fr 1fr;
+    grid-row-gap: 0.4rem;
+    -ms-flex-line-pack: center;
+    align-content: center;
+    max-width: 80%;
+    /* margin: 0 auto; */
+    margin-top: 10px;
+    /* padding: 0px 60px; */
+  }
 }
 
 .slidecontainer p {
   /* font-size: 14px; */
-  font-size: var(--sidenav-font-size);
-  font-family: var(--sidenav-font-family);
-  font-weight: 500;
+  // font-size: var(--sidenav-font-size);
+  // font-family: var(--sidenav-font-family);
+  // font-weight: 500;
+  // padding: 10px;
   /* padding: 30px; */
 }
 
-.settings-wrapper input.input {
-  background: -webkit-gradient(linear, left top, right top, color-stop(50%, rgba(255, 190, 0, 1)), color-stop(84%, rgba(255, 190, 0, 0)));
-  background: -o-linear-gradient(left, rgba(255, 190, 0, 1) 50%, rgba(255, 190, 0, 0) 84%);
-  background: linear-gradient(90deg, rgba(255, 190, 0, 1) 50%, rgba(255, 190, 0, 0) 84%);
-  /* margin-right: 10px; */
-}
+// .settings-wrapper input.input,
+// .settings-wrapper p {
+//   padding: 10px;
+// }
 
-.settings-wrapper input.input, .settings-wrapper p {
-  padding: 10px;
-}
+// end settings wrapper
 
 .slider {
   -webkit-appearance: none;
@@ -3734,13 +4394,15 @@ margin-top: -30px; */
   padding: .25rem .5rem
 }
 
-.btn-group.show .btn-tool, .btn-tool:hover {
+.btn-group.show .btn-tool,
+.btn-tool:hover {
   color: #495057
 }
 
-.btn-tool:focus, .show .btn-tool {
-  -webkit-box-shadow: none!important;
-  box-shadow: none!important
+.btn-tool:focus,
+.show .btn-tool {
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important
 }
 
 .text-sm .card-title {
@@ -3755,7 +4417,8 @@ margin-top: -30px; */
   margin-bottom: 0
 }
 
-.card-body>.table>thead>tr>td, .card-body>.table>thead>tr>th {
+.card-body>.table>thead>tr>td,
+.card-body>.table>thead>tr>th {
   border-top-width: 0
 }
 
@@ -3885,6 +4548,7 @@ margin-top: -30px; */
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -3894,6 +4558,7 @@ margin-top: -30px; */
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -3968,9 +4633,11 @@ margin-top: -30px; */
     -ms-grid-columns: 1fr;
     grid-template-columns: 1fr;
   }
+
   article[class*="graph-"]:not([class*="live"]) {
     left: 0 !important;
   }
+
   article[class*="graph-"]:not([class*="live"]) .card-body {
     margin: 0px -0.5rem -10px -0.5rem !important;
   }
@@ -4128,7 +4795,10 @@ div#zones-list .zone-item a span {
   font-weight: 500;
 }
 
-div#zones-list .zone-item a:hover, div#zones-list .zone-item a.hovered-county, .zone-item-selected a, a.link-selected {
+div#zones-list .zone-item a:hover,
+div#zones-list .zone-item a.hovered-county,
+.zone-item-selected a,
+a.link-selected {
   color: var(--navbar-bg) !important;
   background: var(--yellow);
   /* padding: 10px 20px;
@@ -4320,7 +4990,8 @@ div#gauge {
   display: none !important;
 }
 
-article[class*='graph-'], article[class*='live-card-'] {
+article[class*='graph-'],
+article[class*='live-card-'] {
   /* name, duration, timing function, delay, fill mode */
   /* -webkit-animation: fadeIn 600ms ease; */
   /* animation: fadeIn 600ms ease; */
@@ -4332,32 +5003,38 @@ article[class*='graph-'], article[class*='live-card-'] {
   animation-fill-mode: both;
 }
 
-article[class*='graph-']:nth-child(1), article[class*='live-card-']:nth-child(1) {
+article[class*='graph-']:nth-child(1),
+article[class*='live-card-']:nth-child(1) {
   -webkit-animation-delay: 0.1s;
   animation-delay: 0.1s
 }
 
-article[class*='graph-']:nth-child(2), article[class*='live-card-']:nth-child(2) {
+article[class*='graph-']:nth-child(2),
+article[class*='live-card-']:nth-child(2) {
   -webkit-animation-delay: 0.2s;
   animation-delay: 0.2s
 }
 
-article[class*='graph-']:nth-child(3), article[class*='live-card-']:nth-child(3) {
+article[class*='graph-']:nth-child(3),
+article[class*='live-card-']:nth-child(3) {
   -webkit-animation-delay: 0.3s;
   animation-delay: 0.3s
 }
 
-article[class*='graph-']:nth-child(4), article[class*='live-card-']:nth-child(4) {
+article[class*='graph-']:nth-child(4),
+article[class*='live-card-']:nth-child(4) {
   -webkit-animation-delay: 0.4s;
   animation-delay: 0.4s
 }
 
-article[class*='graph-']:nth-child(5), article[class*='live-card-']:nth-child(5) {
+article[class*='graph-']:nth-child(5),
+article[class*='live-card-']:nth-child(5) {
   -webkit-animation-delay: 0.5s;
   animation-delay: 0.5s
 }
 
-article[class*='graph-']:nth-child(n+6), article[class*='live-card-']:nth-child(n+6) {
+article[class*='graph-']:nth-child(n+6),
+article[class*='live-card-']:nth-child(n+6) {
   -webkit-animation-delay: 0.5s;
   animation-delay: 0.5s
 }
@@ -4368,11 +5045,13 @@ article[class*='graph-']:nth-child(n+6), article[class*='live-card-']:nth-child(
     -webkit-transform: scale(0.95);
     transform: scale(0.95)
   }
+
   70% {
     opacity: 1;
     -webkit-transform: scale(1);
     transform: scale(1)
   }
+
   100% {
     opacity: 1;
     -webkit-transform: scale(1);
@@ -4386,11 +5065,13 @@ article[class*='graph-']:nth-child(n+6), article[class*='live-card-']:nth-child(
     -webkit-transform: scale(0.95);
     transform: scale(0.95)
   }
+
   70% {
     opacity: 1;
     -webkit-transform: scale(1);
     transform: scale(1)
   }
+
   100% {
     opacity: 1;
     -webkit-transform: scale(1);
@@ -4449,9 +5130,32 @@ div#reportrange i:last-child {
   display: none;
 }
 
-.daterangepicker.opensright:after, .daterangepicker.opensright:before {
+.daterangepicker.opensright:after,
+.daterangepicker.opensright:before {
   display: none !important
 }
+
+// New Message
+
+.new-message>div {
+  margin: 1rem;
+  margin-bottom: 0;
+  padding: 1rem;
+  background: var(--danger);
+  text-align: center;
+  font-size: 2.2rem;
+  font-weight: bold;
+  border-radius: 13px;
+
+  a {
+    color: white;
+    font-size: 2.2rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+}
+
+// End New Message
 
 /* Dashboard Small Box */
 
@@ -4461,7 +5165,9 @@ div#reportrange i:last-child {
   background: #e4e4e2
 }
 
-.small-box[disabled] i, .small-box[disabled] p, .small-box[disabled] h3 {
+.small-box[disabled] i,
+.small-box[disabled] p,
+.small-box[disabled] h3 {
   color: #343a4026 !important
 }
 
@@ -4483,18 +5189,22 @@ div#reportrange i:last-child {
     -ms-grid-columns: (25%)[4];
     grid-template-columns: repeat(4, 25%);
   }
+
   .small-box-container.small-box-length-2 {
     -ms-grid-columns: 25% 1fr;
     grid-template-columns: 25% 1fr;
   }
+
   .small-box-container.small-box-length-3 {
     -ms-grid-columns: 25% 1fr 1fr;
     grid-template-columns: 25% 1fr 1fr;
   }
+
   .small-box-container.small-box-length-4 {
     -ms-grid-columns: 25% 1fr 1fr 1fr;
     grid-template-columns: 25% 1fr 1fr 1fr;
   }
+
   .small-box-container.small-box-length-5 {
     -ms-grid-columns: 25% 1fr 1fr 1fr 1fr;
     grid-template-columns: 25% 1fr 1fr 1fr 1fr;
@@ -4506,18 +5216,22 @@ div#reportrange i:last-child {
     -ms-grid-columns: (1fr)[1];
     grid-template-columns: repeat(1, 1fr);
   }
+
   .small-box-container.small-box-length-2 {
     -ms-grid-columns: (1fr)[2];
     grid-template-columns: repeat(2, 1fr);
   }
+
   .small-box-container.small-box-length-3 {
     -ms-grid-columns: (1fr)[3];
     grid-template-columns: repeat(3, 1fr);
   }
+
   .small-box-container.small-box-length-4 {
     -ms-grid-columns: (1fr)[4];
     grid-template-columns: repeat(4, 1fr);
   }
+
   .small-box-container.small-box-length-5 {
     -ms-grid-columns: (1fr)[5];
     grid-template-columns: repeat(5, 1fr);
@@ -4544,6 +5258,7 @@ div#reportrange i:last-child {
     opacity: 0;
     left: -10px;
   }
+
   to {
     opacity: 1;
     left: 0px;
@@ -4555,6 +5270,7 @@ div#reportrange i:last-child {
     opacity: 0;
     left: -10px;
   }
+
   to {
     opacity: 1;
     left: 0px;
@@ -4570,6 +5286,7 @@ div#reportrange i:last-child {
   position: relative;
   -webkit-box-shadow: var(--neuro);
   box-shadow: var(--neuro);
+
   /* background: var(--pulse-blue); */
   h3 {
     font-size: 2.2rem;
@@ -4580,9 +5297,11 @@ div#reportrange i:last-child {
     text-transform: capitalize;
     z-index: 5;
   }
+
   p {
     font-size: 1rem;
     z-index: 5;
+
     &>small {
       color: #f8f9fa;
       display: block;
@@ -4590,11 +5309,13 @@ div#reportrange i:last-child {
       margin-top: 5px;
     }
   }
+
   &>.inner {
     padding: 10px;
     color: #343a3f;
     /* background: var(--pulse-blue); */
   }
+
   &>.small-box-footer {
     background: rgba(0, 0, 0, 0.1);
     color: rgba(255, 255, 255, 0.8);
@@ -4604,24 +5325,30 @@ div#reportrange i:last-child {
     text-align: center;
     text-decoration: none;
     z-index: 0;
+
     &:hover {
       background: rgba(0, 0, 0, 0.15);
       color: #ffffff;
     }
   }
+
   &.bg-info {
     background: var(--yellow) !important;
   }
+
   // gate close / open / unknown
   &.gate-info {
     background: var(--sidenav-link-color) !important;
   }
+
   &.gate-info[status='closed'] {
     background: #28a745 !important;
   }
+
   &.gate-info[status='open'] {
     background: #dc3545 !important;
   }
+
   .icon {
     color: rgba(0, 0, 0, 0.15);
     z-index: 0;
@@ -4634,6 +5361,7 @@ div#reportrange i:last-child {
     -webkit-transform: translate(-50%, -50%);
     -ms-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
+
     &>i {
       font-size: 90px;
       position: relative;
@@ -4645,83 +5373,83 @@ div#reportrange i:last-child {
       transition: all 0.3s linear;
       color: #343a3f;
     }
-}
+  }
 
-// .small-box>.inner {
-//   padding: 10px;
-//   color: #343a3f;
-//   /* background: var(--pulse-blue); */
-// }
+  // .small-box>.inner {
+  //   padding: 10px;
+  //   color: #343a3f;
+  //   /* background: var(--pulse-blue); */
+  // }
 
-// .small-box>.small-box-footer {
-//   background: rgba(0, 0, 0, 0.1);
-//   color: rgba(255, 255, 255, 0.8);
-//   display: block;
-//   padding: 3px 0;
-//   position: relative;
-//   text-align: center;
-//   text-decoration: none;
-//   z-index: 0;
-// }
+  // .small-box>.small-box-footer {
+  //   background: rgba(0, 0, 0, 0.1);
+  //   color: rgba(255, 255, 255, 0.8);
+  //   display: block;
+  //   padding: 3px 0;
+  //   position: relative;
+  //   text-align: center;
+  //   text-decoration: none;
+  //   z-index: 0;
+  // }
 
-// .small-box>.small-box-footer:hover {
-//   background: rgba(0, 0, 0, 0.15);
-//   color: #ffffff;
-// }
+  // .small-box>.small-box-footer:hover {
+  //   background: rgba(0, 0, 0, 0.15);
+  //   color: #ffffff;
+  // }
 
-// .small-box h3 {
-//   font-size: 2.2rem;
-//   font-weight: bold;
-//   margin: 0 0 10px 0;
-//   padding: 0;
-//   white-space: nowrap;
-// }
+  // .small-box h3 {
+  //   font-size: 2.2rem;
+  //   font-weight: bold;
+  //   margin: 0 0 10px 0;
+  //   padding: 0;
+  //   white-space: nowrap;
+  // }
 
-// .small-box p {
-//   font-size: 1rem;
-//   z-index: 5;
-//   &>small {
-//     color: #f8f9fa;
-//     display: block;
-//     font-size: 0.9rem;
-//     margin-top: 5px;
-//   }
-// }
+  // .small-box p {
+  //   font-size: 1rem;
+  //   z-index: 5;
+  //   &>small {
+  //     color: #f8f9fa;
+  //     display: block;
+  //     font-size: 0.9rem;
+  //     margin-top: 5px;
+  //   }
+  // }
 
-// .small-box p>small {
-//   color: #f8f9fa;
-//   display: block;
-//   font-size: 0.9rem;
-//   margin-top: 5px;
-// }
+  // .small-box p>small {
+  //   color: #f8f9fa;
+  //   display: block;
+  //   font-size: 0.9rem;
+  //   margin-top: 5px;
+  // }
 
-// .small-box h3, .small-box p {
-//   z-index: 5;
-// }
+  // .small-box h3, .small-box p {
+  //   z-index: 5;
+  // }
 
-// .small-box .icon {
-//   color: rgba(0, 0, 0, 0.15);
-//   z-index: 0;
-//   /* position: relative; */
-//   /* justify-self: start; */
-//   /* display: grid; */
-//   position: absolute;
-//   right: 0px;
-//   top: 60px;
-//   -webkit-transform: translate(-50%, -50%);
-//   -ms-transform: translate(-50%, -50%);
-//   transform: translate(-50%, -50%);
-//   &>i {
-//     font-size: 90px;
-//     position: relative;
-//     /* right: 15px; */
-//     /* top: 15px; */
-//     top: 0px !important;
-//     -webkit-transition: all 0.3s linear;
-//     -o-transition: all 0.3s linear;
-//     transition: all 0.3s linear;
-//     color: #343a3f;
-//   }
+  // .small-box .icon {
+  //   color: rgba(0, 0, 0, 0.15);
+  //   z-index: 0;
+  //   /* position: relative; */
+  //   /* justify-self: start; */
+  //   /* display: grid; */
+  //   position: absolute;
+  //   right: 0px;
+  //   top: 60px;
+  //   -webkit-transform: translate(-50%, -50%);
+  //   -ms-transform: translate(-50%, -50%);
+  //   transform: translate(-50%, -50%);
+  //   &>i {
+  //     font-size: 90px;
+  //     position: relative;
+  //     /* right: 15px; */
+  //     /* top: 15px; */
+  //     top: 0px !important;
+  //     -webkit-transition: all 0.3s linear;
+  //     -o-transition: all 0.3s linear;
+  //     transition: all 0.3s linear;
+  //     color: #343a3f;
+  //   }
 }
 
 // .small-box .icon>i {
@@ -4736,7 +5464,12 @@ div#reportrange i:last-child {
 //   color: #343a3f;
 // }
 
-.small-box .icon>i.fa, .small-box .icon>i.fas, .small-box .icon>i.far, .small-box .icon>i.fab, .small-box .icon>i.glyphicon, .small-box .icon>i.ion {
+.small-box .icon>i.fa,
+.small-box .icon>i.fas,
+.small-box .icon>i.far,
+.small-box .icon>i.fab,
+.small-box .icon>i.glyphicon,
+.small-box .icon>i.ion {
   font-size: 70px;
   top: 20px;
 }
@@ -4749,7 +5482,12 @@ div#reportrange i:last-child {
   font-size: 95px;
 }
 
-.small-box:hover .icon>i.fa, .small-box:hover .icon>i.fas, .small-box:hover .icon>i.far, .small-box:hover .icon>i.fab, .small-box:hover .icon>i.glyphicon, .small-box:hover .icon>i.ion {
+.small-box:hover .icon>i.fa,
+.small-box:hover .icon>i.fas,
+.small-box:hover .icon>i.far,
+.small-box:hover .icon>i.fab,
+.small-box:hover .icon>i.glyphicon,
+.small-box:hover .icon>i.ion {
   font-size: 75px;
 }
 
@@ -4757,9 +5495,11 @@ div#reportrange i:last-child {
   .small-box {
     /*     text-align: center; */
   }
+
   .small-box .icon {
     display: none;
   }
+
   .small-box p {
     /*     font-size: 12px; */
   }
@@ -4848,7 +5588,7 @@ notification {
   border-radius: .25rem;
   overflow: hidden;
   border-bottom-right-radius: 13px;
-  
+
 }
 
 .messages background {
@@ -5029,16 +5769,19 @@ div[id*="-floatinBall"] {
     -webkit-transform: translate(-50%, -50%) scale(.9);
     transform: translate(-50%, -50%) scale(.9);
   }
+
   10% {
     -webkit-transform: translate(-50%, -50%) scale(.9);
     transform: translate(-50%, -50%) scale(.9);
     background: var(--nav-bg)
   }
+
   25% {
     -webkit-transform: translate(-50%, -50%) scale(1.1);
     transform: translate(-50%, -50%) scale(1.1);
     background: var(--nav-bg)
   }
+
   70% {
     -webkit-transform: translate(-50%, -50%) scale(1);
     transform: translate(-50%, -50%) scale(1);
@@ -5046,6 +5789,7 @@ div[id*="-floatinBall"] {
     box-shadow: 0 0 10px 60px rgba(90, 153, 212, 0);
     background: var(--pulse-blue);
   }
+
   100% {
     -webkit-transform: translate(-50%, -50%) scale(1);
     transform: translate(-50%, -50%) scale(1);
@@ -5082,44 +5826,91 @@ stroke-width: 10;
   grid-template-columns: 1fr;
   grid-column-gap: 5rem;
   grid-row-gap: 1rem;
+
+  tr {
+    display: -ms-grid;
+    display: grid;
+    -ms-grid-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
+    padding: 10px;
+    border-left: 10px solid #ffc00903;
+
+    &.current-user {
+      border-left: 10px solid #ffc009;
+    }
+  }
+
+  .user-col {
+
+  }
+  .zones-col {
+    position:relative;
+  }
+  .actions-col {
+
+  }
+
+  .spinner {
+    left: 0;
+    transform: translateX(0);
+  }
+
+  tbody tr:nth-child(2n+1) {
+    -webkit-box-shadow: var(--neuro);
+    box-shadow: var(--neuro);
+  }
+
+  span.zone {
+    background: var(--nav-bg);
+    padding: 5px 18px;
+    margin: 5px 15px;
+    margin-left: 0px;
+    color: white;
+    border-radius: 13px;
+    display: inline-block;
+    -webkit-box-shadow: var(--neuro);
+    box-shadow: var(--neuro);
+  }
+
+  button.btn {
+    max-width: 180px;
+    border-radius: 13px;
+    // -webkit-box-shadow: var(--neuro);
+    // box-shadow: var(--neuro)
+  }
 }
 
-.team-container tr {
-  display: -ms-grid;
-  display: grid;
-  -ms-grid-columns: 1fr 1fr 1fr;
-  grid-template-columns: 1fr 1fr 1fr;
-  padding: 10px;
-}
+// .team-container tr {
+//   display: -ms-grid;
+//   display: grid;
+//   -ms-grid-columns: 1fr 1fr 1fr;
+//   grid-template-columns: 1fr 1fr 1fr;
+//   padding: 10px;
+// }
 
-.team-container tbody tr:nth-child(2n+1) {
-  -webkit-box-shadow: var(--neuro);
-  box-shadow: var(--neuro);
-}
+// .team-container tbody tr:nth-child(2n+1) {
+//   -webkit-box-shadow: var(--neuro);
+//   box-shadow: var(--neuro);
+// }
 
-.team-container span.zone {
-  background: var(--nav-bg);
-  padding: 5px 18px;
-  margin: 5px 15px;
-  margin-left: 0px;
-  color: white;
-  border-radius: 13px;
-  display: inline-block;
-  -webkit-box-shadow: var(--neuro);
-  box-shadow: var(--neuro);
-}
+// .team-container span.zone {
+//   background: var(--nav-bg);
+//   padding: 5px 18px;
+//   margin: 5px 15px;
+//   margin-left: 0px;
+//   color: white;
+//   border-radius: 13px;
+//   display: inline-block;
+//   -webkit-box-shadow: var(--neuro);
+//   box-shadow: var(--neuro);
+// }
 
-.team-container button.btn {
-  max-width: 180px;
-  border-radius: 13px;
-  -webkit-box-shadow: var(--neuro);
-  box-shadow: var(--neuro)
-}
-
-.team-container tr.current-user {
-  /* background: gray; */
-  border-left: 10px solid #ffc009;
-}
+// .team-container button.btn {
+//   max-width: 180px;
+//   border-radius: 13px;
+//   -webkit-box-shadow: var(--neuro);
+//   box-shadow: var(--neuro)
+// }
 
 /* Modal */
 
@@ -5157,6 +5948,17 @@ div[id*="edit-user"] form .form-zones-container .form-check {
 }
 
 /* End Team Container */
+
+// Team add user
+.wrong-password.form-control:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 0.2rem #dc35458a;
+}
+
+.correct-password.form-control:focus {
+  border-color: var(--success);
+  box-shadow: 0 0 0 0.2rem #28a7458a;
+}
 
 /* Scale Page */
 
@@ -5415,6 +6217,7 @@ label.switch-label:active:after {
   .small-box:not(.switch-box) .icon {
     display: block;
   }
+
   .small-box .icon i {
     font-size: 70px !important;
     top: 0px !important;

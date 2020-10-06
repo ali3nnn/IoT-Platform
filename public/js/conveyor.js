@@ -193,7 +193,7 @@ async function switchConveyor() {
 
 // get list of power sources
 let getPowerSource = async () => {
-    let response = await fetch("https://anysensor.dasstec.ro/api/get-voltage?source1&source2")
+    let response = await fetch("/api/get-voltage?source1&source2")
     return response.json()
 }
 

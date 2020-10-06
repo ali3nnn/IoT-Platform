@@ -75,7 +75,7 @@
             let json = ''
 
             const getData = async () => {
-                const response = await fetch("https://anysensor.dasstec.ro/api/manage-sensors/")
+                const response = await fetch("/api/manage-sensors/")
                 return response.json()
             }
 

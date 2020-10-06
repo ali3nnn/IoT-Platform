@@ -9,12 +9,12 @@ import {
 // Fetch
 let sendScaleRecordings = async (barcode, weight, wms = 0) => {
   console.log(barcode, weight)
-  let response = await fetch("https://anysensor.dasstec.ro/api/send-scale-recordings?barcode='" + barcode + "'&weight='" + weight + "'&wms='" + wms + "'")
+  let response = await fetch("/api/send-scale-recordings?barcode='" + barcode + "'&weight='" + weight + "'&wms='" + wms + "'")
   return response.json()
 }
 
 let getScaleRecordings = async () => {
-  let response = await fetch("https://anysensor.dasstec.ro/api/get-scale-recordings")
+  let response = await fetch("/api/get-scale-recordings")
   return response.json()
 }
 
@@ -33,6 +33,7 @@ socket.on('socketChannel', (data) => {
   // Live Weight - client receives scale data from backend
   if (data.topic.includes(username + "/scale")) {
     liveWeightTable(data.message, 1)
+    filterColumn('scaleInput','scaleTable',1)
   }
 
 })

@@ -96,7 +96,7 @@ async function getAWB(type, contentType, url, data, value) {
     // var proxyurl = "http://89.39.209.2:8010/";
     // var proxyurl = "https://cors-anywhere.herokuapp.com/";
     // var proxyurl = "https://api.codetabs.com/v1/proxy?quest="
-    var proxyurl = "https://anysensor.dasstec.ro/proxy?url="
+    var proxyurl = "/proxy?url="
 
     fetch(proxyurl + url, {
             method: type,
@@ -266,12 +266,12 @@ function openInNewTab(url, barcode) {
 // }
 
 let getScannerRecordings = async () => {
-    let response = await fetch("https://anysensor.dasstec.ro/api/get-scanner-recordings")
+    let response = await fetch("/api/get-scanner-recordings")
     return response.json()
 }
 
 let sendScannerRecordings = async (barcode, status) => {
-    let response = await fetch("https://anysensor.dasstec.ro/api/send-scanner-recordings?barcode='" + barcode + "'&status='" + status + "'")
+    let response = await fetch("/api/send-scanner-recordings?barcode='" + barcode + "'&status='" + status + "'")
     return response.json()
 }
 

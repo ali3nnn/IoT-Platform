@@ -19,6 +19,7 @@ const bcrypt = require('bcryptjs');
 const helmet = require('helmet');
 const url = require('url');
 const axios = require('axios')
+const moment = require('moment')
 // global.fetch = require("node-fetch");
 
 const Handlebars = require('handlebars');
@@ -67,6 +68,15 @@ Handlebars.registerHelper('json', function (context) {
 // ==================================
 // End Handlebar Custom Helper
 
+// Prototype
+// ==================================
+Date.prototype.addHours = function (h) {
+    this.setTime(this.getTime() + (h * 60 * 60 * 1000));
+    return this;
+}
+// ==================================
+// End Prototype
+
 // Middleware
 // ==================================
 const {
@@ -90,7 +100,8 @@ const {
     isConveyorAvailable,
     isScannerAvailable,
     mqttOverSocketIoBridge,
-    test
+    test,
+    // trackurl
 } = require('./controllers/getInfo')
 // ==================================
 // End Middleware
@@ -104,7 +115,7 @@ const influx = new Influx.InfluxDB({
     database: 'anysensor3',
 })
 
-// // Influx Write - ASYNC
+// Influx Write - ASYNC
 function influxWriter(measurement, country, county, city, location, zone, username, type, sensorId, value, database = 'anysensor3', precision = 's') {
     console.log('Influx Write')
     influx.writePoints([{
@@ -257,6 +268,8 @@ dotenv.config({
     path: './.env'
 })
 app.use(test)
+// app.use(trackurl)
+// app.use(trackurl)
 // app.use(isScaleAvailable)
 // app.use(isConveyorAvailable)
 // app.use(isScannerAvailable)
@@ -437,18 +450,6 @@ app.get('/logout', function (req, res) {
 
 // ADMIN reuqest
 //=========================================
-
-app.get('/team', cookieChecker, authDashboard, getCounties, (req, res) => {
-    sess = req.session
-    res.render("team", {
-        username: sess.username,
-        user_role: sess.user_role,
-        sensorId: sess.sensorAccess,
-        counties: sess.counties,
-        user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0,
-        user_role_is_admin: sess.user_role == 'admin' ? 1 : 0,
-    })
-})
 
 //=========================================
 // END ADMIN reuqest
@@ -658,7 +659,7 @@ class Sensor {
     }
 }
 
-// Get Counties
+// Get counties of user
 app.get('/api/get-data', (req, res) => {
 
     var time = new Date()
@@ -675,6 +676,7 @@ app.get('/api/get-data', (req, res) => {
 
         mysqlReader(query).then(async (rows) => {
             let rows_ = await rows
+            // If user is found in mysql
             if (rows_.length) {
 
                 var whereQuery = `where (username='` + sess.username + `') or (`
@@ -688,6 +690,7 @@ app.get('/api/get-data', (req, res) => {
 
                 var queryCounties = `select distinct(county) as county from ( select county, value from sensors ` + whereQuery + ` )`
 
+                // If user is not found in mysql
             } else {
 
                 // get counties
@@ -1102,7 +1105,7 @@ app.get('/api/get-data/sensorId/:county', (req, res) => {
 
 })
 
-// Get today' values of a sensor EXPERIMENT
+// Get last week daily values EXPERIMENT
 app.get('/api/experiment/get-data/:county/:sensorQuery', (req, res) => {
     sess = req.session
     let data = []
@@ -1457,24 +1460,29 @@ app.get('/api/v2/get-data/:county/:sensorQuery', (req, res) => {
         // console.log(req.params)
 
         // Get the date for influx query - this day 0 to currentHour
-        var today = new Date(); // this is -1h romanian timezone
-        console.log("today:", today);
+        var today__raw = new Date(); // this is -1h romanian timezone
+        var today__raw_2 = new Date(); // this is -1h romanian timezone
+        // console.log("today__raw", today__raw);
 
         // cannot query for today date starting at 00:00 because influx tz is -1h than romanian tz
         // set today 00:00 as yesterday 23:00
-        today.setDate(today.getDate() - 1)
-        var dd = String(today.getDate()).padStart(2, '0');
-        var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-        var yyyy = today.getFullYear();
+        today__raw.setDate(today__raw.getDate() - 1)
+        var dd = String(today__raw.getDate()).padStart(2, '0');
+        var mm = String(today__raw.getMonth() + 1).padStart(2, '0'); //January is 0!
+        var yyyy = today__raw.getFullYear();
         today = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
-        dd = (parseInt(dd) + 1).toLocaleString('en-US', {
+
+        var dd = String(today__raw_2.getDate()).padStart(2, '0');
+        var mm = String(today__raw_2.getMonth() + 1).padStart(2, '0'); //January is 0!
+        dd = (parseInt(dd)).toLocaleString('en-US', {
             minimumIntegerDigits: 2,
             useGrouping: false
         })
         todayEnd = "'" + yyyy + '-' + mm + '-' + dd + 'T23:00:00Z' + "'";
         // todayEnd = "now()"
 
-        // console.log(">> TODAY start:",today)
+        // console.log(">> TODAY start:", today)
+        // console.log(">> TODAY end:", todayEnd)
 
         // Mean of last week - experiment
         // ==========================================
@@ -1593,7 +1601,11 @@ app.get('/api/v2/get-data/:county/:sensorQuery', (req, res) => {
             .then(async (result) => {
                 res.status(200).send(result)
             }).catch((e) => {
-                res.status(404).send("Scraping sensor data from influx failed")
+                res.status(404).send({
+                    e,
+                    query,
+                    influxQuery
+                })
                 // res.status(404).send(influxQuery)
             })
 
@@ -1706,19 +1718,20 @@ app.get('/api/get-interval/:step', (req, res) => {
     let data = []
     // console.log("--->",req.params.step)
     var time = new Date()
-    console.log('/api/get-interval/...')
+    // console.log('/api/get-interval/...')
     // console.log("---")
     // console.log(req.params)
     // console.log(req.query.county)
     // console.log(req.query.sensorQuery)
     // console.log("---")
     // sess.username = "1"
+
     if (sess.username) {
 
         if (sess.sensorAccess != -1) {
 
             // return evrything that belongs to username and match county and is in a 1day time interval
-            var whereQuery = `where username='` + sess.username + `' and county='` + req.query.county + `' and sensorId='` + req.query.sensorQuery + `' and time>='` + req.query.start + `' and time<'` + req.query.end + `'`
+            var whereQuery = `where county='` + req.query.county + `' and sensorId='` + req.query.sensorQuery + `' and time>='` + req.query.start + `' and time<'` + req.query.end + `'`
 
             // group by
             // console.log(req.params.step)
@@ -2617,6 +2630,7 @@ app.get('/api/v2/sensors-access', (req, res) => {
                 result[0].forEach(element => {
                     data.push({
                         // result: element.key,
+                        error: false,
                         query: req.query.username,
                         sensorId: element.key.split(",")[5].split("=")[1],
                         belongsTo: element.key.split(",")[7].split("=")[1],
@@ -2745,26 +2759,24 @@ app.get('/api/edit-user', getCounties, async (req, res) => {
         // get the sensorIds of selected zone
         if (req.query.zones) {
 
-            // console.log(typeof req.query.zones)
+            console.log(req.query.zones)
 
             if (typeof req.query.zones == 'string') {
-                var influxQuery = `show series where zone='` + req.query.zones + `'`
-                console.log(influxQuery)
+                var influxQuery = `show series where zone='` + req.query.zones + `' and username='` + sess.username + `'`
+                // console.log(influxQuery)
                 influxReader(influxQuery).then(result => {
                         return result[0].key.split("sensorId=")[1].split(",")[0]
                     })
                     .then(async (sensorId) => {
-                        // delete all assigments of this user
+                        // delete all sensor assigments of this user
                         var sqlQuery = `DELETE FROM sensors WHERE username='` + req.query.username + `'`
                         mysqlWriter(sqlQuery)
                         return sensorId
                     })
                     .then(async (sensorId) => {
-                        // console
                         // insert sensorId and username into sensors mysql table 
                         var sqlQuery = `INSERT INTO sensors (sensorId, username) VALUES ('` + sensorId + `', '` + req.query.username + `')`
                         mysqlWriter(sqlQuery)
-                        // res.redirect('/team')
                     })
             } else if (typeof req.query.zones == 'object') {
                 var zoneQuery = ''
@@ -2775,8 +2787,7 @@ app.get('/api/edit-user', getCounties, async (req, res) => {
                         zoneQuery += ' or '
                     zoneCounter++
                 })
-                var influxQuery = `show series where (` + zoneQuery + `)`
-
+                var influxQuery = `show series where (` + zoneQuery + `) and username='` + sess.username + `'`
                 // console.log(influxQuery)
 
                 influxReader(influxQuery).then(result => {
@@ -2907,12 +2918,63 @@ app.get('/api/edit-user', getCounties, async (req, res) => {
     }
 
 })
+
+app.get('/api/add-user',  (req, res) => {
+    sess = req.session
+    if (sess.username) {
+        console.log(req.query)
+        var sql = `SELECT Username from users where username='` + req.query.username + `'`
+        mysqlReader(sql).then(async (response) => {
+            if (response.length) {
+                res.send({
+                    error: "username already exists"
+                })
+            } else {
+                let hashedPassword = await bcrypt.hash(req.query.password, 10)
+                var sql = `INSERT INTO users (Name, Username, Password, Email, User_role, company) VALUES ('` + req.query.name + `','` + req.query.username + `','` + hashedPassword + `','` + req.query.email + `','basic','` + req.query.company + `');`
+                mysqlReader(sql)
+            }
+        })
+        res.redirect("/team")
+    } else {
+        res.render("login", {
+            alert: "Username `" + username + "` is not registered!"
+        })
+    }
+})
+
+app.get('/api/remove-user', async (req, res) => {
+    // res.send(req.query)
+    const queryRemoveUser = `delete from users where username='` + req.query.username + `'`
+    let removeUser = await mysqlReader(queryRemoveUser)
+    const queryRemoveSensors = `delete from sensors where username='` + req.query.username + `'`
+    let removeSensors = await mysqlReader(queryRemoveSensors)
+    Promise.all([removeUser, removeSensors]).then((response)=>{
+        console.log(response)
+    })
+    res.redirect('/team')
+})
+
+app.get('/team', cookieChecker, authDashboard, getCounties, isScaleAvailable, isConveyorAvailable, isScannerAvailable, mqttOverSocketIoBridge, (req, res) => {
+    sess = req.session
+    res.render("team", {
+        username: sess.username,
+        user_role: sess.user_role,
+        sensorId: sess.sensorAccess, //this needs to be replaced or removed
+        // sensors: sess.sensors, //this contains a list of sensorsId the user has access to - generated by getSensorLocation
+        counties: sess.counties, //this contains a list of counties the user has access to - generated by getCounties
+        isScaleAvailable: sess.isScaleAvailable,
+        isConveyorAvailable: sess.isConveyorAvailable,
+        isScannerAvailable: sess.isScannerAvailable,
+        user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0,
+        user_role_is_admin: sess.user_role == 'admin' ? 1 : 0,
+    })
+})
 //=========================================
 // End Team Page
 
 // Scale, Conveyor, Scanner API
 //=========================================
-
 app.get("/api/conveyor", (req, res) => {
 
     if (req.query.setStatus) {
@@ -3109,6 +3171,25 @@ app.post("/proxy", (req, res) => {
 //=========================================
 // END PROXY
 
+// ROUTE FOR VUE
+//=========================================
+app.get("/api/vue/influx", async (req, res) => {
+    // console.log(req.query)
+    var query = req.query.query
+    const result = await influxReader(query)
+    res.send(result)
+})
+//=========================================
+// END ROUTE FOR VUE
+
+// Admin Page
+//=========================================
+app.get("/admin", authDashboard, async (req, res) => {
+    res.send("Admin page")
+})
+//=========================================
+// END Admin Page
+
 // CSV
 app.get("/api/csv", (req, res) => {
     var query = "select mean(value) as value from sensors where sensorId='sensor22' group by time(1d) limit 100"
@@ -3136,7 +3217,7 @@ app.get("/api/csv", (req, res) => {
 })
 
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 var server = app.listen(PORT, console.log(`NodeJS started on port ${PORT}`)).on('error', function (err) {
     console.log(err)

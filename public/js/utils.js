@@ -1,3 +1,7 @@
+// Start imports
+var Checker = require('password-checker');
+// End Imports
+
 export const timeoutAsync = (ms, f) => {
     let sleep = new Promise(resolve => setTimeout(function () {
         f();
@@ -44,6 +48,7 @@ export function liveWeightTable(payloadJson, tableColumn) {
     if (typeof payloadJson == 'string') {
         payloadJson = JSON.parse(payloadJson)
     }
+    // console.log(payloadJson.weight)
     scaleTitle.html(payloadJson.weight + "g")
     barcodeTitle.html(payloadJson.barcode)
 
@@ -92,7 +97,11 @@ export function liveWeightTable(payloadJson, tableColumn) {
                       </tr>`)
 
     // Filter again
-    filterColumn(tableColumn)
+    // try {
+    //     filterColumn(tableColumn)
+    // } catch(e) {
+    //     console.warn(e)
+    // }
 
 }
 
@@ -113,7 +122,7 @@ export function liveGate(status) {
             insertStatus("on"); // insert status into DB
             switchConveyorToggle()
         }
-        showNotification("Gate is closed", 4)
+        // showNotification("Gate is closed", 4)
     } else if (status == 1) {
         // gate is open
         gate.attr("status", "open")
@@ -125,9 +134,9 @@ export function liveGate(status) {
             insertStatus("on"); // insert status into DB
             switchConveyorToggle()
         }
-        showNotification("Gate is open", 4)
+        // showNotification("Gate is open", 4)
     } else {
-        timeoutAsync(2000, function() {
+        timeoutAsync(2000, function () {
 
         })
     }
@@ -194,7 +203,10 @@ export function scaleInput(tableColumn) {
 
 export function filterColumn(id_input, id_table, tableColumn) {
     // Declare variables
-    var input, filter, table, tr, td, i, txtValue;
+    var input = {
+        value: ''
+    }
+    var filter, table, tr, td, i, txtValue;
     input = document.getElementById(id_input);
     filter = input.value.toUpperCase();
     table = document.getElementById(id_table);
@@ -219,14 +231,14 @@ export function filterColumn(id_input, id_table, tableColumn) {
 export let insertStatus = async (status) => {
     // status = on / off
     $.ajax({
-        url: "https://anysensor.dasstec.ro/api/conveyor?setStatus=" + status + "",
+        url: "/api/conveyor?setStatus=" + status + "",
         type: 'GET'
     });
 }
 
 // get all values of a sensor
 export let getConveyorStatus = async (sensor) => {
-    let response = await fetch("https://anysensor.dasstec.ro/api/conveyor")
+    let response = await fetch("/api/conveyor")
     return response.json()
 }
 
@@ -276,4 +288,61 @@ export function showNotification(message, error = 0) {
                                         </div>
                                 </div>`).show('slow');
 
+    else if (error == 'top') {
+        if ($(".new-message").length) {
+            $("#main .new-message").hide().prepend(`<div>` + message + `</div>`).slideToggle(500, function () {
+                timeoutAsync(7000, function () {
+                    $('#main .new-message > div:last-child').slideToggle(1000)
+                })
+            })
+        }
+    }
+
+}
+
+export function getLocationObj() {
+    var bodyEl = $("body")
+    var location = []
+    if (bodyEl.attr("location")) {
+        location.push(bodyEl.attr("location"))
+        var locationObj = JSON.parse(location)
+
+        // if($("body").hasClass("map-page")) {
+        //   showNotification("You have <b>"+location.length+" "+ (location.length>1 ? `sensors` : `sensor`) +"</b> on map!", error = 4)
+        // }
+
+        return locationObj
+    } else {
+        // return coordinates of bucharest (lon,lat)
+        // showNotification("You have no sensor assigned!", error = 4)
+        return {
+            "bucharest": [44.439663, 26.096306]
+        }
+    }
+}
+
+export function passwordChecker(value) {
+    var checker = new Checker();
+    var error = false
+    checker.min_length = 6;
+    checker.max_length = 20;
+    checker.requireLetters(true);
+    checker.requireNumbers(true);
+    checker.requireSymbols(false);
+    checker.checkLetters(true);
+    checker.checkNumbers(true);
+    checker.checkSymbols(true);
+    checker.allowed_symbols = '-.';
+    if (!checker.check(value)) {
+        error = checker.errors[0].message
+    } else {
+        error = false
+    }
+    return error
+}
+
+export function allTrue(obj) {
+    for (var o in obj)
+        if (!obj[o]) return false;
+    return true;
 }
