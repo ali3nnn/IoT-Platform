@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    {{> head}}
+</head>
+
+<body>
+
+    <!-- Sidenav -->
+    {{> aside}}
+
+    <div id="main">
+
+        <div class="main-overlay hidden-overlay"></div>
+
+        {{!-- Main Navbar --}}
+        {{> navbar-general}}
+
+        <!-- Alerts -->
+        {{!-- <div class="container alerts-container">
+
+            {{#if alert }}
+            <div class="alert alert-danger mt-3 mb-0" role="alert">
+                {{alert}}
+            </div>
+            {{/if}}
+
+            {{#if success  }}
+            <div class="alert alert-success mt-3 mb-0" role="alert">
+                {{success}}
+            </div>
+            {{/if}}
+
+        </div> --}}
+
+        <!-- DB Results -->
+
+        {{#if db_results}}
+
+        <!-- Content Wrapper. Contains page content -->
+        <div class="card-container">
+
+            {{#each db_results}}
+
+            {{!-- If user_role == superadmin make the header red --}}
+            {{#if (eq this.user_role 'superadmin')}}
+            <div class="card card-danger m-10">
+            {{!-- else make the header blue --}}
+            {{else}}
+            <div class="card card-primary m-10">
+            {{/if}}
+            
+                <div class="card-header">
+                    <h3 class="card-title">{{this.username}}</h3>
+                </div>
+                <form role="form" class="update-container" action="/update" method="POST" autocomplete="off">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="card-fields col-12">
+                                <input type="text" class="form-control" name="id" value="{{this.id}}" readonly>
+                                {{!-- <input class="charInput" type="text" name="id" value="{{this.id}}" readonly> --}}
+                            </div>
+                            <div class="card-fields col-12">
+                                {{!-- <input type="text" class="form-control" name="id" value="{{this.id}}"> --}}
+                                <input class="form-control" type="text" name="name" value="{{this.name}}">
+                            </div>
+                            <div class="card-fields col-12">
+                                {{!-- <input type="text" class="form-control" name="id" value="{{this.id}}"> --}}
+                                <input class="form-control" type="text" name="username" value="{{this.username}}">
+                            </div>
+                            <div class="card-fields col-12">
+                                {{!-- <input type="text" class="form-control" name="id" value="{{this.id}}"> --}}
+                                <input class="form-control" type="text" name="email" value="{{this.email}}">
+                            </div>
+                            <div class="card-fields col-12">
+                                <select id="role_dropdown" class="custom-select" name="role">
+                                    <option value="{{this.user_role}}">{{this.user_role}}</option>
+                                    <option value="none" disabled>----------------</option>
+                                    <option value="basic">basic</option>
+                                    <option value="superadmin">superadmin</option>
+                                </select>
+                            </div>
+                            <div class="card-fields col-12 popup">
+                                <span class="popuptext" id="sensorId-popup">Here comes the IDs' of sensor that user has
+                                    access to. (eg. 1,2,3,4)</span>
+                                <input class="form-control" type="text" name="sensorId" value="{{ this.sensorId }}">
+                            </div>
+                            <div class="card-fields col-12">
+                                <input class="form-control" type="text" name="password" placeholder="Password">
+                            </div>
+                            <div class="card-fields col-12">
+                                {{!-- If user_role == superadmin make the header red --}}
+                                {{#if (eq this.user_role 'superadmin')}}
+                                <button type="submit" class="btn btn-danger" name="update" value="Update">Update</button>
+                                {{!-- else make the header blue --}}
+                                {{else}}
+                                <button type="submit" class="btn btn-primary" name="update" value="Update">Update</button>
+                                {{/if}}
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            {{/each}}
+
+        </div>
+        {{!-- container wrapper end --}}
+
+
+        {{else}}
+
+            {{!-- test --}}
+
+        {{/if}}
+
+        {{> notification}}
+
+    </div>
+    {{!-- #main Div End --}}
+
+    {{> scripts}}
+
+</body>
+
+</html>

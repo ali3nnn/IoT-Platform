@@ -1,0 +1,37 @@
+  {{#if username  }}
+  <nav class="navbar navbar-light bg-light navbar-fixed-top" style="display:none">
+  {{else }}
+  <nav class="navbar navbar-light bg-light navbar-fixed-top">
+    {{/if}}
+
+    {{#if username}}
+    <button class='btn btn-outline-secondary toggleSidenav open-button'><i class="p-0 fas fa-bars"></i></button>
+    <button class='btn btn-outline-secondary toggleSidenav hidden-button close-button'><i
+        class="p-0 fas fa-times"></i></button>
+    {{/if}}
+    <button onclick="location.href='/';" class="btn btn-outline-secondary" type="button"><i
+        class="fas fa-home p-0"></i></button>
+    {{!-- {{#if username}} --}}
+    <button onclick="location.href='/map';" class="btn btn-outline-secondary" type="button"><i
+        class="fas fa-globe-europe"></i>Map</button>
+    {{!-- {{/if}} --}}
+
+    <ul class="nav justify-content-end">
+      {{#if username  }}
+      <button class='btn hidden-text-on-mobile btn-outline-danger' onclick="location.href='/logout';"><i
+          class="fas fa-sign-out-alt"></i><span class="">Log Out</span></button>
+      {{else }}
+      {{!-- <li class="nav-item"> --}}
+      {{!-- <a class="nav-link active" href="/login">Login</a> --}}
+      <button class='btn hidden-text-on-mobile btn-outline-secondary' onclick="location.href='/login';"><i
+          class="fas fa-sign-in-alt"></i><span class="">Log In</span></button>
+      {{!-- </li> --}}
+      {{!-- <li class="nav-item"> --}}
+      {{!-- <a class="nav-link active" href="/register">Register</a> --}}
+      <button class='btn hidden-text-on-mobile btn-outline-secondary' onclick="location.href='/register';"><i
+          class="fas fa-user"></i><span class="">Register</span></button>
+      {{!-- </li> --}}
+      {{/if}}
+    </ul>
+
+  </nav>

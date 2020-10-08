@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+   {{> head}}
+</head>
+
+<body>
+
+    {{> navbar-general}}
+
+    <div class="container">
+
+        {{#if alert }}
+        <div class="alert alert-danger mt-3 mb-0" role="alert">
+            {{alert}}
+        </div>
+        {{/if}}
+
+        {{#if success  }}
+        <div class="alert alert-success mt-3 mb-0" role="alert">
+            {{success}}
+        </div>
+        {{/if}}
+
+    </div>
+
+    {{!-- <div class="jumbotron custom-box edit-user"> </div> --}}
+
+    <script src="https://code.jquery.com/jquery-3.3.1.js"
+        integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+
+    <script src="/js/scripts.js"></script>
+
+</body>
+
+</html>

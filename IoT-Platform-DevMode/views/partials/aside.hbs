@@ -1,0 +1,136 @@
+<div id="mySidenav" class="blur0 sidenav sidenav-closed text-selection-disable-for-all">
+    <div class="sidenav-wrapper">
+        <div class="brand">
+            <a class="navbar-brand" href="/">
+                <i><img src="/images/logo.png" class='img-circle' width="50" height="50" alt="" /></i>
+                <span>Hi, <b>{{username}}!</b></span>
+            </a>
+            {{!-- <a href="/"><i class="fas fa-users-cog"></i><span>Hi, <b>{{username}}!</b></span></a> --}}
+        </div>
+        {{#if user_role_is_superadmin }}
+        <div class="admin-items">
+            <a href="/users"><i class="fas fa-users-cog"></i><span>Users Overview</span></a>
+        </div>
+        <div class="admin-items">
+            <a href="/add-sensor"><i class="fas fa-plus-circle"></i><span>Add new sensors</span></a>
+        </div>
+        {{/if}}
+
+        <script>
+            var counties = JSON.parse('{{{json counties}}}');
+        </script>
+
+        <div class="basic-items">
+            <a href="/map" class='map-button'>
+                <i class="fas fa-globe-europe"></i>
+                <span>Map</span>
+            </a>
+        </div>
+
+        {{!-- Zones List --}}
+        <div id="zones-list" class="">
+            <script>
+                if (counties.length == 0) {
+                    $("#zones-list").append(`<div class="zone-item">
+                        <a href="#" class='no-zone'><i class="fas fa-map-marker-slash"></i><span>You have no sensors</span></a>
+                        <!--<a href="#" class='no-zone'></i><span class="badge badge-danger">You have no sensors</span></a>-->
+                    </div>`)
+                } else {
+                    for (var i = 0; i < counties.length; i++) {
+                        $("#zones-list").append(`<div class="zone-item">
+                            <a href="/map/`+ counties[i] + `" county="` + counties[i] + `" class="county-item"><i class="fas fa-map-marker-alt"></i><span>` + counties[i] + `</span></a>
+                        </div>`)
+                    }
+                }
+            </script>
+        </div>
+
+        {{#if isScaleAvailable.tableExist}}
+        {{#if isScaleAvailable.count}}
+        <div class="basic-items">
+            <a href="/scale-dashboard" class='scale-button'>
+                <i class="fas fa-balance-scale"></i>
+                {{!-- <i class="far fa-conveyor-belt-alt"></i> --}}
+                <span>Scale</span>
+            </a>
+        </div>
+        {{else}}
+        <div class="basic-items">
+            <a href="/scale-dashboard" class='scale-button'>
+                <i class="fas fa-balance-scale"></i>
+                <span>Scale</span>
+            </a>
+        </div>
+        {{/if}}
+        {{/if}}
+
+        {{#if isConveyorAvailable.tableExist}}
+        {{#if isConveyorAvailable.count}}
+        <div class="basic-items">
+            <a href="/conveyor-dashboard" class='conveyor-button'>
+                <i class="far fa-conveyor-belt-alt"></i>
+                <span>Conveyor</span>
+            </a>
+        </div>
+        {{else}}
+        <div class="basic-items">
+            <a href="/conveyor-dashboard" class='conveyor-button'>
+                <i class="far fa-conveyor-belt-alt"></i>
+                <span>Conveyor</span>
+            </a>
+        </div>
+        {{/if}}
+        {{/if}}
+
+        {{#if isScannerAvailable.tableExist}}
+        {{#if isScannerAvailable.count}}
+        <div class="basic-items">
+            <a href="/scanner-dashboard" class='scanner-button'>
+                <i class="fas fa-barcode"></i>
+                <span>Scanner</span>
+            </a>
+        </div>
+        {{else}}
+        <div class="basic-items">
+            <a href="/scanner-dashboard" class='scanner-button'>
+                {{!-- <i class="fas fa-barcode"></i> --}}
+                <i class="fad fa-barcode-read"></i>
+                <span>Scanner</span>
+            </a>
+        </div>
+        {{/if}}
+        {{/if}}
+
+        <div class="settings-items">
+
+            {{!-- <a href="/manage-sensors">
+                <i class="fas fa-cogs"></i>
+                <span>Manage Sensors</span><span class="badge badge-danger right">6</span>
+            </a>
+
+            <a href="/set-new-device">
+                <i class="fas fa-laptop-code"></i>
+                <span>Set new device</span>
+            </a> --}}
+
+            {{!-- {{test}} --}}
+
+            {{#if user_role_is_admin }}
+            <a href="/team" class='team-route'>
+                <i class="fas fa-sitemap"></i>
+                <span>Your team</span>
+            </a>
+            {{/if}}
+
+            {{#if username  }}
+            <div class="logout-btn">
+                <button class='btn btn-outline-danger' onclick="location.href='/logout';"><i
+                        class="fas fa-sign-out-alt"></i><span>Log Out</span></button>
+            </div>
+            {{/if}}
+
+        </div>
+    </div>
+</div>
+
+{{!-- {{> loader}} --}}

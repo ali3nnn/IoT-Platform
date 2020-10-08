@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  {{> head}}
+  <script>
+    document.title = "MAP | Anysensor"
+  </script>
+</head>
+
+<body class="map-page">
+
+  {{!-- Loading Screen --}}
+  {{> loader}}
+
+  <!-- Main Sidebar Container -->
+  {{> aside}}
+
+  <!-- Add all page content inside this div if you want the side nav to push page content to the right (not used if you only want the sidenav to sit on top of the page -->
+  <div id="main">
+
+    <div class="main-overlay hidden-overlay"></div>
+
+    {{!-- Main Navbar --}}
+    {{> navbar-general}}
+
+    {{!-- Zones List --}}
+    {{!-- {{> mapzones}} --}}
+
+    {{!-- Romanian Map SVG --}}
+    {{!-- <div class="container wrapper">
+            {{> ro}}
+        </div> --}}
+
+    {{!-- Map --}}
+    {{!-- <div class="container wrapper"> --}}
+    <div id="map" class="map"></div>
+
+    <script>
+      function insertAfter(newNode, referenceNode) {
+        console.log(newNode, referenceNode)
+        referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+      }
+
+      var sensorId = JSON.parse('{{{json sensors}}}');
+      console.log("sensorId:", sensorId)
+
+      sensorId.forEach(sensor => {
+
+        var element = document.createElement('div'); // it's a node
+        element.className = 'temeprature-marker';
+        $(element).attr("sensorid", sensor)
+       // $(element).insertAfter("#map")
+
+      })
+
+    </script>
+    {{!-- </div> --}}
+
+    <notification></notification>
+
+  </div>
+
+  {{> scripts}}
+
+
+
+</body>
+
+</html>
