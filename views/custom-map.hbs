@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    {{> head}}
+    {{!-- <script src="https://code.jquery.com/jquery-1.12.4.js"></script> --}}
+    {{!-- <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script> --}}
+    <script>
+        document.title = "CUSTOM MAP | Anysensor"
+    </script>
+</head>
+
+<body class="custom-map-page">
+
+    {{!-- Loading Screen --}}
+    {{> loader}}
+
+    <!-- Main Sidebar Container -->
+    {{> aside}}
+
+    <!-- Add all page content inside this div if you want the side nav to push page content to the right (not used if you only want the sidenav to sit on top of the page -->
+    <div id="main">
+
+        <div class="main-overlay hidden-overlay"></div>
+
+        {{!-- Main Navbar --}}
+        {{> navbar-general}}
+
+        {{!-- Map --}}
+        {{!-- <div class="container wrapper"> --}}
+        <div id="map" class="map">
+            <button onclick="left()">left</button>
+            <button onclick="right()">right</button>
+            <button onclick="up()">up</button>
+            <button onclick="down()">down</button>
+            <div id="custom-map"></div>
+        </div>
+        {{!-- </div> --}}
+
+        <notification></notification>
+
+    </div>
+
+    <script>
+        if (window.location.href.indexOf('custom-map') > -1) {
+            $(".custom-map-route").addClass("link-selected")
+        }
+
+        var loggedInUser = JSON.parse('{{{json username}}}');
+    </script>
+
+    {{> scripts}}
+
+
+
+</body>
+
+</html>

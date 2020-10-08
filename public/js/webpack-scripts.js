@@ -34,3 +34,8 @@ if ($("#zones-list").length) {
     console.log("map.js added")
     require("./map")
 }
+
+if ($(".custom-map-page").length) {
+    console.log("custom-map.js added")
+    require("./custom-map")
+}

@@ -107,7 +107,7 @@
         var username = JSON.parse('{{{json username}}}');
     }
 
-    var socket = io.connect(":1920")
+    var socket = io.connect("https://anysensor.dasstec.ro:1920")
 
     //MQTT Broker --mqtt--> NodeJS --socket.io--> Client
     var socketChannel = 'socketChannel'

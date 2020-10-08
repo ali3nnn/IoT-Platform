@@ -7,7 +7,7 @@
 
 <body>
 
-    {{> navbar-general}}
+    {{!-- {{> navbar-general}} --}}
 
     <div class="wrapper fadeInDown">
         <div id="formContent">
@@ -30,12 +30,6 @@
                     class="fadeIn third" autocomplete="off">
                 <input class="charInput" type="password" name="password" value="" placeholder="Choose a password"
                     class="fadeIn third">
-                <ul class='passwordRules'>
-                    <li>At least one uppercase letter</li>
-                    <li>At least one lowercase letter</li>
-                    <li>At least one digit</li>
-                    <li>At least 8 characters</li>
-                </ul>
                 <input class="charInput" type="password" name="passwordConfirm" value=""
                     placeholder="Confirm the password" class="fadeIn third">
                 {{!-- <div class='lower-buttons'> --}}
@@ -58,13 +52,16 @@
         {{/if}}
     </div>
 
+    <notification></notification>
 
-    <script src="https://code.jquery.com/jquery-3.3.1.js"
+    {{!-- <script src="https://code.jquery.com/jquery-3.3.1.js"
         integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
 
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
 
-    <script src="/js/scripts.js"></script>
+    <script src="/js/scripts.js"></script> --}}
+
+    {{> scripts}}
 
 </body>
 

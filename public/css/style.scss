@@ -4193,6 +4193,7 @@ span.maxAlertGauge {
 
 // Unit Measure
 article[sensortype='temperature'] {
+
   .currentValue:after,
   .minAlertGauge:after,
   .maxAlertGauge:after {
@@ -4202,6 +4203,7 @@ article[sensortype='temperature'] {
 }
 
 article[sensortype='voltage'] {
+
   .currentValue:after,
   .minAlertGauge:after,
   .maxAlertGauge:after {
@@ -4726,15 +4728,18 @@ margin-top: -30px; */
   border-radius: 13px;
   -webkit-box-shadow: var(--neuro);
   box-shadow: var(--neuro);
+  min-width: 100%;
+  min-height: 100%;
 }
 
 div#map>div:first-child {
   display: block !important;
+  
 }
 
-div#map>div {
-  display: none;
-}
+// div#map>div {
+//   display: none;
+// }
 
 /* End Map Container */
 
@@ -5840,15 +5845,13 @@ stroke-width: 10;
     }
   }
 
-  .user-col {
+  .user-col {}
 
-  }
   .zones-col {
-    position:relative;
+    position: relative;
   }
-  .actions-col {
 
-  }
+  .actions-col {}
 
   .spinner {
     left: 0;
@@ -6282,3 +6285,44 @@ border-bottom: 1px dotted black; */
 }
 
 /* End Scanner Page */
+
+// Custom Map Page
+#map {
+  width: 500px;
+}
+
+.draggable {
+  // width: 90px;
+  // height: 80px;
+  padding: 5px;
+  float: left;
+  margin: 0 10px 10px 0;
+  font-size: 5em;
+  // border: 1px solid black;
+  cursor:pointer;
+  span {
+    font-size: 12px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+.ui-widget-header p,
+.ui-widget-content p {
+  margin: 0;
+}
+
+#custom-map {
+  overflow:scroll;
+  position:relative;
+  img {
+    position:absolute;
+    top: 0;
+    left: 0;
+    width: 1600px;
+    height: 1000px;
+  }
+}
+
+// End Custom Map Page

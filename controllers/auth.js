@@ -24,7 +24,7 @@ const {
 // console.dir(process.env)
 
 //config db info
-config_db = {
+const config_db = {
     host: process.env.DATABASE_HOST,
     user: process.env.DATABASE_USER,
     password: process.env.DATABASE_PASSWORD,
@@ -95,12 +95,12 @@ function influxReader(query) {
 // ==================================
 
 // DB Configuration
-config_db = {
-    host: process.env.DATABASE_HOST,
-    user: process.env.DATABASE_USER,
-    password: process.env.DATABASE_PASSWORD,
-    database: process.env.DATABASE
-}
+// const config_db = {
+//     host: process.env.DATABASE_HOST,
+//     user: process.env.DATABASE_USER,
+//     password: process.env.DATABASE_PASSWORD,
+//     database: process.env.DATABASE
+// }
 
 // Database Connection In Promise
 class Database {
@@ -129,7 +129,7 @@ class Database {
 }
 
 // Set and connect to DB - Promise
-database = new Database(config_db)
+const database = new Database(config_db)
 
 function mysqlReader(query) {
     return new Promise((resolve, reject) => {

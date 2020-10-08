@@ -99,6 +99,7 @@ const {
     isScaleAvailable,
     isConveyorAvailable,
     isScannerAvailable,
+    isCustomMapAvailable,
     mqttOverSocketIoBridge,
     test,
     // trackurl
@@ -114,33 +115,6 @@ const influx = new Influx.InfluxDB({
     host: 'localhost',
     database: 'anysensor3',
 })
-
-// Influx Write - ASYNC
-function influxWriter(measurement, country, county, city, location, zone, username, type, sensorId, value, database = 'anysensor3', precision = 's') {
-    console.log('Influx Write')
-    influx.writePoints([{
-            measurement,
-            tags: {
-                country,
-                county,
-                city,
-                location,
-                zone,
-                username,
-                type,
-                sensorId,
-            },
-            fields: {
-                value
-            }
-        }], {
-            database,
-            precision,
-        })
-        .catch(error => {
-            console.error(`Error saving data to InfluxDB! ${err.stack}`)
-        });
-}
 
 // Influx Query - PROMISE
 function influxReader(query) {
@@ -166,7 +140,7 @@ function influxReader(query) {
 // ==================================
 
 // DB Configuration
-config_db = {
+const config_db = {
     host: process.env.DATABASE_HOST,
     user: process.env.DATABASE_USER,
     password: process.env.DATABASE_PASSWORD,
@@ -209,7 +183,7 @@ class Database {
 }
 
 // Set and connect to DB - Promise
-database = new Database(config_db)
+const database = new Database(config_db)
 
 function mysqlReader(query) {
     return new Promise((resolve, reject) => {
@@ -321,7 +295,7 @@ app.get('/', (req, res) => {
 
 });
 
-app.get("/map", cookieChecker, authDashboard, getCounties, getSensorLocation, isScaleAvailable, isConveyorAvailable, isScannerAvailable, mqttOverSocketIoBridge, (req, res) => {
+app.get("/map", cookieChecker, authDashboard, getCounties, getSensorLocation, isScaleAvailable, isConveyorAvailable, isScannerAvailable, mqttOverSocketIoBridge, isCustomMapAvailable, (req, res) => {
     sess = req.session;
     console.log(sess.username, sess.counties)
     res.render("map", {
@@ -334,12 +308,13 @@ app.get("/map", cookieChecker, authDashboard, getCounties, getSensorLocation, is
         isScaleAvailable: sess.isScaleAvailable,
         isConveyorAvailable: sess.isConveyorAvailable,
         isScannerAvailable: sess.isScannerAvailable,
+        isCustomMapAvailable: sess.isCustomMapAvailable,
         user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0,
         user_role_is_admin: sess.user_role == 'admin' ? 1 : 0,
     })
 })
 
-app.get('/map/:county', cookieChecker, authDashboard, getCounties, getSensorLocation, isScaleAvailable, isConveyorAvailable, isScannerAvailable, mqttOverSocketIoBridge, (req, res) => {
+app.get('/map/:county', cookieChecker, authDashboard, getCounties, getSensorLocation, isScaleAvailable, isConveyorAvailable, isScannerAvailable, mqttOverSocketIoBridge, isCustomMapAvailable, (req, res) => {
 
     sess = req.session
     sess.county = req.params.county
@@ -359,6 +334,7 @@ app.get('/map/:county', cookieChecker, authDashboard, getCounties, getSensorLoca
             isScaleAvailable: sess.isScaleAvailable,
             isConveyorAvailable: sess.isConveyorAvailable,
             isScannerAvailable: sess.isScannerAvailable,
+            isCustomMapAvailable: sess.isCustomMapAvailable,
             user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0,
             user_role_is_admin: sess.user_role == 'admin' ? 1 : 0
         })
@@ -370,7 +346,7 @@ app.get('/map/:county', cookieChecker, authDashboard, getCounties, getSensorLoca
 
 })
 
-app.get('/scale-dashboard', cookieChecker, authDashboard, getCounties, isScaleAvailable, isConveyorAvailable, isScannerAvailable, mqttOverSocketIoBridge, (req, res) => {
+app.get('/scale-dashboard', cookieChecker, authDashboard, getCounties, isScaleAvailable, isConveyorAvailable, isScannerAvailable, mqttOverSocketIoBridge, isCustomMapAvailable, (req, res) => {
     sess = req.session
     res.render("scale-dashboard", {
         username: sess.username,
@@ -385,7 +361,7 @@ app.get('/scale-dashboard', cookieChecker, authDashboard, getCounties, isScaleAv
     })
 })
 
-app.get('/conveyor-dashboard', cookieChecker, authDashboard, getCounties, isScaleAvailable, isConveyorAvailable, isScannerAvailable, mqttOverSocketIoBridge, (req, res) => {
+app.get('/conveyor-dashboard', cookieChecker, authDashboard, getCounties, isScaleAvailable, isConveyorAvailable, isScannerAvailable, mqttOverSocketIoBridge, isCustomMapAvailable, (req, res) => {
     sess = req.session
     res.render("conveyor-dashboard", {
         username: sess.username,
@@ -396,12 +372,13 @@ app.get('/conveyor-dashboard', cookieChecker, authDashboard, getCounties, isScal
         isScaleAvailable: sess.isScaleAvailable,
         isConveyorAvailable: sess.isConveyorAvailable,
         isScannerAvailable: sess.isScannerAvailable,
+        isCustomMapAvailable: sess.isCustomMapAvailable,
         user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0,
         user_role_is_admin: sess.user_role == 'admin' ? 1 : 0,
     })
 })
 
-app.get('/scanner-dashboard', cookieChecker, authDashboard, getCounties, isScaleAvailable, isConveyorAvailable, isScannerAvailable, mqttOverSocketIoBridge, (req, res) => {
+app.get('/scanner-dashboard', cookieChecker, authDashboard, getCounties, isScaleAvailable, isConveyorAvailable, isScannerAvailable, mqttOverSocketIoBridge, isCustomMapAvailable, (req, res) => {
     sess = req.session
     res.render("scanner-dashboard", {
         username: sess.username,
@@ -412,6 +389,24 @@ app.get('/scanner-dashboard', cookieChecker, authDashboard, getCounties, isScale
         isScaleAvailable: sess.isScaleAvailable,
         isConveyorAvailable: sess.isConveyorAvailable,
         isScannerAvailable: sess.isScannerAvailable,
+        isCustomMapAvailable: sess.isCustomMapAvailable,
+        user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0,
+        user_role_is_admin: sess.user_role == 'admin' ? 1 : 0,
+    })
+})
+
+app.get('/custom-map', cookieChecker, authDashboard, getCounties, isScaleAvailable, isConveyorAvailable, isScannerAvailable, mqttOverSocketIoBridge, isCustomMapAvailable, (req,res) => {
+    sess = req.session
+    res.render("custom-map", {
+        username: sess.username,
+        user_role: sess.user_role,
+        sensorId: sess.sensorAccess, //this needs to be replaced or removed
+        // sensors: sess.sensors, //this contains a list of sensorsId the user has access to - generated by getSensorLocation
+        counties: sess.counties, //this contains a list of counties the user has access to - generated by getCounties
+        isScaleAvailable: sess.isScaleAvailable,
+        isConveyorAvailable: sess.isConveyorAvailable,
+        isScannerAvailable: sess.isScannerAvailable,
+        isCustomMapAvailable: sess.isCustomMapAvailable,
         user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0,
         user_role_is_admin: sess.user_role == 'admin' ? 1 : 0,
     })
@@ -2955,7 +2950,7 @@ app.get('/api/remove-user', async (req, res) => {
     res.redirect('/team')
 })
 
-app.get('/team', cookieChecker, authDashboard, getCounties, isScaleAvailable, isConveyorAvailable, isScannerAvailable, mqttOverSocketIoBridge, (req, res) => {
+app.get('/team', cookieChecker, authDashboard, getCounties, isScaleAvailable, isConveyorAvailable, isScannerAvailable, mqttOverSocketIoBridge, isCustomMapAvailable, (req, res) => {
     sess = req.session
     res.render("team", {
         username: sess.username,
@@ -2966,6 +2961,7 @@ app.get('/team', cookieChecker, authDashboard, getCounties, isScaleAvailable, is
         isScaleAvailable: sess.isScaleAvailable,
         isConveyorAvailable: sess.isConveyorAvailable,
         isScannerAvailable: sess.isScannerAvailable,
+        isCustomMapAvailable: sess.isCustomMapAvailable,
         user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0,
         user_role_is_admin: sess.user_role == 'admin' ? 1 : 0,
     })
@@ -2973,7 +2969,7 @@ app.get('/team', cookieChecker, authDashboard, getCounties, isScaleAvailable, is
 //=========================================
 // End Team Page
 
-// Scale, Conveyor, Scanner API
+// Scale, Conveyor, Scanner, Custom Map API
 //=========================================
 app.get("/api/conveyor", (req, res) => {
 
@@ -3142,6 +3138,23 @@ app.get("/api/socketio-access", (req, res) => {
                         })
                     }
                 })
+            })
+            .catch(err => {
+                res.send(err)
+            })
+    } else {
+        res.send({
+            success: false
+        })
+    }
+})
+
+app.get("/api/mysql", (req,res) => {
+    sess = req.session
+    if (sess.username) {
+        mysqlReader(req.query.q)
+            .then(result => {
+                res.status(200).send(result)
             })
             .catch(err => {
                 res.send(err)

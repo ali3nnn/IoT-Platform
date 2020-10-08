@@ -437,6 +437,41 @@ const mqttOverSocketIoBridge = (req, res, next) => {
     next()
 }
 
+const isCustomMapAvailable = async (req, res, next) => {
+    // next()
+    sess = req.session;
+    var time = new Date()
+    var data = {}
+    if (sess.username) {
+        if (sess.isCustomMapAvailable == undefined || sess.isCustomMapAvailable.length == 0) {
+            const query = "SHOW TABLES LIKE 'custommap_" + sess.username + "'";
+            mysqlReader(query)
+                .then(rows => {
+                    data['tableExist'] = rows.length ? true : false
+                    if (rows.length) {
+                        mysqlReader("SELECT count(*) as count FROM custommap_" + sess.username + "")
+                            .then(count => {
+                                data['count'] = count[0].count
+                                data["responseTime"] = new Date() - time
+                            }).then(() => {
+                                sess.isCustomMapAvailable = data
+                                next()
+                            })
+                    } else {
+                        data['count'] = 0
+                        data["responseTime"] = new Date() - time
+                        sess.isCustomMapAvailable = data
+                        next()
+                    }
+                })
+        } else {
+            next()
+        }
+    } else {
+        next()
+    }
+}
+
 // This is a test middleware that is used at every route
 const test = (req, res, next) => {
     // console.log("--->>>", req.originalUrl)
@@ -469,6 +504,7 @@ module.exports = {
     isScaleAvailable,
     isConveyorAvailable,
     isScannerAvailable,
+    isCustomMapAvailable,
     mqttOverSocketIoBridge,
     test,
     // trackurl
