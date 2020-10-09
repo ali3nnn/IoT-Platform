@@ -417,11 +417,11 @@ app.get('/scanner-dashboard', cookieChecker, authDashboard, getCounties, isScale
     })
 })
 
-// get and post request to /register page
 app.get('/register', (req, res) => {
     res.render('register')
 });
 
+// get and post request to /register page
 app.post('/register', authRegister, (req, res) => {
     sess = req.session;
     res.redirect('/login')

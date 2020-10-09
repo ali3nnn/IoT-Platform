@@ -39,14 +39,7 @@ checker.allowed_symbols = '-.';
 
 var passwordField = document.querySelector('.login-container .charInput[name="password"]');
 var passwordConfirm = document.querySelector('.login-container .charInput[name="passwordConfirm"]');
-var otherPasswordFields = document.querySelectorAll('.login-container .charInput[name="password"]');
 var registerButton = document.querySelector('.login-container input[name="register"]');
-
-var passwordRules = document.querySelector('.login-container .passwordRules');
-var passwordUpperCase = document.querySelector('.login-container .passwordRules li:first-child');
-var passwordLowerCase = document.querySelector('.login-container .passwordRules li:nth-child(2)');
-var passwordDigit = document.querySelector('.login-container .passwordRules li:nth-child(3)');
-var password8Char = document.querySelector('.login-container .passwordRules li:nth-child(4)');
 
 // Input Values
 let allInputs = () => {

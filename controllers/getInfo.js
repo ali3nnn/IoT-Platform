@@ -132,37 +132,43 @@ const getCounties = async (req, res, next) => {
     sess = req.session;
 
     sess.counties = []
-    // console.log(sess.username, "getCounties", sess.counties, sess.counties == undefined || sess.counties.length == 0)
+    console.log("getcounties:", sess.username)
 
     var time = new Date()
     var data = []
     if (sess.username) {
         if (sess.counties == undefined || sess.counties.length == 0) {
-            const query = "SELECT * FROM sensors WHERE username='" + sess.username + "'"
+            const query = "select userAccess.username, sensors.*, locations.* from userAccess inner join sensors on sensors.sensorId=userAccess.sensorId and userAccess.username='"+sess.username+"' inner join locations on locations.zoneId=sensors.zoneId;"
             mysqlReader(query).then(async (rows) => {
-                let rows_ = await rows
-                // console.log(await rows)
-                if (rows_.length) {
+                // let rows_ = await rows
 
-                    var whereQuery = `where (username='` + sess.username + `') or (`
+                if (rows.length) {
 
-                    for (var i = 0; i < rows_.length; i++) {
+                    // usually it should result something
+                    console.log(rows)
 
-                        whereQuery += `sensorId='` + rows_[i].sensorId + `'`
-                        if (i < rows_.length - 1) whereQuery += ` or `
-                        else whereQuery += `)`
-                    }
+                    // var whereQuery = `where (username='` + sess.username + `') or (`
 
-                    // var queryCounties = `select distinct(county) as county from ( select county, value from sensors ` + whereQuery + ` )`
-                    var queryCounties = `SHOW TAG VALUES WITH KEY IN ("county") ` + whereQuery
+                    // for (var i = 0; i < rows_.length; i++) {
+
+                    //     whereQuery += `sensorId='` + rows_[i].sensorId + `'`
+                    //     if (i < rows_.length - 1) whereQuery += ` or `
+                    //     else whereQuery += `)`
+                    // }
+
+                    // // var queryCounties = `select distinct(county) as county from ( select county, value from sensors ` + whereQuery + ` )`
+                    // var queryCounties = `SHOW TAG VALUES WITH KEY IN ("county") ` + whereQuery
 
                 } else {
+                    
 
                     // get counties
                     // var queryCounties = "select distinct(county) as county from (select county, value from sensors where username='" + sess.username + "')"
-                    var queryCounties = `SHOW TAG VALUES WITH KEY IN ("county") WHERE username='` + sess.username + `'`
+                    // var queryCounties = `SHOW TAG VALUES WITH KEY IN ("county") WHERE username='` + sess.username + `'`
 
                 }
+
+                console.log("queryCounties:", queryCounties)
 
                 let counties = influxReader(queryCounties).then(async (result) => {
 
@@ -171,6 +177,8 @@ const getCounties = async (req, res, next) => {
                         // counties.push(result[i].county)
                         counties.push(result[i].value)
                     }
+
+                    console.log("counties", counties)
 
                     return await counties
 
@@ -196,12 +204,14 @@ const getCounties = async (req, res, next) => {
                     } else {
                         data.push({
                             error: true,
-                            message: "No data found for this user",
+                            message: "No sensor in influx for this user",
                             user: sess.username
                         })
 
                         sess.counties = []
                     }
+
+                    console.log("data", data)
 
                     // console.log(sess.username, "getCounties 2", sess.counties)
 
@@ -221,216 +231,210 @@ const getCounties = async (req, res, next) => {
 
 const getSensorLocation = async (req, res, next) => {
 
-    sess = req.session;
-    sess.sensors = []
+    // sess = req.session;
+    // sess.sensors = []
 
-    // sess.counties = []
-    // console.log(sess.username, "getCounties", sess.counties, sess.counties == undefined || sess.counties.length == 0)
+    // var time = new Date()
+    // var data = []
 
-    var time = new Date()
-    var data = []
-    
-    if (sess.username) {
-        if (sess.user_role=="superadmin") {
-            next()
-        }
-        else if (sess.sensors == undefined || sess.sensors.length == 0) {
-            const query = "SELECT * FROM sensors WHERE username='" + sess.username + "'"
-            mysqlReader(query).then(async (rows) => {
-                let rows_ = await rows
-                // console.log(await rows)
-                if (rows_.length) {
+    // if (sess.username) {
+    //     if (sess.sensors == undefined || sess.sensors.length == 0) {
+    //         const query = "SELECT * FROM sensors WHERE username='" + sess.username + "'"
+    //         mysqlReader(query).then(async (rows) => {
+    //             let rows_ = await rows
+    //             // console.log(await rows)
+    //             if (rows_.length) {
 
-                    var whereQuery = `where (username='` + sess.username + `') or (`
+    //                 var whereQuery = `where (username='` + sess.username + `') or (`
 
-                    for (var i = 0; i < rows_.length; i++) {
+    //                 for (var i = 0; i < rows_.length; i++) {
 
-                        whereQuery += `sensorId='` + rows_[i].sensorId + `'`
-                        if (i < rows_.length - 1) whereQuery += ` or `
-                        else whereQuery += `)`
-                    }
+    //                     whereQuery += `sensorId='` + rows_[i].sensorId + `'`
+    //                     if (i < rows_.length - 1) whereQuery += ` or `
+    //                     else whereQuery += `)`
+    //                 }
 
-                    // var querySensorId = `select distinct(sensorId) as sensorId from ( select sensorId, value from sensors ` + whereQuery + ` )`
-                    var querySensorId = `SHOW TAG VALUES WITH KEY IN ("sensorId") ` + whereQuery
+    //                 // var querySensorId = `select distinct(sensorId) as sensorId from ( select sensorId, value from sensors ` + whereQuery + ` )`
+    //                 var querySensorId = `SHOW TAG VALUES WITH KEY IN ("sensorId") ` + whereQuery
 
-                } else {
+    //             } else {
 
-                    // get counties
-                    // var querySensorId = `select distinct(sensorId) as sensorId from (select sensorId, value from sensors where username='` + sess.username + `')`
-                    var querySensorId = `SHOW TAG VALUES WITH KEY IN ("sensorId") WHERE username='` + sess.username + `'`
+    //                 // get counties
+    //                 // var querySensorId = `select distinct(sensorId) as sensorId from (select sensorId, value from sensors where username='` + sess.username + `')`
+    //                 var querySensorId = `SHOW TAG VALUES WITH KEY IN ("sensorId") WHERE username='` + sess.username + `'`
 
-                }
+    //             }
 
-                // console.log(querySensorId)
+    //             // console.log(querySensorId)
 
-                let sensors = influxReader(querySensorId).then(async (result) => {
+    //             let sensors = influxReader(querySensorId).then(async (result) => {
 
-                    var sensors = []
-                    for (var i = 0; i < result.length; i++) {
-                        // sensors.push(result[i].sensorId)
-                        sensors.push(result[i].value)
-                    }
+    //                 var sensors = []
+    //                 for (var i = 0; i < result.length; i++) {
+    //                     // sensors.push(result[i].sensorId)
+    //                     sensors.push(result[i].value)
+    //                 }
 
-                    return await sensors
+    //                 return await sensors
 
-                })
+    //             })
 
-                Promise.all([sensors]).then((result) => {
+    //             Promise.all([sensors]).then((result) => {
 
-                    // build the output
-                    if (result[0].length) {
+    //                 // build the output
+    //                 if (result[0].length) {
 
-                        data.push({
-                            error: false,
-                            message: "Data found",
-                            user: sess.username,
-                            sensorCounter: result[0].length,
-                            sensors: result[0].length ? result[0] : "No sensor found",
-                            query: querySensorId,
-                            responseTime: new Date() - time + "ms",
-                        })
+    //                     data.push({
+    //                         error: false,
+    //                         message: "Data found",
+    //                         user: sess.username,
+    //                         sensorCounter: result[0].length,
+    //                         sensors: result[0].length ? result[0] : "No sensor found",
+    //                         query: querySensorId,
+    //                         responseTime: new Date() - time + "ms",
+    //                     })
 
-                        sess.sensors = data[0].sensors
-                        // sess.data = data
+    //                     sess.sensors = data[0].sensors
+    //                     // sess.data = data
 
-                    } else {
-                        data.push({
-                            error: true,
-                            message: "No data found for this user",
-                            user: sess.username
-                        })
+    //                 } else {
+    //                     data.push({
+    //                         error: true,
+    //                         message: "No data found for this user",
+    //                         user: sess.username
+    //                     })
 
-                        // sess.data = []
-                    }
+    //                     // sess.data = []
+    //                 }
 
-                    // console.log(sess.username, "getCounties 2", sess.counties)
+    //                 // console.log(sess.username, "getCounties 2", sess.counties)
 
-                    // console.log(sess.sensors)
+    //                 // console.log(sess.sensors)
 
-                    next()
+    //                 next()
 
-                }).catch(error => console.log(`Error in promise for GETSENSORLOCATION ${error}`))
+    //             }).catch(error => console.log(`Error in promise for GETSENSORLOCATION ${error}`))
 
-            })
-        } else {
-            next()
-        }
-    } else {
-        // console.log("test")
-        res.render("login", {
-            alert: "You are not logged in"
-        })
-    }
+    //         })
+    //     } else {
+    //         next()
+    //     }
+    // } else {
+    //     // console.log("test")
+    //     res.render("login", {
+    //         alert: "You are not logged in"
+    //     })
+    // }
 
-    // next()
+    next()
 }
 
 const isScaleAvailable = async (req, res, next) => {
-    // next()
-    sess = req.session;
-    var time = new Date()
-    var data = {}
-    if (sess.username) {
-        if (sess.isScaleAvailable == undefined || sess.isScaleAvailable.length == 0) {
-            const query = "SHOW TABLES LIKE 'scale_" + sess.username + "'";
-            mysqlReader(query)
-                .then(rows => {
-                    data['tableExist'] = rows.length ? true : false
-                    if (rows.length) {
-                        mysqlReader("SELECT count(*) as count FROM scale_" + sess.username + "")
-                            .then(count => {
-                                data['count'] = count[0].count
-                                data["responseTime"] = new Date() - time
-                            }).then(() => {
-                                sess.isScaleAvailable = data
-                                next()
-                            })
-                    } else {
-                        data['count'] = 0
-                        data["responseTime"] = new Date() - time
-                        sess.isScaleAvailable = data
-                        next()
-                    }
-                })
-        } else {
-            next()
-        }
-    } else {
-        next()
-    }
+    next()
+    // sess = req.session;
+    // var time = new Date()
+    // var data = {}
+    // if (sess.username) {
+    //     if (sess.isScaleAvailable == undefined || sess.isScaleAvailable.length == 0) {
+    //         const query = "SHOW TABLES LIKE 'scale_" + sess.username + "'";
+    //         mysqlReader(query)
+    //             .then(rows => {
+    //                 data['tableExist'] = rows.length ? true : false
+    //                 if (rows.length) {
+    //                     mysqlReader("SELECT count(*) as count FROM scale_" + sess.username + "")
+    //                         .then(count => {
+    //                             data['count'] = count[0].count
+    //                             data["responseTime"] = new Date() - time
+    //                         }).then(() => {
+    //                             sess.isScaleAvailable = data
+    //                             next()
+    //                         })
+    //                 } else {
+    //                     data['count'] = 0
+    //                     data["responseTime"] = new Date() - time
+    //                     sess.isScaleAvailable = data
+    //                     next()
+    //                 }
+    //             })
+    //     } else {
+    //         next()
+    //     }
+    // } else {
+    //     next()
+    // }
 }
 
 const isConveyorAvailable = async (req, res, next) => {
-    // next()
-    sess = req.session;
-    var time = new Date()
-    var data = {}
-    if (sess.username) {
-        if (sess.isConveyorAvailable == undefined || sess.isConveyorAvailable.length == 0) {
-            const query = "SHOW TABLES LIKE 'conveyor_" + sess.username + "'";
-            mysqlReader(query)
-                .then(rows => {
-                    data['tableExist'] = rows.length ? true : false
-                    if (rows.length) {
-                        mysqlReader("SELECT count(*) as count FROM conveyor_" + sess.username + "")
-                            .then(count => {
-                                data['count'] = count[0].count
-                                data["responseTime"] = new Date() - time
-                            }).then(() => {
-                                sess.isConveyorAvailable = data
-                                next()
-                            })
-                    } else {
-                        data['count'] = 0
-                        data["responseTime"] = new Date() - time
-                        sess.isConveyorAvailable = data
-                        next()
-                    }
-                })
-        } else {
-            next()
-        }
-    } else {
-        next()
-    }
+    next()
+    // sess = req.session;
+    // var time = new Date()
+    // var data = {}
+    // if (sess.username) {
+    //     if (sess.isConveyorAvailable == undefined || sess.isConveyorAvailable.length == 0) {
+    //         const query = "SHOW TABLES LIKE 'conveyor_" + sess.username + "'";
+    //         mysqlReader(query)
+    //             .then(rows => {
+    //                 data['tableExist'] = rows.length ? true : false
+    //                 if (rows.length) {
+    //                     mysqlReader("SELECT count(*) as count FROM conveyor_" + sess.username + "")
+    //                         .then(count => {
+    //                             data['count'] = count[0].count
+    //                             data["responseTime"] = new Date() - time
+    //                         }).then(() => {
+    //                             sess.isConveyorAvailable = data
+    //                             next()
+    //                         })
+    //                 } else {
+    //                     data['count'] = 0
+    //                     data["responseTime"] = new Date() - time
+    //                     sess.isConveyorAvailable = data
+    //                     next()
+    //                 }
+    //             })
+    //     } else {
+    //         next()
+    //     }
+    // } else {
+    //     next()
+    // }
 }
 
 const isScannerAvailable = async (req, res, next) => {
-    // next()
-    sess = req.session;
-    var time = new Date()
-    var data = {}
-    if (sess.username) {
-        if (sess.isScannerAvailable == undefined || sess.isScannerAvailable.length == 0) {
-            // console.log(sess.isScannerAvailable, "up")
-            const query = "SHOW TABLES LIKE 'scanner_" + sess.username + "'";
-            mysqlReader(query)
-                .then(rows => {
-                    data['tableExist'] = rows.length ? true : false
-                    if (rows.length) {
-                        mysqlReader("SELECT count(*) as count FROM scanner_" + sess.username + "")
-                            .then(count => {
-                                data['count'] = count[0].count
-                                data["responseTime"] = new Date() - time
-                            }).then(() => {
-                                // console.log(data)
-                                sess.isScannerAvailable = data
-                                next()
-                            })
-                    } else {
-                        data['count'] = 0
-                        data["responseTime"] = new Date() - time
-                        sess.isScannerAvailable = data
-                        next()
-                    }
-                })
-        } else {
-            // console.log(sess.isScannerAvailable, "down")
-            next()
-        }
-    } else {
-        next()
-    }
+    next()
+    // sess = req.session;
+    // var time = new Date()
+    // var data = {}
+    // if (sess.username) {
+    //     if (sess.isScannerAvailable == undefined || sess.isScannerAvailable.length == 0) {
+    //         // console.log(sess.isScannerAvailable, "up")
+    //         const query = "SHOW TABLES LIKE 'scanner_" + sess.username + "'";
+    //         mysqlReader(query)
+    //             .then(rows => {
+    //                 data['tableExist'] = rows.length ? true : false
+    //                 if (rows.length) {
+    //                     mysqlReader("SELECT count(*) as count FROM scanner_" + sess.username + "")
+    //                         .then(count => {
+    //                             data['count'] = count[0].count
+    //                             data["responseTime"] = new Date() - time
+    //                         }).then(() => {
+    //                             // console.log(data)
+    //                             sess.isScannerAvailable = data
+    //                             next()
+    //                         })
+    //                 } else {
+    //                     data['count'] = 0
+    //                     data["responseTime"] = new Date() - time
+    //                     sess.isScannerAvailable = data
+    //                     next()
+    //                 }
+    //             })
+    //     } else {
+    //         // console.log(sess.isScannerAvailable, "down")
+    //         next()
+    //     }
+    // } else {
+    //     next()
+    // }
 }
 
 const mqttOverSocketIoBridge = (req, res, next) => {

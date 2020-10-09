@@ -192,8 +192,6 @@ const authRegister = (req, res, next) => {
         return res.render('register', {
             alert: "Passwords do not match!"
         })
-
-        // console.log("Password do not match!")
     }
 
     // all fields required
@@ -213,9 +211,10 @@ const authRegister = (req, res, next) => {
     }
 
 
-    // check duplicate username - old way
+    // check duplicate username
     db.query("SELECT username FROM users WHERE username = ?", [username], async (err, result) => {
-        // console.log("result:",result)
+
+        // alert duplicate username
         if (err) console.log("There is a problem authRegister 1", err)
         else if (result.length) return res.render('register', {
             alert: 'That username is in use'
@@ -224,61 +223,37 @@ const authRegister = (req, res, next) => {
         let hashedPassword = await bcrypt.hash(password, 10)
 
         //register the user into db
-        db.query("INSERT INTO users SET ?", {
+        const credentials = {
             name: name,
             username: username,
             email: email,
             company: company,
             password: hashedPassword,
-            user_role: 'basic'
-            // user_role: 'admin'
-        }, (err) => {
-            if (err) console.log("Problem with insert ", err)
+            role: 'admin'
+        }
+
+        // insert username in db
+        db.query("INSERT INTO users SET ?", credentials, (err, result) => {
+            if (err) 
+                console.log("Problem with insert 1", err)
             else {
                 console.log("New user registration")
-                console.log(name, username, email, company, password, '\r\n')
-                next()
+                
+                // create a map view for this company
+                db.query("INSERT INTO maps SET ?", {company}, (err, result) => {
+                    if (err) 
+                        console.log("Problem with insert 2", err)
+                    else {
+                        console.log("New map registration")
+                        next()
+                    }
+                })
+
             }
         })
 
     })
 
-    //check duplicate email - old way
-    // db.query("SELECT email FROM users WHERE Email = ?", [email], async (err, result) => {
-
-    //     if (err) console.log("There is a problem authRegister 2")
-    //     else if (result.length) return res.render('register', {
-    //         alert: 'That email is in use!'
-    //     })
-    //     else if (password != passwordConfirm) return res.render('register', {
-    //         alert: "Passwords do not match!"
-    //     })
-
-    //     // Register if mail isn't duplicate
-
-    //     // encrypt the pasword
-    //     let hashedPassword = await bcrypt.hash(password, 10)
-
-    //     //register the user into db
-    //     db.query("INSERT INTO users SET ?", {
-    //         name: name,
-    //         username: username,
-    //         email: email,
-    //         company: company,
-    //         password: hashedPassword,
-    //         user_role: 'basic'
-    //     }, (err) => {
-    //         if (err) console.log("Problem with insert ", err)
-    //         else {
-    //             console.log("New user registration")
-    //             console.log(name, username, email, company, password, '\r\n')
-    //             next()
-    //         }
-    //     })
-
-    // })
-
-    // res.send("form submitted")
 }
 
 function writeCookie(attr, text, res) {
@@ -315,44 +290,35 @@ const authLogin = async (req, res, next) => {
 
             // check user the is trying to login
             console.log("Login try:", username, '\r\n')
-            var sql_query = "SELECT id, username, password, user_role FROM users WHERE username = '" + username + "'"
+
+            var sql_query = "SELECT username, password, role, company FROM users WHERE username = '" + username + "'"
             db.query(sql_query, async (err, result) => {
 
                 if (err)
                     console.log("There is a problem authLogin 1")
 
                 if (result.length) {
+
                     // check password
                     let passwordComparator = await bcrypt.compare(password, result[0].password)
                     if (result[0].username != username || !passwordComparator) return res.render('login', {
                         alert: 'Username or password is wrong'
                     })
+
                     else {
 
                         // Set Cookie if checked
                         if (remember == '1') {
-                            // console.log("Write cookie for user:", result[0].username)
-                            // const cookieOptions = {
-                            //     expires: new Date(
-                            //         Date.now() + process.env.JWT_COOKIE_EXPIRES * 24 * 60 * 60 * 1000
-                            //     ),
-                            //     httpOnly: true,
-                            //     signed: true
-                            // }
-                            // res.cookie('username', result[0].username, cookieOptions)
                             writeCookie("username", result[0].username, res)
                         }
 
                         // set other sess variables
-                        sess.id_user = result[0].id
                         sess.username = result[0].username
-                        sess.user_role = result[0].user_role
-                        sess.super_admin = ((result[0].user_role == 'superadmin') ? 1 : 0)
+                        sess.role = result[0].role
                         sess.admin = ((result[0].user_role == 'admin') ? 1 : 0)
                         sess.check_cookies = 0 // 1 - check cookie; 0 - don't check cookie
 
-                        console.log("Logged in")
-                        console.log("Username:", sess.username, "Role:", sess.user_role)
+                        console.log("Logged in: ", sess.username, " role:", sess.role)
 
                         next()
 
@@ -415,52 +381,25 @@ const cookieChecker = async (req, res, next) => {
 
     // check cookie
     let username_cookie = req.signedCookies.username
-    // console.log("Signed cookie read:",req.signedCookies.username)
-    // console.log("URL:",req.originalUrl)
 
     // if user has already logged in don't check cookies anymore
     if (sess.username) {
-        // username_cookie = sess.username
         next()
     }
-    // if user not logged in by cookie
     else if (username_cookie) {
         let sql_query = "SELECT username, password, role FROM users WHERE username = '" + username_cookie + "'"
         db.query(sql_query, (err, result) => {
-            if (result) {
-                // if (result[0].username) {
-                // sess.id_user = result[0].id
+            if (result.length) {
                 sess.username = result[0].username
                 sess.role = result[0].role
-                // sess.super_admin = ((result[0].user_role == 'superadmin') ? 1 : 0)
-                // }
-
-                // check sensor access for this user
-                // db.query(sql_query, async (err, result) => {
-                //     if (err)
-                //         console.log("There is a problem cookieChecker")
-                //     else if (result.length) {
-                //         let sensorAccess = Array()
-                //         for (var i = 0; i < result.length; i++)
-                //             if (result[i].sensorId)
-                //                 sensorAccess.push(result[i].sensorId)
-                //         sess.sensorAccess = (sensorAccess.length ? sensorAccess : ((sess.username == 'superadmin') ? -1 : 0));
-                //     } else {
-                //         sess.sensorAccess = ((sess.username == 'superadmin') ? -1 : 0);
-                //     }
-                    // console.log("Login based on cookie")
-                    // console.log("Username:", sess.username, "Role:", sess.user_role)
-                    // console.log("Sensors:", sess.sensorAccess, '\r\n')
-                    next() //go forward with username retrieved from cookie
-                // })
+                next()
 
             } else {
-                next() //go forward without username even is there is a cookie
+                next()
             }
         })
     } else {
-        // console.log("no cookie found | sess:",sess)
-        next() //go forward without cookie retrieved
+        next()
     }
 
 
