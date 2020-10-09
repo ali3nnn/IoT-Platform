@@ -420,39 +420,39 @@ const cookieChecker = async (req, res, next) => {
 
     // if user has already logged in don't check cookies anymore
     if (sess.username) {
-        username_cookie = sess.username
+        // username_cookie = sess.username
         next()
     }
     // if user not logged in by cookie
     else if (username_cookie) {
-        let sql_query = "SELECT id, username, password, user_role FROM users WHERE username = '" + username_cookie + "'"
+        let sql_query = "SELECT username, password, role FROM users WHERE username = '" + username_cookie + "'"
         db.query(sql_query, (err, result) => {
             if (result) {
                 // if (result[0].username) {
-                sess.id_user = result[0].id
+                // sess.id_user = result[0].id
                 sess.username = result[0].username
-                sess.user_role = result[0].user_role
-                sess.super_admin = ((result[0].user_role == 'superadmin') ? 1 : 0)
+                sess.role = result[0].role
+                // sess.super_admin = ((result[0].user_role == 'superadmin') ? 1 : 0)
                 // }
 
                 // check sensor access for this user
-                db.query(sql_query, async (err, result) => {
-                    if (err)
-                        console.log("There is a problem cookieChecker")
-                    else if (result.length) {
-                        let sensorAccess = Array()
-                        for (var i = 0; i < result.length; i++)
-                            if (result[i].sensorId)
-                                sensorAccess.push(result[i].sensorId)
-                        sess.sensorAccess = (sensorAccess.length ? sensorAccess : ((sess.username == 'superadmin') ? -1 : 0));
-                    } else {
-                        sess.sensorAccess = ((sess.username == 'superadmin') ? -1 : 0);
-                    }
-                    console.log("Login based on cookie")
-                    console.log("Username:", sess.username, "Role:", sess.user_role)
-                    console.log("Sensors:", sess.sensorAccess, '\r\n')
+                // db.query(sql_query, async (err, result) => {
+                //     if (err)
+                //         console.log("There is a problem cookieChecker")
+                //     else if (result.length) {
+                //         let sensorAccess = Array()
+                //         for (var i = 0; i < result.length; i++)
+                //             if (result[i].sensorId)
+                //                 sensorAccess.push(result[i].sensorId)
+                //         sess.sensorAccess = (sensorAccess.length ? sensorAccess : ((sess.username == 'superadmin') ? -1 : 0));
+                //     } else {
+                //         sess.sensorAccess = ((sess.username == 'superadmin') ? -1 : 0);
+                //     }
+                    // console.log("Login based on cookie")
+                    // console.log("Username:", sess.username, "Role:", sess.user_role)
+                    // console.log("Sensors:", sess.sensorAccess, '\r\n')
                     next() //go forward with username retrieved from cookie
-                })
+                // })
 
             } else {
                 next() //go forward without username even is there is a cookie

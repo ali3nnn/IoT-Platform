@@ -2,7 +2,7 @@
   "name": "anysensor2",
   "version": "1.0.0",
   "description": "### Anysensor",
-  "main": "anysensor.js",
+  "main": "dev.js",
   "scripts": {
     "dev": "nodemon dev.js",
     "prod": "webpack --config webpack.config-dev.js --mode=development && forever start --spinSleepTime 1000 dev.js",
