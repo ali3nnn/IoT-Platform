@@ -16,24 +16,24 @@ const influx = new Influx.InfluxDB({
 function influxWriter(measurement, country, county, city, location, zone, username, type, sensorId, value, database = 'anysensor3', precision = 's') {
     console.log('Influx Write')
     influx.writePoints([{
-            measurement,
-            tags: {
-                country,
-                county,
-                city,
-                location,
-                zone,
-                username,
-                type,
-                sensorId,
-            },
-            fields: {
-                value
-            }
-        }], {
-            database,
-            precision,
-        })
+        measurement,
+        tags: {
+            country,
+            county,
+            city,
+            location,
+            zone,
+            username,
+            type,
+            sensorId,
+        },
+        fields: {
+            value
+        }
+    }], {
+        database,
+        precision,
+    })
         .catch(error => {
             console.error(`Error saving data to InfluxDB! ${err.stack}`)
         });
@@ -127,103 +127,139 @@ function mysqlWriter(query) {
 
 // Middlewares
 // ==================================
+const getUserData = async (req, res, next) => {
+    sess = req.session;
+    let userData = {}
+    // select company from users where username='"+sess.username+"'
+    if (sess.role == 'superadmin') {
+        const query = "select sensors.*, locations.*, users.company from sensors join locations on sensors.zoneId=locations.zoneId join userAccess on sensors.sensorId=userAccess.sensorId join users on userAccess.username = users.username where users.company=(select company from users where username='" + sess.username + "');"
+        mysqlReader(query).then(async (rows) => {
+            if (rows.length) {
+                userData = rows
+                userData["error"] = false
+            } else {
+                userData["error"] = "No data found"
+            }
+
+            // Set session varriable
+            sess.userData = userData // set list of sensors that are assignet to this user
+            sess.company = userData[0].company // set company
+
+            next()
+        })
+    } else {
+        const query = "select userAccess.username, sensors.*, locations.* from userAccess inner join sensors on sensors.sensorId=userAccess.sensorId and userAccess.username='" + sess.username + "' inner join locations on locations.zoneId=sensors.zoneId;"
+        mysqlReader(query).then(async (rows) => {
+            if (rows.length) {
+                userData = rows
+                userData["error"] = false
+            } else {
+                userData["error"] = "No data found"
+            }
+
+            // Set session variables
+            sess.userData = userData
+            // [ ] TODO: get company of user sess.company
+
+            next()
+        })
+    }
+}
+
 const getCounties = async (req, res, next) => {
 
     sess = req.session;
-
     sess.counties = []
     console.log("getcounties:", sess.username)
 
     var time = new Date()
     var data = []
     if (sess.username) {
-        if (sess.counties == undefined || sess.counties.length == 0) {
-            const query = "select userAccess.username, sensors.*, locations.* from userAccess inner join sensors on sensors.sensorId=userAccess.sensorId and userAccess.username='"+sess.username+"' inner join locations on locations.zoneId=sensors.zoneId;"
-            mysqlReader(query).then(async (rows) => {
-                // let rows_ = await rows
+        const query = "select userAccess.username, sensors.*, locations.* from userAccess inner join sensors on sensors.sensorId=userAccess.sensorId and userAccess.username='" + sess.username + "' inner join locations on locations.zoneId=sensors.zoneId;"
+        mysqlReader(query).then(async (rows) => {
 
-                if (rows.length) {
+            if (rows.length) {
+                // TODO - continue from here
+                sess.userData = rows[0]
+                console.log(rows[0])
 
-                    // usually it should result something
-                    console.log(rows)
+                // var whereQuery = `where (username='` + sess.username + `') or (`
 
-                    // var whereQuery = `where (username='` + sess.username + `') or (`
+                // for (var i = 0; i < rows_.length; i++) {
 
-                    // for (var i = 0; i < rows_.length; i++) {
+                //     whereQuery += `sensorId='` + rows_[i].sensorId + `'`
+                //     if (i < rows_.length - 1) whereQuery += ` or `
+                //     else whereQuery += `)`
+                // }
 
-                    //     whereQuery += `sensorId='` + rows_[i].sensorId + `'`
-                    //     if (i < rows_.length - 1) whereQuery += ` or `
-                    //     else whereQuery += `)`
-                    // }
+                // // var queryCounties = `select distinct(county) as county from ( select county, value from sensors ` + whereQuery + ` )`
+                // var queryCounties = `SHOW TAG VALUES WITH KEY IN ("county") ` + whereQuery
 
-                    // // var queryCounties = `select distinct(county) as county from ( select county, value from sensors ` + whereQuery + ` )`
-                    // var queryCounties = `SHOW TAG VALUES WITH KEY IN ("county") ` + whereQuery
+            } else {
 
-                } else {
-                    
+                console.log("not found", rows)
+                // get counties
+                // var queryCounties = "select distinct(county) as county from (select county, value from sensors where username='" + sess.username + "')"
+                // var queryCounties = `SHOW TAG VALUES WITH KEY IN ("county") WHERE username='` + sess.username + `'`
 
-                    // get counties
-                    // var queryCounties = "select distinct(county) as county from (select county, value from sensors where username='" + sess.username + "')"
-                    // var queryCounties = `SHOW TAG VALUES WITH KEY IN ("county") WHERE username='` + sess.username + `'`
+            }
 
-                }
+            // console.log("queryCounties:", queryCounties)
 
-                console.log("queryCounties:", queryCounties)
+            // let counties = influxReader(queryCounties).then(async (result) => {
 
-                let counties = influxReader(queryCounties).then(async (result) => {
+            //     var counties = []
+            //     for (var i = 0; i < result.length; i++) {
+            //         // counties.push(result[i].county)
+            //         counties.push(result[i].value)
+            //     }
 
-                    var counties = []
-                    for (var i = 0; i < result.length; i++) {
-                        // counties.push(result[i].county)
-                        counties.push(result[i].value)
-                    }
+            //     console.log("counties", counties)
 
-                    console.log("counties", counties)
+            //     return await counties
 
-                    return await counties
+            // })
 
-                })
+            // Promise.all([counties]).then((result) => {
 
-                Promise.all([counties]).then((result) => {
+            //     // build the output
+            //     if (result[0].length) {
 
-                    // build the output
-                    if (result[0].length) {
+            //         data.push({
+            //             error: false,
+            //             message: "Data found",
+            //             user: sess.username,
+            //             countiesCounter: result[0].length,
+            //             counties: result[0].length ? result[0] : "No county found",
+            //             query: queryCounties,
+            //             responseTime: new Date() - time + "ms",
+            //         })
 
-                        data.push({
-                            error: false,
-                            message: "Data found",
-                            user: sess.username,
-                            countiesCounter: result[0].length,
-                            counties: result[0].length ? result[0] : "No county found",
-                            query: queryCounties,
-                            responseTime: new Date() - time + "ms",
-                        })
+            //         sess.counties = data[0].counties
 
-                        sess.counties = data[0].counties
+            //     } else {
+            //         data.push({
+            //             error: true,
+            //             message: "No sensor in influx for this user",
+            //             user: sess.username
+            //         })
 
-                    } else {
-                        data.push({
-                            error: true,
-                            message: "No sensor in influx for this user",
-                            user: sess.username
-                        })
+            //         sess.counties = []
+            //     }
 
-                        sess.counties = []
-                    }
+            //     console.log("data", data)
 
-                    console.log("data", data)
+            //     // console.log(sess.username, "getCounties 2", sess.counties)
 
-                    // console.log(sess.username, "getCounties 2", sess.counties)
+            //     next()
 
-                    next()
+            // }).catch(error => console.log(`Error in promise for GETCOUNTY ${error}`))
 
-                }).catch(error => console.log(`Error in promise for GETCOUNTY ${error}`))
+        })
 
-            })
-        } else {
-            // console.log(sess.username, "getCounties 3", sess.counties)
-            next()
-        }
+        // console.log(sess.username, "getCounties 3", sess.counties)
+        next()
+
     } else res.render("login", {
         alert: "You are not logged in"
     })
@@ -456,6 +492,35 @@ const test = (req, res, next) => {
     next()
 }
 
+// Utils
+const getDistinctValuesFromObject = (val, obj) => {
+    let flags = [],
+        output = [],
+        l = obj.length,
+        i;
+    for (i = 0; i < l; i++) {
+        if (flags[obj[i][val]]) continue;
+        flags[obj[i][val]] = true;
+        output.push(obj[i][val]);
+    }
+    return output
+}
+
+const replaceAll = (str1, str2, ignore) => {
+    // String.prototype.replaceAll = function(str1, str2, ignore) {
+    return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g, "\\$&"), (ignore ? "gi" : "g")), (typeof (str2) == "string") ? str2.replace(/\$/g, "$$$$") : str2);
+    // }
+}
+
+const replaceDiacritics = (str, ignore) => {
+    const diacritics = 'áàâäãéèëêíìïîóòöôõúùüûñçăşţ'
+    let result
+    diacritics.split('').forEach(letter => {
+        result = str.replace(new RegExp(letter.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g, "\\$&"), (ignore ? "gi" : "g")), (typeof (str2) == "string") ? str.replace(/\$/g, "$$$$") : str);
+    })
+    return result
+}
+
 // Keep track url
 // const trackurl = (req,res,next) => {
 //     if(req.originalUrl!='undefined')
@@ -468,6 +533,7 @@ const test = (req, res, next) => {
 // End Middlewares
 
 module.exports = {
+    getUserData,
     getCounties,
     getSensorLocation,
     isScaleAvailable,
@@ -475,5 +541,8 @@ module.exports = {
     isScannerAvailable,
     mqttOverSocketIoBridge,
     test,
+    getDistinctValuesFromObject,
+    replaceAll,
+    replaceDiacritics
     // trackurl
 }

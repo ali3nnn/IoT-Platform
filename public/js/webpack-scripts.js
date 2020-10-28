@@ -26,11 +26,17 @@ if ($(".team-page").length) {
 }
 
 if ($(".dashboard-page").length) {
-    console.log("dashboard.js added")
-    require("./dashboard")
+    console.log("dashboardv2.js added")
+    // require("./dashboard")
+    require("./dashboardv2")
 }
 
 if ($("#zones-list").length) {
     console.log("map.js added")
     require("./map")
+}
+
+if ($(".settings-page").length) {
+    console.log("settings.js added")
+    require("./settings")
 }

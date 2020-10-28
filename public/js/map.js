@@ -2,6 +2,7 @@
 // ========================================
 
 // Imports
+import { post } from 'jquery';
 import {
   // timeoutAsync,
   // sendMessage,
@@ -12,7 +13,8 @@ import {
   // insertStatus,
   // getConveyorStatus,
   // showNotification,
-  getLocationObj
+  getLocationObj,
+  searchToObj
 } from './utils.js'
 // End imports
 
@@ -175,6 +177,117 @@ function showNotification(message, error = 0) {
 
 }
 
+// Display Map
+// ============================
+
+// Search to json
+let searchObj = searchToObj(window.location.search)
+
+let splash = `<div class='splash-inner'>
+
+<div class='ol-option'>
+  <h4>World map</h4>
+  <button type="button" class='map-picker map-picker-ol'>I want this map</button>
+  <div class='ol-map'>
+    <img src='../images/ol.jpeg' />
+    <background></background>
+  </div>
+</div>
+<div class='path-option'>
+    <h4>Custom Map</h4>
+    <button type="button" class='map-picker map-picker-custom'>I want my custom map</button>
+    <div class='path-map'>
+      <img src='../images/custom.jpeg' />
+      <background></background>
+    </div>
+</div>
+
+</div>`
+
+// Check map option (null, ol, custom)
+let mapOption
+userData_raw.forEach(sensor => {
+  if (sensor.zoneId == searchObj.id) {
+    mapOption = sensor.map
+  }
+})
+
+// console.log(mapOption)
+
+// Do magic stuff
+if (!mapOption || mapOption == 'NULL') {
+
+  // show splash
+  $("#map").append(splash)
+
+  // button functionality - ol
+  $(".map-picker-ol").on('click', () => {
+    $(".map-picker-ol").html("Loading...")
+    // [*] get url data
+    let params = new URLSearchParams(location.search);
+    let id = params.get('id')
+    let map = 'ol'
+    // [*] save into mysql option selected
+    $.ajax({
+      method: "POST",
+      url: "/api/update-map",
+      data: { id, map }
+    })
+      .done(function (msg) {
+        console.log("Data Saved: ", msg);
+        location.reload()
+      });
+    // [ ] reload the page with new query
+  })
+
+  // button functionality - custom
+  $(".map-picker-custom").on('click', () => {
+    $(".map-picker-custom").html("Loading...")
+    // [*] get url data
+    let params = new URLSearchParams(location.search);
+    let id = params.get('id')
+    let map = 'custom'
+    // [*] save into mysql option selected
+    $.ajax({
+      method: "POST",
+      url: "/api/update-map",
+      data: { id, map }
+    })
+      .done(function (msg) {
+        console.log("Data Saved: ", msg);
+      });
+    // [ ] reload the page with new query
+  })
+
+} else if (mapOption == 'ol') {
+  // show ol
+  // console.log(userData_raw)
+  createMap()
+} else if (mapOption == 'custom') {
+  // } else {
+  // show prompt to upload the image
+  let params = new URLSearchParams(location.search);
+  let id = params.get('id')
+  $("#map").append(`<div><form enctype="multipart/form-data" action="/api/upload-image" method="post">
+                      <input id="image-file" name="map" type="file"><br>
+                      <input id="zone-id" class='hidden' name="id" type="number" readonly value="`+ id + `">
+                      <input type="submit" id="send-image">
+                  </form></div>`)
+} else if (mapOption != 'NULL') {
+  // console.log(userData_raw)
+  let src = mapOption.split('./public')[1]
+  $("#map").append(`<div class='custom-map'> <img src='` + src + `' /> </div>`)
+}
+
+// userData_raw.forEach(sensor =>  {
+//   console.log(window.location.search, sensor.zoneId, sensor.location3)
+// })
+// console.log(userData_raw)
+// $("#map .map-inner").append(userData_raw)
+
+// ============================
+// END Display Map
+
 // cluster
 
 // get coordinates
@@ -192,25 +305,28 @@ var sensorDictionary
 let lastValue = []
 // var time = new Date()
 // sensorId = sess.sensors passed from backend
+
+// [ ] TODO: refactor the way map get sensor values, locations, type, alerts.
+
 if (typeof sensorId !== 'undefined') {
   var sensorsCoord = []
   let sensorLocation = (async () => {
-      return await getSensorLocation();
-    })().then((json) => {
-      // console.log("then1")
-      // console.log(json)
-      json.result.forEach(sensor => {
-        // console.log(sensorId, sensor)
-        if (sensorId.includes(sensor.sensorId)) {
-          // console.log(sensor.coord.split(','))
-          var numbers = sensor.coord.split(',').map(Number);
-          numbers.push(sensor.sensorId)
-          // console.log(numbers)
-          sensorsCoord.push(numbers)
-        }
-      })
-      return sensorsCoord
+    return await getSensorLocation();
+  })().then((json) => {
+    // console.log("then1")
+    console.log(json)
+    json.result.forEach(sensor => {
+      // console.log(sensorId, sensor)
+      if (sensorId.includes(sensor.sensorId)) {
+        // console.log(sensor.coord.split(','))
+        var numbers = sensor.coord.split(',').map(Number);
+        numbers.push(sensor.sensorId)
+        // console.log(numbers)
+        sensorsCoord.push(numbers)
+      }
     })
+    return sensorsCoord
+  })
     .then(async response => {
       var sensorList = ''
       var sensorCounter = 0
@@ -383,7 +499,7 @@ function getCenterOfMap() {
   return [longAvg, latAvg]
 }
 
-function createMap(coordinates, sensorValuesJson) {
+function createMap(coordinates='', sensorValuesJson='') {
 
   var features = new Array();
   for (var i = 0; i < coordinates.length; ++i) {

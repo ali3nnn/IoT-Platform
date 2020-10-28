@@ -321,6 +321,32 @@ export function getLocationObj() {
     }
 }
 
+export function passwordCheckerPromise(value) {
+
+    let promise = new Promise(function (resolve, reject) {
+        var checker = new Checker();
+        var error = false
+        checker.min_length = 6;
+        checker.max_length = 20;
+        checker.requireLetters(true);
+        checker.requireNumbers(true);
+        checker.requireSymbols(false);
+        checker.checkLetters(true);
+        checker.checkNumbers(true);
+        checker.checkSymbols(true);
+        checker.allowed_symbols = '-.';
+        if (!checker.check(value)) {
+            error = checker.errors[0].message
+        } else {
+            error = false
+        }
+        resolve(error)
+    });
+
+    return promise
+
+}
+
 export function passwordChecker(value) {
     var checker = new Checker();
     var error = false
@@ -345,4 +371,93 @@ export function allTrue(obj) {
     for (var o in obj)
         if (!obj[o]) return false;
     return true;
+}
+
+export function getDistinctValuesFromObject(val, obj) {
+    let flags = [],
+        output = [],
+        l,
+        i;
+    l = obj.length;
+    for (i = 0; i < l; i++) {
+        if (flags[obj[i][val]]) continue;
+        flags[obj[i][val]] = true;
+        output.push(obj[i][val]);
+    }
+    return output
+}
+
+export function getValuesFromObject(val, obj) {
+    let flags = [],
+        output = [],
+        l,
+        i;
+    l = obj.length;
+    for (i = 0; i < l; i++) {
+        // if (flags[obj[i][val]]) continue;
+        // flags[obj[i][val]] = true;
+        output.push(obj[i][val]);
+    }
+    return output
+}
+
+export function searchToObj(val) {
+    let search = val.split('?')[1]
+
+    let searchobj = {}
+    if (search) {
+        search = search.split('&')
+        for (const el of search) {
+            searchobj[el.split('=')[0]] = el.split('=')[1]
+        }
+    }
+    return searchobj
+}
+
+export function generateUniqueId() {
+    // Generate unique Id
+    let date = new Date()
+    let uniqueId = date.getTime() + Math.floor((Math.random() * 100) + 1)
+    return uniqueId
+}
+
+export function downloadCSV(args) {
+    var data, filename, link;
+    var csv = "";
+
+    var ylabels = args.ylabels
+    var xlabels = args.xlabels
+
+    xlabels = xlabels.map(time => {
+        return time ? time.replace(":00.000Z","").replace("T"," ") : time
+    })
+
+    ylabels = ylabels.map(value => {
+        return value ? value.toFixed(1) : "not recorded"
+    })
+ 
+    // console.log(xlabels)
+
+    // Header of table
+    csv = "Date,Value\n"
+
+    for (var i = 0; i < ylabels.length; i++) {
+        csv += xlabels[i] + "," + ylabels[i].toString() + "\n"
+    }
+
+    if (csv == null) return;
+
+    filename = args.filename || 'Report.csv';
+
+    if (!csv.match(/^data:text\/csv/i)) {
+        csv = 'data:text/csv;charset=utf-8,' + csv;
+    }
+
+    data = encodeURI(csv);
+    link = document.createElement('a');
+    link.setAttribute('href', data);
+    link.setAttribute('download', filename);
+    document.body.appendChild(link); // Required for FF
+    link.click();
+    document.body.removeChild(link);
 }

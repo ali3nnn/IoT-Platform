@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    {{> head}}
+    <script>
+        document.title = "LOCATION QR | Anysensor"
+
+        if ('{{{json userData}}}') {
+            var userData_raw = JSON.parse('{{{json userData}}}');
+        }
+
+    </script>
+</head>
+
+<body class="location-qr-page">
+
+    {{!-- Loading Screen --}}
+    {{!-- {{> loader}} --}}
+
+    <!-- Main Sidebar Container -->
+    {{!-- {{> aside}} --}}
+
+    <!-- Add all page content inside this div if you want the side nav to push page content to the right (not used if you only want the sidenav to sit on top of the page -->
+    <div id="main">
+
+        <div class="main-overlay hidden-overlay"></div>
+
+        {{!-- Main Navbar --}}
+        {{!-- {{> navbar-general}} --}}
+
+        <!-- Location Form -->
+        <form class="location-container" action="/api/v3/init-sensor-qr" method="POST" autocomplete="off">
+            <input type="charInput" name="sensorid" placeholder="Sensor ID" value="{{sensorid}}"
+                readonly='readonly' /><br>
+            <input type="charInput" name="type" placeholder="Sensor Type" value="{{type}}" class='hidden' />
+            <label for="zone">Pick a zone:</label>
+            <select name="zone" id="zone">
+                <option value="Nothing selected">Nothing selected</option>
+                {{#each locations}}
+                <option value="{{this.location1}}/{{this.location2}}/{{this.location3}}">
+                    {{this.location1}}/{{this.location2}}/{{this.location3}}</option>
+                {{/each}}
+            </select><br>
+            <input type="charInput" name="location1" placeholder="Region/County" value="{{userData.location1}}" /><br>
+            <input type="charInput" name="location2" placeholder="City" value="{{userData.location2}}" /><br>
+            <input type="charInput" name="location3" placeholder="Location" value="{{userData.location3}}" /><br>
+            <input type="charInput" name="sensorName" placeholder="Sensor name" value="{{userData.sensorName}}" /><br>
+            <input type="submit" name="button" value="Set location">
+        </form>
+
+
+    </div>
+
+    {{> scripts}}
+
+</body>
+
+</html>

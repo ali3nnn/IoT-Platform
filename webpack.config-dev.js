@@ -11,12 +11,17 @@ module.exports = {
     },
     module: {
         rules: [{
-            test: /\.scss$/,
-            use: [
-                "style-loader", // inject css into dom
-                "css-loader", // take css and insert it into js
-                "sass-loader" // convert sass to css
-            ]
-        }]
+                test: /\.scss$/,
+                use: [
+                    "style-loader", // inject css into dom
+                    "css-loader", // take css and insert it into js
+                    "sass-loader", // convert sass to css
+                ]
+            },
+            {
+                test: /\.(png|jpg|jpeg)$/,
+                loader: 'url-loader'
+            }
+        ]
     }
 };

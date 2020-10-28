@@ -24,35 +24,29 @@
     {{!-- Main Navbar --}}
     {{> navbar-general}}
 
-    {{!-- Zones List --}}
-    {{!-- {{> mapzones}} --}}
-
-    {{!-- Romanian Map SVG --}}
-    {{!-- <div class="container wrapper">
-            {{> ro}}
-        </div> --}}
-
-    {{!-- Map --}}
-    {{!-- <div class="container wrapper"> --}}
-    <div id="map" class="map"></div>
-
+    {{!-- The map --}}
+    <div id="map" class="map">
+      
+    </div>
+    
     <script>
-      function insertAfter(newNode, referenceNode) {
-        console.log(newNode, referenceNode)
-        referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
-      }
 
-      var sensorId = JSON.parse('{{{json sensors}}}');
-      console.log("sensorId:", sensorId)
+      //function insertAfter(newNode, referenceNode) {
+      //  console.log(newNode, referenceNode)
+      //  referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+      //}
 
-      sensorId.forEach(sensor => {
+      //var sensorId = JSON.parse('{{{json sensors}}}');
+      //console.log("sensorId:", sensorId)
+
+      /*sensorId.forEach(sensor => {
 
         var element = document.createElement('div'); // it's a node
         element.className = 'temeprature-marker';
         $(element).attr("sensorid", sensor)
        // $(element).insertAfter("#map")
 
-      })
+      })*/
 
     </script>
     {{!-- </div> --}}

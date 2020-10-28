@@ -166,9 +166,6 @@ function allTrue(obj) {
     return true;
 }
 
-// console.log("ENV:", process.env.DATABASE_PASSWORD)
-
-//auth controller register
 const authRegister = (req, res, next) => {
 
     const {
@@ -210,49 +207,93 @@ const authRegister = (req, res, next) => {
         })
     }
 
+    const checkUsername = mysqlReader("SELECT username FROM users WHERE username='" + username + "'")
+    const checkCompany = mysqlReader("SELECT company FROM users WHERE company='" + company + "'")
 
-    // check duplicate username
-    db.query("SELECT username FROM users WHERE username = ?", [username], async (err, result) => {
-
-        // alert duplicate username
-        if (err) console.log("There is a problem authRegister 1", err)
-        else if (result.length) return res.render('register', {
-            alert: 'That username is in use'
-        })
-
-        let hashedPassword = await bcrypt.hash(password, 10)
-
-        //register the user into db
-        const credentials = {
-            name: name,
-            username: username,
-            email: email,
-            company: company,
-            password: hashedPassword,
-            role: 'admin'
+    Promise.all([checkUsername, checkCompany]).then(async (result, err) => {
+        if (err) {
+            console.log(err)
+            return res.render('register', {
+                alert: 'Try again!'
+            })
+        } else if (result[0].length) {
+            // is duplicate
+            return res.render('register', {
+                alert: 'That username is in use'
+            })
+        } else if (result[1].length) {
+            return res.render('register', {
+                alert: 'That company is in use'
+            })
+        } else {
+            let hashedPassword = await bcrypt.hash(password, 10)
+            //register the user into db
+            const credentials = {
+                name: name,
+                username: username,
+                email: email,
+                company: company,
+                password: hashedPassword,
+                role: 'superadmin'
+            }
+            db.query("INSERT INTO users SET ?", credentials, (err, result) => {
+                if (err)
+                    return res.render('register', {
+                        alert: 'Try again!'
+                    })
+                else {
+                    console.log("New user registration")
+                    next()
+                }
+            })
         }
 
-        // insert username in db
-        db.query("INSERT INTO users SET ?", credentials, (err, result) => {
-            if (err) 
-                console.log("Problem with insert 1", err)
-            else {
-                console.log("New user registration")
-                
-                // create a map view for this company
-                db.query("INSERT INTO maps SET ?", {company}, (err, result) => {
-                    if (err) 
-                        console.log("Problem with insert 2", err)
-                    else {
-                        console.log("New map registration")
-                        next()
-                    }
-                })
-
-            }
-        })
-
     })
+
+    // check duplicate username
+    // db.query("SELECT username FROM users WHERE username = ?", [username], async (err, result) => {
+
+    //     // alert duplicate username
+    //     if (err) console.log("There is a problem authRegister 1", err)
+    //     else if (result.length) return res.render('register', {
+    //         alert: 'That username is in use'
+    //     })
+
+    //     let hashedPassword = await bcrypt.hash(password, 10)
+
+    //     //register the user into db
+    //     const credentials = {
+    //         name: name,
+    //         username: username,
+    //         email: email,
+    //         company: company,
+    //         password: hashedPassword,
+    //         role: 'superadmin'
+    //     }
+
+    //     // insert username in db
+    //     db.query("INSERT INTO users SET ?", credentials, (err, result) => {
+    //         if (err)
+    //             console.log("Problem with insert 1", err)
+    //         else {
+    //             console.log("New user registration")
+
+    //             // create a map view for this company
+    //             db.query("INSERT INTO maps SET ?", {
+    //                 company
+    //             }, (err, result) => {
+    //                 if (err)
+    //                     console.log("Problem with insert 2", err)
+    //                 else {
+    //                     console.log("New map registration")
+    //                     next()
+    //                 }
+    //             })
+
+    //         }
+    //     })
+
+    // })
 
 }
 
@@ -356,7 +397,7 @@ const authDashboard = (req, res, next) => {
         next()
     } else res.render("login", {
         alert: "You are not logged in",
-        admin: true
+        redirect: req.originalUrl
     })
 }
 
@@ -385,8 +426,7 @@ const cookieChecker = async (req, res, next) => {
     // if user has already logged in don't check cookies anymore
     if (sess.username) {
         next()
-    }
-    else if (username_cookie) {
+    } else if (username_cookie) {
         let sql_query = "SELECT username, password, role FROM users WHERE username = '" + username_cookie + "'"
         db.query(sql_query, (err, result) => {
             if (result.length) {

@@ -81,7 +81,6 @@ function addSmallBox(label, value, fontAwesome = false) {
 
     $(".small-box-container").append(component)
 
-
 }
 
 function addCssForSmallBox() {
@@ -1236,40 +1235,6 @@ function sliderAlerts(element) {
 // Time Interval Change
 function timeIntervalChanger(sensorId, chartList) {
 
-    const overlay = $(".main-overlay")
-    const cancelBtn = $(".daterangepicker .cancelBtn")
-    const applyBtn = $(".daterangepicker .applyBtn")
-    const range = $(".ranges ul li:not(:last-child)")
-    const main = $("#main")
-
-    // open the overlay
-    $('.' + sensorId + '-card #reportrange').click(function () {
-        // overlay.addClass("force-show-overlay")
-        // main.addClass("no-scroll")
-    })
-
-    // close the overlay
-    // overlay.click(function () {
-    //     console.log("------------>click overlay")
-    //     overlay.removeClass("force-show-overlay")
-    //     main.removeClass("no-scroll")
-    // });
-
-    // cancelBtn.click(function () {
-    //     overlay.removeClass("force-show-overlay")
-    //     main.removeClass("no-scroll")
-    // });
-
-    // applyBtn.click(function () {
-    //     console.log("------------>click apply")
-    //     overlay.removeClass("force-show-overlay")
-    //     main.removeClass("no-scroll")
-    // });
-
-    // range.click(function () {
-    //     overlay.removeClass("force-show-overlay")
-    //     main.removeClass("no-scroll")
-    // });
 
     var currentHourPm = moment().format("HH")
     var currentMin = moment().format("mm")
@@ -2038,6 +2003,8 @@ let mainLoader = (async () => {
 
 })
 // ======================================================
+
+
 // ======================================================
 // End of main loader
 

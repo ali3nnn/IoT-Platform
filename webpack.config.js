@@ -17,6 +17,9 @@ module.exports = {
                 "css-loader", // take css and insert it into js
                 "sass-loader" // convert sass to css
             ]
+        }, {
+            test: /\.(png|jpg|jpeg)$/,
+            loader: 'url-loader'
         }]
     },
     watch: true

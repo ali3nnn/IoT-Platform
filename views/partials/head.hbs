@@ -108,6 +108,10 @@
         var username = JSON.parse('{{{json username}}}');
     }
 
+    if('{{{json userData}}}') {
+        var userData_raw = JSON.parse('{{{json userData}}}');
+    }
+
     var socket = io.connect("https://anysensor.dasstec.ro:1920")
 
     //MQTT Broker --mqtt--> NodeJS --socket.io--> Client

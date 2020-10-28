@@ -1,6 +1,5 @@
 import '../css/style.scss'
 
-
 var jQuery = require("jquery");
 window.jQuery = window.$ = jQuery; //Make jquery accesible from html files
 
