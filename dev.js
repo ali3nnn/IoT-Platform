@@ -704,7 +704,7 @@ app.get('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, asy
 app.post('/api/v3/init-sensor-qr', (req, res) => {
     sess = req.session
     const postQuery = req.body
-    // console.log(postQuery)
+    console.log(postQuery)
     if (postQuery.location1 && postQuery.location2 && postQuery.location2 && postQuery.location3 && postQuery.sensorName) {
         // Location from dropdown
         if (postQuery.zone == "Nothing selected") {
@@ -715,23 +715,37 @@ app.post('/api/v3/init-sensor-qr', (req, res) => {
             postQuery.location3 = postQuery.location3.normalize('NFKD').replace(/[\u0300-\u036f]/g, "");
             postQuery.sensorName = postQuery.sensorName.normalize('NFKD').replace(/[\u0300-\u036f]/g, "");
 
-            // Insert into locations
-            mysqlReader("INSERT INTO locations (location1, location2, location3) values ('" + postQuery.location1 + "','" + postQuery.location2 + "','" + postQuery.location3 + "')")
+            if (postQuery.zoneId) {
+                // Insert into sensors
+                mysqlReader("INSERT INTO sensors (sensorId, sensorType, sensorName, zoneId) values ('" + postQuery.sensorid + "','" + postQuery.type + "','" + postQuery.sensorName + "'," + int(postQuery.zoneId) + ")")
                 .then(() => {
-                    // Get zoneId
-                    mysqlReader("select zoneId from locations order by zoneId desc limit 1;").then(result => {
-                        // Insert into sensors
-                        mysqlReader("INSERT INTO sensors (sensorId, sensorType, sensorName, zoneId) values ('" + postQuery.sensorid + "','" + postQuery.type + "','" + postQuery.sensorName + "','" + result[0].zoneId + "')")
-                            .then(() => {
-                                // Insert into userAccess
-                                mysqlReader("INSERT INTO userAccess (sensorId, username) values ('" + postQuery.sensorid + "','" + sess.username + "')")
-                                    .then(() => {
-                                        res.redirect("/map")
-                                    })
-                            })
-                    })
-
+                    // Insert into userAccess
+                    mysqlReader("INSERT INTO userAccess (sensorId, username) values ('" + postQuery.sensorid + "','" + sess.username + "')")
+                        .then(() => {
+                            res.redirect("/map")
+                        })
                 })
+            } else {
+                // Insert into locations
+                mysqlReader("INSERT INTO locations (location1, location2, location3) values ('" + postQuery.location1 + "','" + postQuery.location2 + "','" + postQuery.location3 + "')")
+                    .then(() => {
+                        // Get zoneId
+                        mysqlReader("select zoneId from locations order by zoneId desc limit 1;").then(result => {
+                            // Insert into sensors
+                            mysqlReader("INSERT INTO sensors (sensorId, sensorType, sensorName, zoneId) values ('" + postQuery.sensorid + "','" + postQuery.type + "','" + postQuery.sensorName + "','" + result[0].zoneId + "')")
+                                .then(() => {
+                                    // Insert into userAccess
+                                    mysqlReader("INSERT INTO userAccess (sensorId, username) values ('" + postQuery.sensorid + "','" + sess.username + "')")
+                                        .then(() => {
+                                            res.redirect("/map")
+                                        })
+                                })
+                        })
+
+                    })
+            }
+
+
         } else {
             // Location new
 
@@ -859,6 +873,8 @@ app.get('/api/v3/get-interval', async (req, res) => {
 
 //=========================================
 // END NEW API ROUTES
+
+
 
 // API Get Data From Different Zones
 //=========================================

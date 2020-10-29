@@ -132,7 +132,8 @@ const getUserData = async (req, res, next) => {
     let userData = {}
     // select company from users where username='"+sess.username+"'
     if (sess.role == 'superadmin') {
-        const query = "select sensors.*, locations.*, users.company from sensors join locations on sensors.zoneId=locations.zoneId join userAccess on sensors.sensorId=userAccess.sensorId join users on userAccess.username = users.username where users.company=(select company from users where username='" + sess.username + "');"
+        // const query = "select sensors.*, locations.*, users.company from sensors join locations on sensors.zoneId=locations.zoneId join userAccess on sensors.sensorId=userAccess.sensorId join users on userAccess.username = users.username where users.company=(select company from users where username='" + sess.username + "');"
+        const query = "select DISTINCTROW sensors.*, locations.*, users.company from sensors join locations on sensors.zoneId=locations.zoneId join userAccess on sensors.sensorId=userAccess.sensorId join users on userAccess.username = users.username where users.company=(select company from users where username='" + sess.username + "');"
         mysqlReader(query).then(async (rows) => {
             if (rows.length) {
                 userData = rows

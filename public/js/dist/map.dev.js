@@ -26,7 +26,7 @@ userData_raw.forEach(function (sensor) {
 }); // console.log(mapOption)
 // Do magic stuff
 
-if (!mapOption) {
+if (!mapOption || mapOption == 'NULL') {
   // show splash
   $("#map").append(splash); // button functionality - ol
 
@@ -46,6 +46,7 @@ if (!mapOption) {
       }
     }).done(function (msg) {
       console.log("Data Saved: ", msg);
+      location.reload();
     }); // [ ] reload the page with new query
   }); // button functionality - custom
 
@@ -67,24 +68,111 @@ if (!mapOption) {
       console.log("Data Saved: ", msg);
     }); // [ ] reload the page with new query
   });
-} else if (mapOption == 'ol') {// show ol
+} else if (mapOption == 'ol') {
+  // show ol
+  // console.log(userData_raw)
+  createMap();
 } else if (mapOption == 'custom') {
   // } else {
   // show prompt to upload the image
   var params = new URLSearchParams(location.search);
   var id = params.get('id');
-  $("#map").append("<div><form enctype=\"multipart/form-data\" action=\"/api/upload-image\" method=\"post\">\n                      <input id=\"image-file\" name=\"map\" type=\"file\"><br>\n                      <input id=\"zone-id\" name=\"id\" type=\"number\" value=\"" + id + "\"><br>\n                      <input type=\"submit\" id=\"send-image\">\n                  </form></div>");
-} else if (mapOption) {
+  $("#map").append("<div><form enctype=\"multipart/form-data\" action=\"/api/upload-image\" method=\"post\">\n                      <input id=\"image-file\" name=\"map\" type=\"file\"><br>\n                      <input id=\"zone-id\" class='hidden' name=\"id\" type=\"number\" readonly value=\"" + id + "\">\n                      <input type=\"submit\" id=\"send-image\">\n                  </form></div>");
+} else if (mapOption != 'NULL') {
   // console.log(userData_raw)
   var src = mapOption.split('./public')[1];
   $("#map").append("<div class='custom-map'> <img src='" + src + "' /> </div>");
-} // userData_raw.forEach(sensor =>  {
-//   console.log(window.location.search, sensor.zoneId, sensor.location3)
-// })
-// console.log(userData_raw)
-// $("#map .map-inner").append(userData_raw)
-// ============================
+} // ============================
 // END Display Map
+// Display unassigned sensors
+// ============================
+// Everything happens if custom-map is present
+
+
+if ($("#map .custom-map")) {
+  // undefinedSensorsTemplate
+  var undefinedSensorsTemplate = function undefinedSensorsTemplate(sensorList) {
+    var sensorToDisplay = '';
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = sensorList[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var sensor = _step.value;
+        sensorToDisplay += "<span class='sensor-item' sensorid='" + sensor.sensorId + "'><i class=\"fad fa-signal-stream\"></i><span class='sensorName'>@sensorName</span><span class='sensorValue'>27</span></span>";
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return != null) {
+          _iterator.return();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+
+    return "<div class='undefinedSensorsWrapper'><div class='undefinedSensorsInner hidden'>" + sensorToDisplay + "</div><div class='undefinedButton'><i class=\"fas fa-map-marker-question\"></i></div></div>";
+  }; // Get query from URL
+
+
+  var url = new URL(location.href);
+  var zoneId = url.searchParams.get('id');
+  var sensorsInThisZone = [];
+  var sensorsWithUndefinedLocation = [];
+  userData_raw.forEach(function (sensor) {
+    if (sensor.zoneId == zoneId) {
+      sensorsInThisZone.push(sensor);
+      if (!sensor.x || !sensor.y) sensorsWithUndefinedLocation.push(sensor);
+    }
+  });
+  var undefinedSensors = sensorsWithUndefinedLocation.length;
+
+  if (undefinedSensors) {
+    // Append a notification
+    $("#map .custom-map").append(undefinedSensorsTemplate(sensorsWithUndefinedLocation));
+    var heightOfMap = $(".custom-map").innerHeight();
+    var widthOfMap = $(".custom-map").innerWidth();
+    console.log(heightOfMap, widthOfMap);
+  }
+
+  $(".undefinedButton").on('click', function (e) {
+    $(".undefinedSensorsInner").toggleClass("hidden");
+  });
+  $(".undefinedSensorsInner").on('click', function (e) {
+    var sensorElement = e.target.parentElement;
+    var sensorId = sensorElement.getAttribute("sensorid");
+    console.log(sensorId);
+    $(".custom-map").append("\n            <div sensor=\"" + sensorId + "\" class=\"sensor-item draggable ui-widget-content\" data-toggle=\"tooltip\" data-placement=\"top\"  title=\"" + sensorId + "\">\n              <i class=\"fad fa-signal-stream\"></i>\n              <span class='sensorName'>@sensorName</span>\n              <span class='sensorValue'>27</span>\n            </div>");
+    $(".draggable[sensor='" + sensorId + "']").draggable({
+      grid: [20, 20],
+      create: function create(event, ui) {
+        $(this).position({
+          my: "left+" + 0 + ", top+" + 0,
+          at: "left top",
+          of: $(this).parent()
+        });
+      },
+      start: function start(event, ui) {
+        console.log("start", ui.position);
+      },
+      drag: function drag(event, ui) {
+        console.log("drag", ui.position);
+      },
+      stop: function stop(event, ui) {
+        var sensorId = $(this).attr('sensor');
+        console.log("UPDATE customap_" + username + " SET x='" + ui.position.left + "', y='" + ui.position.top + "' WHERE sensors='" + sensorId + "';"); // fetch("/api/mysql?q=UPDATE custommap_" + username + " SET x='" + ui.position.left + "', y='" + ui.position.top + "' WHERE sensors='" + sensorId + "';")
+      }
+    });
+    sensorElement.remove(); // console.log(sensorId)
+  });
+} // ============================
+// END Display unassigned sensors
 // cluster
 // get coordinates
 
@@ -134,6 +222,7 @@ var lastValueOf = function lastValueOf(sensorId) {
 var sensorDictionary;
 var lastValue = []; // var time = new Date()
 // sensorId = sess.sensors passed from backend
+// [ ] TODO: refactor the way map get sensor values, locations, type, alerts.
 
 if (typeof sensorId !== 'undefined') {
   var sensorsCoord = [];
@@ -157,7 +246,7 @@ if (typeof sensorId !== 'undefined') {
     });
   }().then(function (json) {
     // console.log("then1")
-    // console.log(json)
+    console.log(json);
     json.result.forEach(function (sensor) {
       // console.log(sensorId, sensor)
       if (sensorId.includes(sensor.sensorId)) {
@@ -346,7 +435,9 @@ function getCenterOfMap() {
   return [longAvg, latAvg];
 }
 
-function createMap(coordinates, sensorValuesJson) {
+function createMap() {
+  var coordinates = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+  var sensorValuesJson = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
   var features = new Array();
 
   for (var i = 0; i < coordinates.length; ++i) {

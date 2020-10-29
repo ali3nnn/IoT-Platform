@@ -544,6 +544,7 @@ let mainLoader = async () => {
     // Preprocess data to extract sensors from current zone only
     let sensorMetaRaw = []
     let sensorBuffer = [] // this buffer is use to prevent double inserting of sensors
+    console.log(userData_raw)
     userData_raw.forEach(sensor => {
         // Iterate through each result and save unique sensorId rows
         if (sensorBuffer.indexOf(sensor.sensorId) == -1) {

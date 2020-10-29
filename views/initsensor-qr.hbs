@@ -31,17 +31,17 @@
 
         <!-- Location Form -->
         <form class="location-container" action="/api/v3/init-sensor-qr" method="POST" autocomplete="off">
-            <input type="charInput" name="sensorid" placeholder="Sensor ID" value="{{sensorid}}"
-                readonly='readonly' /><br>
+            <input type="charInput" name="sensorid" placeholder="Sensor ID" value="{{sensorid}}" readonly='readonly' /><br>
             <input type="charInput" name="type" placeholder="Sensor Type" value="{{type}}" class='hidden' />
             <label for="zone">Pick a zone:</label>
             <select name="zone" id="zone">
                 <option value="Nothing selected">Nothing selected</option>
                 {{#each locations}}
                 <option value="{{this.location1}}/{{this.location2}}/{{this.location3}}">
-                    {{this.location1}}/{{this.location2}}/{{this.location3}}</option>
+                    {{this.zoneId}}/{{this.location1}}/{{this.location2}}/{{this.location3}}</option>
                 {{/each}}
             </select><br>
+            <input type="charInput" class='hidden' name="zoneId" placeholder="zoneId" value="{{userData.zoneId}}" />
             <input type="charInput" name="location1" placeholder="Region/County" value="{{userData.location1}}" /><br>
             <input type="charInput" name="location2" placeholder="City" value="{{userData.location2}}" /><br>
             <input type="charInput" name="location3" placeholder="Location" value="{{userData.location3}}" /><br>

@@ -41,6 +41,7 @@
     "influx": "^5.5.2",
     "jbox": "^1.2.0",
     "jquery": "^3.5.1",
+    "jquery-ui": "^1.12.1",
     "jscharting": "^2.9.0-9",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.0",

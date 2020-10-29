@@ -279,14 +279,95 @@ if (!mapOption || mapOption == 'NULL') {
   $("#map").append(`<div class='custom-map'> <img src='` + src + `' /> </div>`)
 }
 
-// userData_raw.forEach(sensor =>  {
-//   console.log(window.location.search, sensor.zoneId, sensor.location3)
-// })
-// console.log(userData_raw)
-// $("#map .map-inner").append(userData_raw)
-
 // ============================
 // END Display Map
+
+// Display unassigned sensors
+// ============================
+// Everything happens if custom-map is present
+if ($("#map .custom-map")) {
+
+  // undefinedSensorsTemplate
+  let undefinedSensorsTemplate = (sensorList) => {
+    let sensorToDisplay = ''
+    for (let sensor of sensorList) {
+      sensorToDisplay += `<span class='sensor-item' sensorid='` + sensor.sensorId + `'><i class="fad fa-signal-stream"></i><span class='sensorName'>@sensorName</span><span class='sensorValue'>27</span></span>`
+    }
+    return `<div class='undefinedSensorsWrapper'><div class='undefinedSensorsInner hidden'>` + sensorToDisplay + `</div><div class='undefinedButton'><i class="fas fa-map-marker-question"></i></div></div>`
+  }
+
+  // Get query from URL
+  const url = new URL(location.href)
+  const zoneId = url.searchParams.get('id')
+
+  let sensorsInThisZone = []
+  let sensorsWithUndefinedLocation = []
+
+  userData_raw.forEach(sensor => {
+    if (sensor.zoneId == zoneId) {
+      sensorsInThisZone.push(sensor)
+      if (!sensor.x || !sensor.y)
+        sensorsWithUndefinedLocation.push(sensor)
+    }
+  })
+
+  let undefinedSensors = sensorsWithUndefinedLocation.length
+
+  if (undefinedSensors) {
+    // Append a notification
+    $("#map .custom-map").append(undefinedSensorsTemplate(sensorsWithUndefinedLocation))
+    let heightOfMap = $(".custom-map").innerHeight()
+    let widthOfMap = $(".custom-map").innerWidth()
+    console.log(heightOfMap, widthOfMap)
+  }
+
+  $(".undefinedButton").on('click', (e) => {
+    $(".undefinedSensorsInner").toggleClass("hidden")
+  })
+
+  $(".undefinedSensorsInner").on('click', (e) => {
+    let sensorElement = e.target.parentElement
+    let sensorId = sensorElement.getAttribute("sensorid")
+    console.log(sensorId)
+    $(".custom-map").append(`
+            <div sensor="` + sensorId + `" class="sensor-item draggable ui-widget-content" data-toggle="tooltip" data-placement="top"  title="` + sensorId + `">
+              <i class="fad fa-signal-stream"></i>
+              <span class='sensorName'>@sensorName</span>
+              <span class='sensorValue'>27</span>
+            </div>`)
+
+    $(`.draggable[sensor='`+sensorId+`']`).draggable({
+      grid: [20, 20],
+      create: function (event, ui) {
+        $(this).position({
+          my: "left+" + 0 + ", top+" + 0,
+          at: "left top",
+          of: $(this).parent()
+        });
+      },
+      start: function (event, ui) {
+        console.log("start", ui.position)
+      },
+      drag: function (event, ui) {
+        console.log("drag", ui.position)
+      },
+      stop: function (event, ui) {
+        const sensorId = $(this).attr('sensor')
+        console.log("UPDATE customap_" + username + " SET x='" + ui.position.left + "', y='" + ui.position.top + "' WHERE sensors='" + sensorId + "';")
+        // fetch("/api/mysql?q=UPDATE custommap_" + username + " SET x='" + ui.position.left + "', y='" + ui.position.top + "' WHERE sensors='" + sensorId + "';")
+      },
+    });
+
+    sensorElement.remove()
+
+    // console.log(sensorId)
+  })
+
+}
+
+// ============================
+// END Display unassigned sensors
+
 
 // cluster
 
@@ -499,7 +580,7 @@ function getCenterOfMap() {
   return [longAvg, latAvg]
 }
 
-function createMap(coordinates='', sensorValuesJson='') {
+function createMap(coordinates = '', sensorValuesJson = '') {
 
   var features = new Array();
   for (var i = 0; i < coordinates.length; ++i) {

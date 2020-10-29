@@ -95,21 +95,32 @@ var getUserData = function getUserData() {
       }
     }
   });
-})(); // ============================
+})().then(function () {
+  var hrefZone = window.location.href;
+  var zoneItem = $(".zone-item a[href]"); // console.log(zoneItem.length)
+
+  for (var i = 0; i < zoneItem.length; i++) {
+    // console.log(zoneItem[i].href, hrefZone)
+    if (zoneItem[i].href == hrefZone) {
+      zoneItem[i].classList.add('link-selected');
+    }
+  }
+}); // ============================
 // END Aside LOCATIONS
 // Aside MAPS
 // ============================
-// [ ] TODO: show choose userData or userData_row for maps and locations
+// [ ] TODO: choose userData or userData_row for maps and locations
 // let maps = getValuesFromObject('map', userData_raw)
-
 
 var zones = (0, _utils.getValuesFromObject)('zoneId', userData_raw);
 var location1 = (0, _utils.getValuesFromObject)('location1', userData_raw);
 var location2 = (0, _utils.getValuesFromObject)('location2', userData_raw);
 var location3 = (0, _utils.getValuesFromObject)('location3', userData_raw); // [*] TODO: display multiple maps
 
-var bufferAppendedMaps = [];
+var bufferAppendedMaps = []; // console.log(zones)
+
 zones.forEach(function (id, index) {
+  // Check double append
   var aux_checker = JSON.stringify(bufferAppendedMaps);
   var aux_item = JSON.stringify([location3[index], location2[index], location1[index]]);
   var hasBeenAppended = aux_checker.indexOf(aux_item);
@@ -142,9 +153,11 @@ $("form.location-container #zone").on('input', function (e) {
   var optionSelected = $("option:selected", this)[0].text;
 
   if (optionSelected != 'Nothing selected') {
-    var _location3 = optionSelected.split('/')[0];
-    var _location4 = optionSelected.split('/')[1];
-    var _location5 = optionSelected.split('/')[2];
+    var zoneId = optionSelected.split('/')[0];
+    var _location3 = optionSelected.split('/')[1];
+    var _location4 = optionSelected.split('/')[2];
+    var _location5 = optionSelected.split('/')[3];
+    $("form.location-container input[name=zoneId]").attr("value", zoneId);
     $("form.location-container input[name=location1]").attr("value", _location3);
     $("form.location-container input[name=location2]").attr("value", _location4);
     $("form.location-container input[name=location3]").attr("value", _location5);
@@ -152,6 +165,7 @@ $("form.location-container #zone").on('input', function (e) {
     $("form.location-container input[name=location2]").attr("readonly", 'readonly');
     $("form.location-container input[name=location3]").attr("readonly", 'readonly');
   } else {
+    $("form.location-container input[name=zoneId]").attr("value", '');
     $("form.location-container input[name=location1]").attr("value", '');
     $("form.location-container input[name=location2]").attr("value", '');
     $("form.location-container input[name=location3]").attr("value", '');

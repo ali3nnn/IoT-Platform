@@ -114,7 +114,7 @@ let location3 = getValuesFromObject('location3', userData_raw)
 // [*] TODO: display multiple maps
 
 let bufferAppendedMaps = []
-console.log(zones)
+// console.log(zones)
 zones.forEach((id, index) => {
 
     // Check double append
@@ -155,9 +155,11 @@ for (let i = 0; i < mapItem.length; i++) {
 $("form.location-container #zone").on('input', function (e) {
     const optionSelected = $("option:selected", this)[0].text
     if (optionSelected != 'Nothing selected') {
-        const location1 = optionSelected.split('/')[0]
-        const location2 = optionSelected.split('/')[1]
-        const location3 = optionSelected.split('/')[2]
+        const zoneId = optionSelected.split('/')[0]
+        const location1 = optionSelected.split('/')[1]
+        const location2 = optionSelected.split('/')[2]
+        const location3 = optionSelected.split('/')[3]
+        $("form.location-container input[name=zoneId]").attr("value", zoneId)
         $("form.location-container input[name=location1]").attr("value", location1)
         $("form.location-container input[name=location2]").attr("value", location2)
         $("form.location-container input[name=location3]").attr("value", location3)
@@ -165,6 +167,7 @@ $("form.location-container #zone").on('input', function (e) {
         $("form.location-container input[name=location2]").attr("readonly", 'readonly')
         $("form.location-container input[name=location3]").attr("readonly", 'readonly')
     } else {
+        $("form.location-container input[name=zoneId]").attr("value", '')
         $("form.location-container input[name=location1]").attr("value", '')
         $("form.location-container input[name=location2]").attr("value", '')
         $("form.location-container input[name=location3]").attr("value", '')
