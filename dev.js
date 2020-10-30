@@ -718,13 +718,13 @@ app.post('/api/v3/init-sensor-qr', (req, res) => {
             if (postQuery.zoneId) {
                 // Insert into sensors
                 mysqlReader("INSERT INTO sensors (sensorId, sensorType, sensorName, zoneId) values ('" + postQuery.sensorid + "','" + postQuery.type + "','" + postQuery.sensorName + "'," + int(postQuery.zoneId) + ")")
-                .then(() => {
-                    // Insert into userAccess
-                    mysqlReader("INSERT INTO userAccess (sensorId, username) values ('" + postQuery.sensorid + "','" + sess.username + "')")
-                        .then(() => {
-                            res.redirect("/map")
-                        })
-                })
+                    .then(() => {
+                        // Insert into userAccess
+                        mysqlReader("INSERT INTO userAccess (sensorId, username) values ('" + postQuery.sensorid + "','" + sess.username + "')")
+                            .then(() => {
+                                res.redirect("/map")
+                            })
+                    })
             } else {
                 // Insert into locations
                 mysqlReader("INSERT INTO locations (location1, location2, location3) values ('" + postQuery.location1 + "','" + postQuery.location2 + "','" + postQuery.location3 + "')")
@@ -871,9 +871,22 @@ app.get('/api/v3/get-interval', async (req, res) => {
     }
 })
 
-//=========================================
-// END NEW API ROUTES
+app.get("/api/v3/save-position", (req, res) => {
+    sess = req.session
+    if (sess.username) {
+        const query = "UPDATE sensors SET x='" + req.query.x + "', y='" + req.query.y + "' WHERE sensorId='" + req.query.sensor + "';"
+        mysqlReader(query).then((result) => {
+            res.status(200).send("Update performed");
+        }).catch(err => {
+            res.status(400).send("Error");
+        })
+    } else {
+        res.status(403).send("Not logged in");
+    }
+})
 
+// END NEW API ROUTES
+//=========================================
 
 
 // API Get Data From Different Zones
@@ -2908,61 +2921,115 @@ app.get('/api/get-zones', function (req, res) {
 
 })
 
-app.post('/api/edit-zone', (req, res) => {
+app.post('/api/edit-zone', async (req, res) => {
+
+    sess = req.session
 
     const form = new formidable.IncomingForm();
 
-    form.parse(req, function (err, fields, files) {
+    form.parse(req, async function (err, fields, files) {
 
-        console.log(fields)
+        // console.log(fields)
 
-        if (fields.map == 'custom') {
+        // Get username list
+        const { zoneid, location1, location2, location3, map, ...userList } = fields;
+        console.log(userList)
 
-            if (files.mapimage.size) {
-                // Get tmp path
-                const oldpath = files.mapimage.path;
-                // Build path of image
-                let filename = files.mapimage.name.toLowerCase().split('.')
-                const asciiStr = filename[0].normalize('NFKD').replace(/[^\w]/g, '');
-                let date = new Date()
-                filename = date.getTime() + '_' + asciiStr + '.' + filename[1]
-                const newpath = './public/images/custom-maps/' + filename;
-                // Save image
-                fs.rename(oldpath, newpath, function (err) {
-                    if (err)
-                        res.status(404).send({ error: err })
-                    else {
-                        mysqlReader("UPDATE locations SET map='" + newpath + "' where zoneId=" + fields.zoneid + "").then((result) => {
-                            res.redirect("/settings")
-                        }).catch((err) => {
-                            res.status(200).send({ error: err });
-                        })
-                    }
-                });
+        // Get all sensors in a zoneId
+        let getSensorList = await mysqlReader("select group_concat(sensors.sensorId) as sensorId from sensors where sensors.zoneId = " + fields.zoneid)
+        let finalSensorList = ''
+        getSensorList[0].sensorId.split(',').forEach((item, index) => {
+            finalSensorList += `'` + item + `'`
+            if (index != getSensorList[0].sensorId.split(',').length - 1)
+                finalSensorList += ','
+        })
+
+        // Drop access for sensors in this zone
+        console.log("DROP ACCESS FOR: ", finalSensorList)
+        console.log("delete from userAccess where sensorId IN (" + finalSensorList + ")")
+        let dropUserAccess = await mysqlReader("delete from userAccess where sensorId IN (" + finalSensorList + ")")
+
+        // Grant superamdin access
+        let valuesToInsertForSuperAdmin = () => {
+            let returnRaw = ``
+            getSensorList[0].sensorId.split(',').forEach((item, index) => {
+                returnRaw += `('` + item + `','alex.barbu')`
+                if (index != getSensorList[0].sensorId.split(',').length - 1)
+                    returnRaw += ','
+            })
+            return returnRaw
+        }
+        console.log("GRANT SUPER ADMIN: ", valuesToInsertForSuperAdmin())
+        let grantSuperAdminAccess = await mysqlReader("insert into userAccess (sensorId, username) VALUES " + valuesToInsertForSuperAdmin())
+
+        // Grant admin access
+        let userListFinal = []
+        for (const key in userList) {
+            userListFinal.push(userList[key])
+        }
+
+        let valuesToInsert = () => {
+            let returnRaw = ``
+            userListFinal.forEach((user, index) => {
+                getSensorList[0].sensorId.split(',').forEach((itemSensor, indexSensor) => {
+                    returnRaw += `('` + itemSensor + `','` + user + `')`
+                    returnRaw += ','
+                })
+            })
+            returnRaw = returnRaw.substring(0, returnRaw.length - 1);
+            return returnRaw
+        }
+
+        console.log("GRANT ADMIN: ", valuesToInsert())
+        let grantUserAccess = await mysqlReader("insert into userAccess (sensorId, username) VALUES " + valuesToInsert())
+
+        Promise.all([dropUserAccess, grantSuperAdminAccess, grantUserAccess]).then(result => {
+            if (fields.map == 'custom') {
+
+                if (files.mapimage.size) {
+                    // Get tmp path
+                    const oldpath = files.mapimage.path;
+                    // Build path of image
+                    let filename = files.mapimage.name.toLowerCase().split('.')
+                    const asciiStr = filename[0].normalize('NFKD').replace(/[^\w]/g, '');
+                    let date = new Date()
+                    filename = date.getTime() + '_' + asciiStr + '.' + filename[1]
+                    const newpath = './public/images/custom-maps/' + filename;
+                    // Save image
+                    fs.rename(oldpath, newpath, function (err) {
+                        if (err)
+                            res.status(404).send({ error: err })
+                        else {
+                            mysqlReader("UPDATE locations SET map='" + newpath + "' where zoneId=" + fields.zoneid + "").then((result) => {
+                                res.redirect("/settings")
+                            }).catch((err) => {
+                                res.status(200).send({ error: err });
+                            })
+                        }
+                    });
+                } else {
+                    mysqlReader("UPDATE locations SET map='custom' where zoneId=" + fields.zoneid + "").then((result) => {
+                        res.redirect("/settings")
+                    }).catch((err) => {
+                        res.status(200).send({ error: err });
+                    })
+                }
+
+
+            } else if (fields.map == 'ol') {
+                mysqlReader("UPDATE locations SET map='ol' where zoneId=" + fields.zoneid + "").then((result) => {
+                    res.redirect("/settings")
+                }).catch((err) => {
+                    res.status(200).send({ error: err });
+                })
             } else {
-                console.log('custom', fields.zoneid)
-                mysqlReader("UPDATE locations SET map='custom' where zoneId=" + fields.zoneid + "").then((result) => {
+                mysqlReader("UPDATE locations SET map='NULL' where zoneId=" + fields.zoneid + "").then((result) => {
                     res.redirect("/settings")
                 }).catch((err) => {
                     res.status(200).send({ error: err });
                 })
             }
-
-
-        } else if (fields.map == 'ol') {
-            mysqlReader("UPDATE locations SET map='ol' where zoneId=" + fields.zoneid + "").then((result) => {
-                res.redirect("/settings")
-            }).catch((err) => {
-                res.status(200).send({ error: err });
-            })
-        } else {
-            mysqlReader("UPDATE locations SET map='NULL' where zoneId=" + fields.zoneid + "").then((result) => {
-                res.redirect("/settings")
-            }).catch((err) => {
-                res.status(200).send({ error: err });
-            })
-        }
-
+        })
 
     })
 })
@@ -3401,6 +3468,7 @@ app.get('/api/add-user', (req, res) => {
     }
 })
 
+// Active route for settings page
 app.post('/api/remove-user', async (req, res) => {
 
     const queryGetSensorId = `select sensorId from userAccess where username='` + req.body.username + `'`

@@ -2,8 +2,9 @@
 
 require("../css/style.scss");
 
-require("jquery-ui");
+require("../../node_modules/jquery-ui-dist/jquery-ui.js");
 
+//for draggable objects
 var jQuery = require("jquery");
 
 window.jQuery = window.$ = jQuery; //Make jquery accesible from html files

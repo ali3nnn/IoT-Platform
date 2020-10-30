@@ -239,6 +239,8 @@ fetchZones().then((result) => {
 
     let bufferAppendedZones = []
 
+    console.log(result)
+
     result.forEach(zone => {
         // Generate unique Id
         let date = new Date()

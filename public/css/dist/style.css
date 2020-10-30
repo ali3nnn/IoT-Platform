@@ -4608,26 +4608,28 @@ div#map > div {
 }
 div#map > div.custom-map img {
   position: absolute;
-  min-height: 100%;
-  min-width: 100%;
 }
-div#map > div.custom-map span.sensor-item {
+div#map > div.custom-map > .sensor-item {
   display: inline-block;
-  position: relative;
+  position: absolute;
   padding: 10px 10px 5px 10px;
   background: var(--yellow);
   border-radius: 13px;
   margin: 5px;
+  top: 0;
+  left: 0;
+  max-width: 150px;
+  min-width: 70px;
 }
-div#map > div.custom-map span.sensor-item:hover {
+div#map > div.custom-map > .sensor-item:hover {
   cursor: pointer;
 }
-div#map > div.custom-map span.sensor-item i {
+div#map > div.custom-map > .sensor-item i {
   font-size: 36px;
   display: block;
   text-align: center;
 }
-div#map > div.custom-map span.sensor-item span {
+div#map > div.custom-map > .sensor-item span {
   display: block;
   text-align: center;
 }
@@ -4660,6 +4662,8 @@ div#map > div.custom-map span.sensor-item span {
   margin: 5px;
   transform: scale(1);
   transition: all 0.2s ease;
+  max-width: 150px;
+  min-width: 70px;
 }
 .undefinedSensorsWrapper .undefinedSensorsInner span.sensor-item:hover {
   cursor: pointer;

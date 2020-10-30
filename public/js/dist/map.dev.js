@@ -100,7 +100,7 @@ if ($("#map .custom-map")) {
     try {
       for (var _iterator = sensorList[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
         var sensor = _step.value;
-        sensorToDisplay += "<span class='sensor-item' sensorid='" + sensor.sensorId + "'><i class=\"fad fa-signal-stream\"></i><span class='sensorName'>@sensorName</span><span class='sensorValue'>27</span></span>";
+        sensorToDisplay += "<span class='sensor-item' type=\"" + sensor.sensorType + "\" sensor='" + sensor.sensorId + "'><i class=\"fad fa-signal-stream\"></i><span class='sensorName'>" + sensor.sensorName + "</span><span class='sensorValue'>@val</span></span>";
       }
     } catch (err) {
       _didIteratorError = true;
@@ -124,75 +124,203 @@ if ($("#map .custom-map")) {
   var url = new URL(location.href);
   var zoneId = url.searchParams.get('id');
   var sensorsInThisZone = [];
-  var sensorsWithUndefinedLocation = [];
-  userData_raw.forEach(function (sensor) {
-    if (sensor.zoneId == zoneId) {
-      sensorsInThisZone.push(sensor);
-      if (!sensor.x || !sensor.y) sensorsWithUndefinedLocation.push(sensor);
-    }
-  });
-  var undefinedSensors = sensorsWithUndefinedLocation.length;
+  var sensorsWithUndefinedLocation = []; // Filter JSON with sensors by zoneId
 
-  if (undefinedSensors) {
-    // Append a notification
-    $("#map .custom-map").append(undefinedSensorsTemplate(sensorsWithUndefinedLocation));
-    var heightOfMap = $(".custom-map").innerHeight();
-    var widthOfMap = $(".custom-map").innerWidth();
-    console.log(heightOfMap, widthOfMap);
-  }
-
-  $(".undefinedButton").on('click', function (e) {
-    $(".undefinedSensorsInner").toggleClass("hidden");
+  var userDataFinal = userData_raw.filter(function (item, index) {
+    if (item.zoneId == zoneId) return item;
   });
-  $(".undefinedSensorsInner").on('click', function (e) {
-    var sensorElement = e.target.parentElement;
-    var sensorId = sensorElement.getAttribute("sensorid");
-    console.log(sensorId);
-    $(".custom-map").append("\n            <div sensor=\"" + sensorId + "\" class=\"sensor-item draggable ui-widget-content\" data-toggle=\"tooltip\" data-placement=\"top\"  title=\"" + sensorId + "\">\n              <i class=\"fad fa-signal-stream\"></i>\n              <span class='sensorName'>@sensorName</span>\n              <span class='sensorValue'>27</span>\n            </div>");
-    $(".draggable[sensor='" + sensorId + "']").draggable({
-      grid: [20, 20],
-      create: function create(event, ui) {
-        $(this).position({
-          my: "left+" + 0 + ", top+" + 0,
-          at: "left top",
-          of: $(this).parent()
-        });
-      },
-      start: function start(event, ui) {
-        console.log("start", ui.position);
-      },
-      drag: function drag(event, ui) {
-        console.log("drag", ui.position);
-      },
-      stop: function stop(event, ui) {
-        var sensorId = $(this).attr('sensor');
-        console.log("UPDATE customap_" + username + " SET x='" + ui.position.left + "', y='" + ui.position.top + "' WHERE sensors='" + sensorId + "';"); // fetch("/api/mysql?q=UPDATE custommap_" + username + " SET x='" + ui.position.left + "', y='" + ui.position.top + "' WHERE sensors='" + sensorId + "';")
+  userDataFinal.forEach(function _callee(sensor, index) {
+    var position;
+    return regeneratorRuntime.async(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            // if (sensor.zoneId == zoneId) {
+            // sensorsInThisZone.push(sensor)
+            if (!sensor.x || !sensor.y) {
+              // Push all the sensors without a location
+              sensorsWithUndefinedLocation.push(sensor); // This is for the last itteration
+
+              if (index == userDataFinal.length - 1) {
+                // Append undefined sensors to their box
+                $("#map .custom-map").append(undefinedSensorsTemplate(sensorsWithUndefinedLocation)); // Toggle sensors box
+
+                $(".undefinedButton").on('click', function (e) {
+                  $(".undefinedSensorsInner").toggleClass("hidden");
+                }); // When you click on a sensor it should be removes and appended to custom-map
+
+                $(".undefinedSensorsInner").on('click', function (e) {
+                  var sensorElement = e.target.parentElement;
+                  var sensorId = sensorElement.getAttribute("sensor");
+                  var sensorName = $(sensorElement).children(".sensorName")[0].innerText;
+                  $(".custom-map").append("\n                  <div sensor=\"" + sensorId + "\" class=\"sensor-item draggable ui-widget-content\" data-toggle=\"tooltip\" data-placement=\"top\"  title=\"" + sensorId + "\">\n                    <i class=\"fad fa-signal-stream\"></i>\n                    <span class='sensorName'>" + sensorName + "</span>\n                    <span class='sensorValue'>@val</span>\n                  </div>");
+                  $(".draggable[sensor='" + sensorId + "']").draggable({
+                    grid: [1, 1],
+                    create: function create(event, ui) {
+                      // console.log(ui.position)
+                      $(this).position({
+                        my: "left+" + 0 + ", top+" + 0,
+                        at: "left top",
+                        of: $('.custom-map')
+                      });
+                    },
+                    start: function start(event, ui) {// console.log("start", ui.position)
+                    },
+                    drag: function drag(event, ui) {
+                      console.log("drag", ui.position);
+                    },
+                    stop: function stop(event, ui) {
+                      var sensorId = $(this).attr('sensor');
+                      fetch("/api/v3/save-position?x=" + ui.position.left + "&y=" + ui.position.top + "&sensor=" + sensorId).then(function (result) {
+                        console.log(result);
+                      });
+                    }
+                  });
+                  sensorElement.remove();
+                });
+              }
+            } else {
+              // Get location of sensor
+              position = {
+                top: parseInt(sensor.y) + 5,
+                left: parseInt(sensor.x) + 5
+              }; // Sensor on map
+
+              $(".custom-map").append("\n            <div sensor=\"" + sensor.sensorId + "\" type=\"" + sensor.sensorType + "\" class=\"sensor-item draggable ui-widget-content\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"" + sensor.sensorId + "\">\n              <i class=\"fad fa-signal-stream\"></i>\n              <span class='sensorName'>" + sensor.sensorName + "</span>\n              <span class='sensorValue'>@val</span>\n            </div>"); // Make sensor on map draggable
+
+              $(".draggable[sensor='" + sensor.sensorId + "']").draggable({
+                grid: [1, 1],
+                create: function create(event, ui) {
+                  // console.log(sensor.sensorId, position, ui, $(this).position())
+                  $(this).position({
+                    my: "left+" + position.left + ", top+" + position.top,
+                    at: "left top",
+                    of: $('.custom-map')
+                  });
+                },
+                stop: function stop(event, ui) {
+                  var sensorId = $(this).attr('sensor'); // Update position of sensor on map
+
+                  fetch("/api/v3/save-position?x=" + ui.position.left + "&y=" + ui.position.top + "&sensor=" + sensorId).then(function (result) {
+                    console.log(result);
+                  });
+                }
+              });
+            } // }
+
+
+          case 1:
+          case "end":
+            return _context.stop();
+        }
       }
     });
-    sensorElement.remove(); // console.log(sensorId)
-  });
+  }); // Append sensors with NO location
+  // let undefinedSensors = sensorsWithUndefinedLocation.length
+  // if (0) {
+  //   // Append a notification
+  //   $("#map .custom-map").append(undefinedSensorsTemplate(sensorsWithUndefinedLocation))
+  //   // let heightOfMap = $(".custom-map").innerHeight()
+  //   // let widthOfMap = $(".custom-map").innerWidth()
+  //   // console.log(heightOfMap, widthOfMap)
+  // }
+  // $(".undefinedButton").on('click', (e) => {
+  //   $(".undefinedSensorsInner").toggleClass("hidden")
+  // })
+  // $(".undefinedSensorsInner").on('click', (e) => {
+  //   let sensorElement = e.target.parentElement
+  //   let sensorId = sensorElement.getAttribute("sensor")
+  //   // console.log(sensorId)
+  //   $(".custom-map").append(`
+  //           <div sensor="` + sensorId + `" class="sensor-item draggable ui-widget-content" data-toggle="tooltip" data-placement="top"  title="` + sensorId + `">
+  //             <i class="fad fa-signal-stream"></i>
+  //             <span class='sensorName'>@sensorName</span>
+  //             <span class='sensorValue'>@val</span>
+  //           </div>`)
+  //   $(`.draggable[sensor='` + sensorId + `']`).draggable({
+  //     grid: [1, 1],
+  //     create: function (event, ui) {
+  //       // console.log(ui.position)
+  //       $(this).position({
+  //         my: "left+" + 0 + ", top+" + 0,
+  //         at: "left top",
+  //         of: $('.custom-map')
+  //       });
+  //     },
+  //     start: function (event, ui) {
+  //       // console.log("start", ui.position)
+  //     },
+  //     drag: function (event, ui) {
+  //       console.log("drag", ui.position)
+  //     },
+  //     stop: function (event, ui) {
+  //       const sensorId = $(this).attr('sensor')
+  //       fetch("/api/v3/save-position?x=" + ui.position.left + "&y=" + ui.position.top + "&sensor=" + sensorId).then(result => {
+  //         console.log(result)
+  //       })
+  //     },
+  //   });
+  //   sensorElement.remove()
+  // })
 } // ============================
 // END Display unassigned sensors
+// Connect sensor to MQTT
+// ============================
+
+
+var socketChannel = 'socketChannel';
+socket.on(socketChannel, function _callee2(data) {
+  var currentValueBox;
+  return regeneratorRuntime.async(function _callee2$(_context2) {
+    while (1) {
+      switch (_context2.prev = _context2.next) {
+        case 0:
+          currentValueBox = $(".sensor-item span.sensorValue"); // console.log(currentValueBox)
+          // Loop through each current value box
+
+          currentValueBox.each(function (index, item) {
+            // get sensor id for each current value box 
+            var sensorId = $(item).parent().attr("sensor");
+            var sensorType = $(item).parent().attr("type"); // get value of topic that contains this I
+
+            if (data.topic.includes(sensorId)) {
+              // Generate symbol
+              var symbol = function symbol() {
+                if (sensorType == 'temperature') return '°C';else if (sensorType != 'temperature') return ' V';
+              }; // Append value and symbol
+
+
+              $(item).html(parseFloat(data.message).toFixed(1) + symbol());
+            }
+          });
+
+        case 2:
+        case "end":
+          return _context2.stop();
+      }
+    }
+  });
+}); // ============================
+// END Connect sensor to MQTT
 // cluster
 // get coordinates
 
-
 var getSensorLocation = function getSensorLocation() {
   var response;
-  return regeneratorRuntime.async(function getSensorLocation$(_context) {
+  return regeneratorRuntime.async(function getSensorLocation$(_context3) {
     while (1) {
-      switch (_context.prev = _context.next) {
+      switch (_context3.prev = _context3.next) {
         case 0:
-          _context.next = 2;
+          _context3.next = 2;
           return regeneratorRuntime.awrap(fetch("/api/read-location"));
 
         case 2:
-          response = _context.sent;
-          return _context.abrupt("return", response.json());
+          response = _context3.sent;
+          return _context3.abrupt("return", response.json());
 
         case 4:
         case "end":
-          return _context.stop();
+          return _context3.stop();
       }
     }
   });
@@ -200,20 +328,20 @@ var getSensorLocation = function getSensorLocation() {
 
 var lastValueOf = function lastValueOf(sensorId) {
   var response;
-  return regeneratorRuntime.async(function lastValueOf$(_context2) {
+  return regeneratorRuntime.async(function lastValueOf$(_context4) {
     while (1) {
-      switch (_context2.prev = _context2.next) {
+      switch (_context4.prev = _context4.next) {
         case 0:
-          _context2.next = 2;
+          _context4.next = 2;
           return regeneratorRuntime.awrap(fetch("/api/get-last-value/?sensorIdList=" + sensorId));
 
         case 2:
-          response = _context2.sent;
-          return _context2.abrupt("return", response.json());
+          response = _context4.sent;
+          return _context4.abrupt("return", response.json());
 
         case 4:
         case "end":
-          return _context2.stop();
+          return _context4.stop();
       }
     }
   });
@@ -227,20 +355,20 @@ var lastValue = []; // var time = new Date()
 if (typeof sensorId !== 'undefined') {
   var sensorsCoord = [];
 
-  var sensorLocation = function _callee() {
-    return regeneratorRuntime.async(function _callee$(_context3) {
+  var sensorLocation = function _callee3() {
+    return regeneratorRuntime.async(function _callee3$(_context5) {
       while (1) {
-        switch (_context3.prev = _context3.next) {
+        switch (_context5.prev = _context5.next) {
           case 0:
-            _context3.next = 2;
+            _context5.next = 2;
             return regeneratorRuntime.awrap(getSensorLocation());
 
           case 2:
-            return _context3.abrupt("return", _context3.sent);
+            return _context5.abrupt("return", _context5.sent);
 
           case 3:
           case "end":
-            return _context3.stop();
+            return _context5.stop();
         }
       }
     });
@@ -258,60 +386,60 @@ if (typeof sensorId !== 'undefined') {
       }
     });
     return sensorsCoord;
-  }).then(function _callee3(response) {
+  }).then(function _callee5(response) {
     var sensorList, sensorCounter, sensorLatestValueJson;
-    return regeneratorRuntime.async(function _callee3$(_context5) {
+    return regeneratorRuntime.async(function _callee5$(_context7) {
       while (1) {
-        switch (_context5.prev = _context5.next) {
+        switch (_context7.prev = _context7.next) {
           case 0:
             sensorList = '';
             sensorCounter = 0; // console.log(response)
 
-            response.forEach(function _callee2(sensor) {
-              return regeneratorRuntime.async(function _callee2$(_context4) {
+            response.forEach(function _callee4(sensor) {
+              return regeneratorRuntime.async(function _callee4$(_context6) {
                 while (1) {
-                  switch (_context4.prev = _context4.next) {
+                  switch (_context6.prev = _context6.next) {
                     case 0:
                       sensorCounter++;
                       if (sensorCounter != response.length) sensorList += sensor[2] + ',';else sensorList += sensor[2];
 
                     case 2:
                     case "end":
-                      return _context4.stop();
+                      return _context6.stop();
                   }
                 }
               });
             }); // console.log(sensorList, sensorList.length)
 
             if (!sensorList.length) {
-              _context5.next = 13;
+              _context7.next = 13;
               break;
             }
 
-            _context5.next = 6;
+            _context7.next = 6;
             return regeneratorRuntime.awrap(lastValueOf(sensorList));
 
           case 6:
-            sensorLatestValueJson = _context5.sent;
+            sensorLatestValueJson = _context7.sent;
             sensorLatestValueJson.forEach(function (sensor) {
               lastValue.push([sensor.sensorQueried, sensor.value]);
             });
-            _context5.next = 10;
+            _context7.next = 10;
             return regeneratorRuntime.awrap([response, lastValue]);
 
           case 10:
-            return _context5.abrupt("return", _context5.sent);
+            return _context7.abrupt("return", _context7.sent);
 
           case 13:
-            _context5.next = 15;
+            _context7.next = 15;
             return regeneratorRuntime.awrap([response, [NaN, NaN]]);
 
           case 15:
-            return _context5.abrupt("return", _context5.sent);
+            return _context7.abrupt("return", _context7.sent);
 
           case 16:
           case "end":
-            return _context5.stop();
+            return _context7.stop();
         }
       }
     });

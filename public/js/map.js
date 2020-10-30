@@ -291,7 +291,7 @@ if ($("#map .custom-map")) {
   let undefinedSensorsTemplate = (sensorList) => {
     let sensorToDisplay = ''
     for (let sensor of sensorList) {
-      sensorToDisplay += `<span class='sensor-item' sensorid='` + sensor.sensorId + `'><i class="fad fa-signal-stream"></i><span class='sensorName'>@sensorName</span><span class='sensorValue'>27</span></span>`
+      sensorToDisplay += `<span class='sensor-item' type="` + sensor.sensorType + `" sensor='` + sensor.sensorId + `'><i class="fad fa-signal-stream"></i><span class='sensorName'>`+sensor.sensorName+`</span><span class='sensorValue'>@val</span></span>`
     }
     return `<div class='undefinedSensorsWrapper'><div class='undefinedSensorsInner hidden'>` + sensorToDisplay + `</div><div class='undefinedButton'><i class="fas fa-map-marker-question"></i></div></div>`
   }
@@ -303,71 +303,200 @@ if ($("#map .custom-map")) {
   let sensorsInThisZone = []
   let sensorsWithUndefinedLocation = []
 
-  userData_raw.forEach(sensor => {
-    if (sensor.zoneId == zoneId) {
-      sensorsInThisZone.push(sensor)
-      if (!sensor.x || !sensor.y)
-        sensorsWithUndefinedLocation.push(sensor)
-    }
+  // Filter JSON with sensors by zoneId
+  let userDataFinal = userData_raw.filter((item, index) => {
+    if (item.zoneId == zoneId)
+      return item
   })
 
-  let undefinedSensors = sensorsWithUndefinedLocation.length
+  userDataFinal.forEach(async (sensor, index) => {
 
-  if (undefinedSensors) {
-    // Append a notification
-    $("#map .custom-map").append(undefinedSensorsTemplate(sensorsWithUndefinedLocation))
-    let heightOfMap = $(".custom-map").innerHeight()
-    let widthOfMap = $(".custom-map").innerWidth()
-    console.log(heightOfMap, widthOfMap)
-  }
+    // if (sensor.zoneId == zoneId) {
+    // sensorsInThisZone.push(sensor)
 
-  $(".undefinedButton").on('click', (e) => {
-    $(".undefinedSensorsInner").toggleClass("hidden")
-  })
+    if (!sensor.x || !sensor.y) {
 
-  $(".undefinedSensorsInner").on('click', (e) => {
-    let sensorElement = e.target.parentElement
-    let sensorId = sensorElement.getAttribute("sensorid")
-    console.log(sensorId)
-    $(".custom-map").append(`
-            <div sensor="` + sensorId + `" class="sensor-item draggable ui-widget-content" data-toggle="tooltip" data-placement="top"  title="` + sensorId + `">
+      // Push all the sensors without a location
+      sensorsWithUndefinedLocation.push(sensor)
+
+      // This is for the last itteration
+      if (index == userDataFinal.length - 1) {
+
+        // Append undefined sensors to their box
+        $("#map .custom-map").append(undefinedSensorsTemplate(sensorsWithUndefinedLocation))
+
+        // Toggle sensors box
+        $(".undefinedButton").on('click', (e) => {
+          $(".undefinedSensorsInner").toggleClass("hidden")
+        })
+
+        // When you click on a sensor it should be removes and appended to custom-map
+        $(".undefinedSensorsInner").on('click', (e) => {
+          let sensorElement = e.target.parentElement
+          let sensorId = sensorElement.getAttribute("sensor")
+          let sensorName = $(sensorElement).children(".sensorName")[0].innerText
+          $(".custom-map").append(`
+                  <div sensor="` + sensorId + `" class="sensor-item draggable ui-widget-content" data-toggle="tooltip" data-placement="top"  title="` + sensorId + `">
+                    <i class="fad fa-signal-stream"></i>
+                    <span class='sensorName'>`+sensorName+`</span>
+                    <span class='sensorValue'>@val</span>
+                  </div>`)
+
+          $(`.draggable[sensor='` + sensorId + `']`).draggable({
+            grid: [1, 1],
+            create: function (event, ui) {
+              // console.log(ui.position)
+              $(this).position({
+                my: "left+" + 0 + ", top+" + 0,
+                at: "left top",
+                of: $('.custom-map')
+              });
+            },
+            start: function (event, ui) {
+              // console.log("start", ui.position)
+            },
+            drag: function (event, ui) {
+              console.log("drag", ui.position)
+            },
+            stop: function (event, ui) {
+              const sensorId = $(this).attr('sensor')
+              fetch("/api/v3/save-position?x=" + ui.position.left + "&y=" + ui.position.top + "&sensor=" + sensorId).then(result => {
+                console.log(result)
+              })
+            },
+          });
+
+          sensorElement.remove()
+        })
+      }
+
+    } else {
+
+      // Get location of sensor
+      const position = {
+        top: parseInt(sensor.y) + 5,
+        left: parseInt(sensor.x) + 5
+      }
+
+      // Sensor on map
+      $(".custom-map").append(`
+            <div sensor="` + sensor.sensorId + `" type="` + sensor.sensorType + `" class="sensor-item draggable ui-widget-content" data-toggle="tooltip" data-placement="top" title="` + sensor.sensorId + `">
               <i class="fad fa-signal-stream"></i>
-              <span class='sensorName'>@sensorName</span>
-              <span class='sensorValue'>27</span>
+              <span class='sensorName'>`+ sensor.sensorName + `</span>
+              <span class='sensorValue'>@val</span>
             </div>`)
 
-    $(`.draggable[sensor='`+sensorId+`']`).draggable({
-      grid: [20, 20],
-      create: function (event, ui) {
-        $(this).position({
-          my: "left+" + 0 + ", top+" + 0,
-          at: "left top",
-          of: $(this).parent()
-        });
-      },
-      start: function (event, ui) {
-        console.log("start", ui.position)
-      },
-      drag: function (event, ui) {
-        console.log("drag", ui.position)
-      },
-      stop: function (event, ui) {
-        const sensorId = $(this).attr('sensor')
-        console.log("UPDATE customap_" + username + " SET x='" + ui.position.left + "', y='" + ui.position.top + "' WHERE sensors='" + sensorId + "';")
-        // fetch("/api/mysql?q=UPDATE custommap_" + username + " SET x='" + ui.position.left + "', y='" + ui.position.top + "' WHERE sensors='" + sensorId + "';")
-      },
-    });
+      // Make sensor on map draggable
+      $(`.draggable[sensor='` + sensor.sensorId + `']`).draggable({
+        grid: [1, 1],
+        create: function (event, ui) {
+          // console.log(sensor.sensorId, position, ui, $(this).position())
+          $(this).position({
+            my: "left+" + position.left + ", top+" + position.top,
+            at: "left top",
+            of: $('.custom-map')
+          });
+        },
+        stop: function (event, ui) {
+          const sensorId = $(this).attr('sensor')
+          // Update position of sensor on map
+          fetch("/api/v3/save-position?x=" + ui.position.left + "&y=" + ui.position.top + "&sensor=" + sensorId).then(result => {
+            console.log(result)
+          })
+        },
+      });
 
-    sensorElement.remove()
-
-    // console.log(sensorId)
+    }
+    // }
   })
+
+  // Append sensors with NO location
+  // let undefinedSensors = sensorsWithUndefinedLocation.length
+
+  // if (0) {
+  //   // Append a notification
+  //   $("#map .custom-map").append(undefinedSensorsTemplate(sensorsWithUndefinedLocation))
+  //   // let heightOfMap = $(".custom-map").innerHeight()
+  //   // let widthOfMap = $(".custom-map").innerWidth()
+  //   // console.log(heightOfMap, widthOfMap)
+  // }
+
+  // $(".undefinedButton").on('click', (e) => {
+  //   $(".undefinedSensorsInner").toggleClass("hidden")
+  // })
+
+  // $(".undefinedSensorsInner").on('click', (e) => {
+  //   let sensorElement = e.target.parentElement
+  //   let sensorId = sensorElement.getAttribute("sensor")
+  //   // console.log(sensorId)
+  //   $(".custom-map").append(`
+  //           <div sensor="` + sensorId + `" class="sensor-item draggable ui-widget-content" data-toggle="tooltip" data-placement="top"  title="` + sensorId + `">
+  //             <i class="fad fa-signal-stream"></i>
+  //             <span class='sensorName'>@sensorName</span>
+  //             <span class='sensorValue'>@val</span>
+  //           </div>`)
+
+  //   $(`.draggable[sensor='` + sensorId + `']`).draggable({
+  //     grid: [1, 1],
+  //     create: function (event, ui) {
+  //       // console.log(ui.position)
+  //       $(this).position({
+  //         my: "left+" + 0 + ", top+" + 0,
+  //         at: "left top",
+  //         of: $('.custom-map')
+  //       });
+  //     },
+  //     start: function (event, ui) {
+  //       // console.log("start", ui.position)
+  //     },
+  //     drag: function (event, ui) {
+  //       console.log("drag", ui.position)
+  //     },
+  //     stop: function (event, ui) {
+  //       const sensorId = $(this).attr('sensor')
+  //       fetch("/api/v3/save-position?x=" + ui.position.left + "&y=" + ui.position.top + "&sensor=" + sensorId).then(result => {
+  //         console.log(result)
+  //       })
+  //     },
+  //   });
+
+  //   sensorElement.remove()
+  // })
 
 }
 
 // ============================
 // END Display unassigned sensors
 
+// Connect sensor to MQTT
+// ============================
+var socketChannel = 'socketChannel'
+socket.on(socketChannel, async (data) => {
+
+  let currentValueBox = $(".sensor-item span.sensorValue")
+  // console.log(currentValueBox)
+  // Loop through each current value box
+  currentValueBox.each((index, item) => {
+    // get sensor id for each current value box 
+    let sensorId = $(item).parent().attr("sensor")
+    let sensorType = $(item).parent().attr("type")
+    // get value of topic that contains this I
+    if (data.topic.includes(sensorId)) {
+      // Generate symbol
+      let symbol = () => {
+        if (sensorType == 'temperature')
+          return '°C'
+        else if (sensorType != 'temperature')
+          return ' V'
+      }
+      // Append value and symbol
+      $(item).html(parseFloat(data.message).toFixed(1) + symbol())
+    }
+  })
+
+})
+// ============================
+// END Connect sensor to MQTT
 
 // cluster
 

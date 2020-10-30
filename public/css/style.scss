@@ -4772,18 +4772,22 @@ div#map {
 
     &.custom-map img {
       position: absolute;
-      min-height: 100%;
-      min-width: 100%;
+      // min-height: 100%;
+      // min-width: 100%;
     }
 
     &.custom-map {
-      span.sensor-item {
+      & > .sensor-item {
         display: inline-block;
-        position: relative;
+        position: absolute;
         padding: 10px 10px 5px 10px;
         background: var(--yellow);
         border-radius: 13px;
         margin: 5px;
+        top: 0;
+        left: 0;
+        max-width: 150px;
+        min-width: 70px;
         // transform: scale(1);
         // transition: all 0.2s ease;
         &:hover {
@@ -4837,6 +4841,8 @@ div#map {
       margin: 5px;
       transform: scale(1);
       transition: all 0.2s ease;
+      max-width: 150px;
+      min-width: 70px;
       &:hover {
         cursor: pointer;
         transform: scale(0.95);

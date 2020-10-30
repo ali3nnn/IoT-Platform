@@ -48,7 +48,9 @@ var fetchZones = function fetchZones() {
 
 if (window.location.href.indexOf('settings') > -1) {
   $(".settings-route").addClass("link-selected");
-} // Create admin button for modal
+} // ADMIN TAB
+// ==============================
+// Create admin button for modal
 
 
 $(function () {
@@ -60,7 +62,9 @@ $(function () {
 }); // Append admin list
 
 var company = '';
+var listOfUsers;
 fetchAdmins().then(function (listOfAdmins) {
+  listOfUsers = listOfAdmins;
   listOfAdmins.forEach(function (admin) {
     // console.log(admin)
     // Add company in form
@@ -95,27 +99,107 @@ fetchAdmins().then(function (listOfAdmins) {
       });
     });
   });
-}); // Zone modal
+}); // END ADMIN TAB
+// ==============================
+// ZONES TAB
+// ==============================
+// [ ] TODO: Append users checkbox in zoneModal
+
+function getZones(user, obj) {
+  var ids_raw = [];
+  obj.forEach(function (item) {
+    if (item.username === user) ids_raw.push(item.zoneId);
+  });
+  return ids_raw;
+} // Zone modal
+
 
 var zoneModal = function zoneModal(id, zoneid, location1, location2, location3, custommap, olmap) {
   var path = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : '';
-  return "<div class='zone-modal' modalid='" + id + "'>\n<div class=\"modal modal-zone\" id=\"edit-zone-modal-" + id + "\" aria-labelledby=\"edit-zone-label\"\n    aria-hidden=\"true\" tabindex=\"-1\" role=\"dialog\">\n    <div class=\"modal-dialog fadeInModal modal-dialog-centered\" role=\"document\">\n        <div class=\"modal-content\">\n\n            <div class=\"modal-header\">\n                <h5 class=\"modal-title\" id='edit-zone-label'>Edit zone</h5>\n                <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\">\n                    <span aria-hidden=\"true\">&times;</span>\n                </button>\n            </div>\n\n            <div class=\"modal-body\">\n                <form enctype=\"multipart/form-data\" action='/api/edit-zone' method='POST' id=\"form-edit-zone-" + id + "\">\n                    <div class=\"form-group\">\n                        <input type=\"text\" class=\"form-control\" id=\"zoneid\" name=\"zoneid\" readonly value=\"" + zoneid + "\">\n                    </div>\n\n                    <div class=\"form-group\">\n                        <input type=\"text\" class=\"form-control\" id=\"location1\" name=\"location1\" readonly value=\"" + location1 + "\">\n                    </div>\n\n                    <div class=\"form-group\">\n                        <input type=\"email\" class=\"form-control\" id=\"location2\" name=\"location2\" readonly value=\"" + location2 + "\">\n                    </div>\n\n                    <div class=\"form-group\">\n                        <input type=\"text\" class=\"form-control\" id=\"location3\" name=\"location3\" readonly value=\"" + location3 + "\">\n                    </div>\n\n                    <div class=\"form-group\">\n                        <input type=\"radio\" " + custommap + " name=\"map\" value=\"custom\"> Custom Map " + function () {
+  var listOfZoneAccess = arguments.length > 8 ? arguments[8] : undefined;
+
+  // console.log(listOfZoneAccess)
+  // [*] TODO: add unique users
+  // [ ] TODO: isChecked
+  // Checkbox for user list template
+  var checkboxesTemplate = function checkboxesTemplate(name, username, checked) {
+    return '<label><input type="checkbox" ' + checked + ' name="' + name + '" value="' + username + '">' + username + '</label>';
+  }; // Init checkboxes
+
+
+  var checkboxes_checked = "";
+  var checkboxes_unchecked = "";
+  var checkboxes = ""; // Duplicate checker
+
+  var usersUnchecked = [];
+  var usersChecked = [];
+  var userBuffer = []; // Build Checkboxes w/ username
+
+  listOfZoneAccess.forEach(function (zone) {
+    // se parcurge fiecare zona
+    // if (zone.zoneId == zoneid) { // se verifica daca zona iterata este egala cu zona din modal, daca da
+    //     // se preia usernamul zonei si se face append in checkboxes_checked, daca nu s-a facut deja
+    //     if (usersUnchecked.indexOf(zone.username) == -1 && usersChecked.indexOf(zone.username) == -1) {
+    //         usersChecked.push(zone.username)
+    //         checkboxes_checked += checkboxesTemplate(zone.username, 'checked')
+    //     }
+    // } else { // se verifica daca zona iterata este egala cu zona din modal, daca nu
+    //     // se preaia usernameul zonei si se face append in checkboxes_unchecked daca nu s-a facut deja
+    if (userBuffer.indexOf(zone.username) == -1) {
+      userBuffer.push(zone.username);
+      var idsForUser = getZones(zone.username, listOfZoneAccess);
+
+      if (idsForUser.indexOf(zoneid) !== -1) {
+        checkboxes += checkboxesTemplate('username' + userBuffer.indexOf(zone.username), zone.username, 'checked');
+      } else {
+        checkboxes += checkboxesTemplate('username' + userBuffer.indexOf(zone.username), zone.username, '');
+      }
+    } // }
+    // console.log(zoneid, usersChecked, usersUnchecked)
+
+  }); // let checkboxes = checkboxes_checked + checkboxes_unchecked
+  // Modal Template
+
+  return "<div class='zone-modal' modalid='" + id + "'>\n            <div class=\"modal modal-zone\" id=\"edit-zone-modal-" + id + "\" aria-labelledby=\"edit-zone-label\"\n                aria-hidden=\"true\" tabindex=\"-1\" role=\"dialog\">\n                <div class=\"modal-dialog fadeInModal modal-dialog-centered\" role=\"document\">\n                    <div class=\"modal-content\">\n\n                        <div class=\"modal-header\">\n                            <h5 class=\"modal-title\" id='edit-zone-label'>Edit zone</h5>\n                            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\">\n                                <span aria-hidden=\"true\">&times;</span>\n                            </button>\n                        </div>\n\n                        <div class=\"modal-body\">\n                            <form enctype=\"multipart/form-data\" action='/api/edit-zone' method='POST' id=\"form-edit-zone-" + id + "\">  \n                            \n                                <div class=\"form-group\">\n                                    <input type=\"text\" class=\"form-control\" id=\"zoneid\" name=\"zoneid\" readonly value=\"" + zoneid + "\">\n                                </div>\n\n                                <div class=\"form-group\">\n                                    <input type=\"text\" class=\"form-control\" id=\"location1\" name=\"location1\" readonly value=\"" + location1 + "\">\n                                </div>\n\n                                <div class=\"form-group\">\n                                    <input type=\"email\" class=\"form-control\" id=\"location2\" name=\"location2\" readonly value=\"" + location2 + "\">\n                                </div>\n\n                                <div class=\"form-group\">\n                                    <input type=\"text\" class=\"form-control\" id=\"location3\" name=\"location3\" readonly value=\"" + location3 + "\">\n                                </div>\n\n                                <div class=\"form-group\">\n                                    <input type=\"radio\" " + custommap + " name=\"map\" value=\"custom\"> Custom Map " + function () {
     return path ? '(<a target="_blank" rel="noopener noreferrer" href="/images/custom-maps/' + path + '">Image</a>)' : '';
-  }() + " </input> <br>\n                        <input type=\"radio\" " + olmap + " name=\"map\" value=\"ol\"> OL Map </input>\n                    </div>\n\n                    <div class=\"form-group\">\n                        <input id=\"image-file\" " + function () {
+  }() + " </input> <br>\n                                    <input type=\"radio\" " + olmap + " name=\"map\" value=\"ol\"> OL Map </input>\n                                </div>\n\n                                <div class=\"form-group\">\n                                    <input id=\"image-file\" " + function () {
     return olmap ? 'disabled' : '';
-  }() + " name=\"mapimage\" type=\"file\">\n                    </div>\n\n                </form>\n            </div>\n\n            <div class=\"modal-footer\">\n                <button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\"\n                    aria-label=\"Close\">Close</button>\n                <button type=\"submit\" value=\"submit\" form=\"form-edit-zone-" + id + "\"\n                    class=\"btn btn-primary\">Save</button>\n            </div>\n\n        </div>\n    </div>\n</div>\n</div>";
-}; // Append zone list
+  }() + " name=\"mapimage\" type=\"file\">\n                                </div>\n\n                                <div class=\"form-group form-checkboxes\">\n                                    " + checkboxes + "\n                                </div>\n\n                            </form>\n                        </div>\n\n                        <div class=\"modal-footer\">\n                            <button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\"\n                                aria-label=\"Close\">Close</button>\n                            <button type=\"submit\" value=\"submit\" form=\"form-edit-zone-" + id + "\"\n                                class=\"btn btn-primary\">Save</button>\n                        </div>\n\n                    </div>\n                </div>\n            </div>\n            </div>";
+}; // console.log(userData_raw)
+// Append zone list
 
 
 fetchZones().then(function (result) {
+  // console.log(result)
+  // Append modal for zone access
+  // $(".zone-tab").append(zoneAccessModal())
+  // Trigger modal zone access
+  // $(function () {
+  // $(`.edit-zone-access`).on('click', function () {
+  //     $(`#edit-zoneAccess-modal`).modal({
+  //         backdrop: 'static'
+  //     });
+  // });
+  // });
+  var bufferAppendedZones = [];
   console.log(result);
   result.forEach(function (zone) {
     // Generate unique Id
     var date = new Date();
-    var modalId = date.getTime() + Math.floor(Math.random() * 100 + 1);
-    $(".zone-tab table tbody").append("<tr zoneid='" + zone.zoneId + "'>\n                    <td>" + zone.location1 + " / " + zone.location2 + " / " + zone.location3 + "</td>\n                    <td>7</td>\n                    <td>username</td>\n                    <td>" + function () {
-      return zone.map == 'custom' ? 'You need to set and image' : zone.map == 'ol' ? "Standard map" : zone.map == 'NULL' ? "Set a map" : 'Custom map';
-    }() + "</td>\n                    <td><span class='edit-zone' zoneid='" + zone.zoneId + "' modalid='" + modalId + "'><i class=\"fas fa-edit\"></i></span></td>\n                </tr>"); // Check zone.map
+    var modalId = date.getTime() + Math.floor(Math.random() * 100 + 1); // Prevet double insert of zones
+
+    var aux_checker = JSON.stringify(bufferAppendedZones);
+    var aux_item = JSON.stringify([zone.location3, zone.location2, zone.location1]);
+    var hasBeenAppended = aux_checker.indexOf(aux_item);
+
+    if (hasBeenAppended == -1) {
+      bufferAppendedZones.push([zone.location3, zone.location2, zone.location1]); // Append rows to zone-tab
+
+      $(".zone-tab .mid-container table tbody").append("<tr zoneid='" + zone.zoneId + "'>\n                    <td>" + zone.location1 + " / " + zone.location2 + " / " + zone.location3 + "</td>\n                    <td>" + function () {
+        return zone.map == 'custom' ? 'You need to set and image' : zone.map == 'ol' ? "Standard map" : zone.map == 'NULL' ? "Set a map" : 'Custom map';
+      }() + "</td>\n                    <td><span class='edit-zone' zoneid='" + zone.zoneId + "' modalid='" + modalId + "'><i class=\"fas fa-edit\"></i></span></td>\n                </tr>");
+    } // Check zone.map
+
 
     var custommap, olmap, path;
 
@@ -138,9 +222,9 @@ fetchZones().then(function (result) {
     } // Disable input file if custommap is unchecked initially
 
 
-    if (custommap == 'unchecked') $(".zone-modal #image-file").attr("disabled", true); // Append modal with unique id
+    if (custommap == 'unchecked') $(".zone-modal #image-file").attr("disabled", true); // Append edit zone modal with unique id
 
-    $(".zone-settings .inner-settings").append(zoneModal(modalId, zone.zoneId, zone.location1, zone.location2, zone.location3, custommap, olmap, path)); // Open Modal 
+    $(".zone-settings .inner-settings").append(zoneModal(modalId, zone.zoneId, zone.location1, zone.location2, zone.location3, custommap, olmap, path, result)); // Open Modal Trigger
 
     $(".edit-zone[modalid='" + modalId + "']").on('click', function () {
       $("#edit-zone-modal-" + modalId).modal({
@@ -171,7 +255,27 @@ fetchZones().then(function (result) {
       $(".zone-modal #image-file").attr("disabled", true);
     }
   });
-}); // Check inputs of form before submit
+}).then(function () {
+  (0, _utils.timeoutAsync)(1000, function () {
+    // console.log($(".team-container tr .zones-col .zone").length)
+    // for (var i = 0; i < $(".team-container tr .zones-col").length; i++) {
+    //     for (var j = 0; j < $(".team-container tr .zones-col")[i].children.length; j++) {
+    //         var username = $(".team-container tr .zones-col")[i].className.split(" ")[1].split('zones-')[1]
+    //         var zone = $(".team-container tr .zones-col")[i].children[j].innerHTML
+    //         if (zone != 'No zone assigned')
+    //             $(`.modal-` + username + ` input[id="` + zone + `"]`).prop("checked", true);
+    //         else
+    //             $(`.modal-` + username + ` input[id="` + zone + `"]`).prop("checked", false);
+    //     }
+    // }    
+    var counterZoneModal = $(".zone-modal").length;
+    $(".zone-modal").each(function (index, element) {// let e = $(this)
+      // console.log( $(element.className).attr() )
+    });
+  });
+}); // END ZONES TAB
+// ==============================
+// Check inputs of form before submit
 
 var isPassword = function isPassword() {
   var el = $("#form-create-admin input[name='password']");

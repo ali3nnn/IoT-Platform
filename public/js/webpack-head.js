@@ -1,9 +1,8 @@
 import '../css/style.scss'
+import '../../node_modules/jquery-ui-dist/jquery-ui.js' //for draggable objects
 
 var jQuery = require("jquery");
 window.jQuery = window.$ = jQuery; //Make jquery accesible from html files
-
-import 'jquery-ui'
 
 require('./bernigauge.js')
 require('./justgage/raphael-2.1.4.min.js')

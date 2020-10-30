@@ -342,6 +342,7 @@ const authLogin = async (req, res, next) => {
 
                     // check password
                     let passwordComparator = await bcrypt.compare(password, result[0].password)
+                    console.log(result[0].username, passwordComparator)
                     if (result[0].username != username || !passwordComparator) return res.render('login', {
                         alert: 'Username or password is wrong'
                     })
