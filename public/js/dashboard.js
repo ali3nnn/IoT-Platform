@@ -1,6 +1,5 @@
 import {
     timeoutAsync,
-    // sendMessage,
     // delay,
     // displayTimeoutAndVanish,
     // liveWeight,
@@ -8,6 +7,7 @@ import {
     // insertStatus,
     // getConveyorStatus,
     // showNotification
+    sendMessage,
     getLocationObj
 } from './utils.js'
 
@@ -107,6 +107,7 @@ function currentValueSvgGauge(element, currentValue = NaN, updatedAt = false, mi
     // console.log("Alerts:",min,max)
 
     var isCounter = false
+    var isCounter = element.includes('uvlamp') ? true : false
     // element.split('-')[1] == 'c' ? isCounter = true : isCounter = false
     // console.log(element, isCounter)
 
@@ -322,8 +323,7 @@ function updateValueSvgGauge(element, gauge, value, updatedAt = false) {
 
     // TODO: Cuurently the counter sensors depends on their sensorid in order
     // to be recognized (SENSORID-c). It should not depened anymore.
-    var isCounter = false
-    element.split('-')[1] == 'c' ? isCounter = true : isCounter = false
+    var isCounter = element.includes('uvlamp') ? true : false
 
     // TODO: Gauge are not used anymore
     // Update the value
@@ -396,13 +396,19 @@ function updateValueSvgGauge(element, gauge, value, updatedAt = false) {
 
             if (oldUpdatedTime != updatedTime) {
 
-                $("." + element + "-newItem .update-time-gauge").html("Updated at " + updatedTime)
-                $('#' + element + '-floatinBall').addClass("pulse-effect")
+                if (username == 'emag') {
+                    // let minCounter = $('#' + element + '-floatinBall').html()
+                    // minCounter += 1
+                    // $('#' + element + '-floatinBall').html(minCounter + " min")
+                }
 
-                timeout(4500, function () {
-                    $('#' + element + '-floatinBall').removeClass("pulse-effect")
-                    // console.log("3 seconds async timeout")
-                })
+                $("." + element + "-newItem .update-time-gauge").html("Updated at " + updatedTime)
+                // $('#' + element + '-floatinBall').addClass("pulse-effect")
+
+                // timeoutAsync(4500, function () {
+                // $('#' + element + '-floatinBall').removeClass("pulse-effect")
+                // console.log("3 seconds async timeout")
+                // })
             }
 
         } else {
@@ -956,7 +962,7 @@ function defaultSensorView(sensorId, sensorType, sensorZone) {
 
     // current value gauge component
     var currentValueView = `
-    <article class="card height-control live-card-` + sensorId + `" sensorId="` + sensorId + `" sensortype="`+sensorType+`">
+    <article class="card height-control live-card-` + sensorId + `" sensorId="` + sensorId + `" sensortype="` + sensorType + `">
 
     <div class="card-header">
         <h3 class="card-title">
@@ -1009,28 +1015,47 @@ function defaultSensorView(sensorId, sensorType, sensorZone) {
     </div>
     `
 
-    // counter noriel ui
-    var newItemLive = `
-    <article class="card height-control live-card-` + sensorId + `">
+    if (username == 'emag') {
+        // counter noriel ui
+        var newItemLive = `
+        <article class="card height-control live-card-` + sensorId + `">
 
-    <div class="card-header">
-        <h3 class="card-title">
-            <i class='update-icon'></i>
-            Live Update
-        </h3>
-    </div>
-
-    <div class="card-body">
-        <div class="` + sensorId + `-newItem">
-
-            <a href="#" class='spinner ` + sensorId + `-newItem-spinner'>
-                <span>Loading...</span>
-            </a>
-
-            <div id="` + sensorId + `-floatinBall" class="hidden-element"></div>
-
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class='update-icon'></i>
+                Live Update
+            </h3>
         </div>
-    </div>`
+
+        <div class="card-body">
+            <div class="` + sensorId + `-newItem">
+
+                <div id="` + sensorId + `-floatinBall" class="hidden-element">0 min</div>
+
+            </div>
+        </div>`
+    } else {
+        // counter noriel ui
+        var newItemLive = `
+        <article class="card height-control live-card-` + sensorId + `">
+
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class='update-icon'></i>
+                Live Update
+            </h3>
+        </div>
+
+        <div class="card-body">
+            <div class="` + sensorId + `-newItem">
+
+                <div id="` + sensorId + `-floatinBall" class="hidden-element"></div>
+
+            </div>
+        </div>`
+    }
+
+
 
     // graph view component
     var graphView = `</article>
@@ -1081,6 +1106,7 @@ function defaultSensorView(sensorId, sensorType, sensorZone) {
     </article>`
 
     // stack the components
+    console.log(sensorType)
     if (sensorType == 'counter') {
         return newItemLive + graphView
     } else {
@@ -1343,21 +1369,21 @@ function currentValueGauge(element) {
         palette: {
             pointValue: '%yValue',
             ranges: [{
-                    value: 350,
-                    color: '#FF5353'
-                },
-                {
-                    value: 400,
-                    color: '#FFD221'
-                },
-                {
-                    value: 700,
-                    color: '#77E6B4'
-                },
-                {
-                    value: [800, 850],
-                    color: '#21D683'
-                }
+                value: 350,
+                color: '#FF5353'
+            },
+            {
+                value: 400,
+                color: '#FFD221'
+            },
+            {
+                value: 700,
+                color: '#77E6B4'
+            },
+            {
+                value: [800, 850],
+                color: '#21D683'
+            }
             ]
         },
         yAxis: {
@@ -1861,6 +1887,21 @@ let mainLoader = (async () => {
 
     } else {
 
+        // EMAG HARDCODED
+        if (username == 'emag') {
+            $(".small-box-container").append(`<div class="small-box bg-info box-shadow-5 send-command">
+                                <div class="inner">
+                                    <h3>Send</h3>
+                                </div>
+                                <div class="uvlamp-buttons">
+                                    <div class="uvlamp-start noselect">Start</div>
+                                    <div class="uvlamp-stop noselect">Stop</div>
+                                </div>
+                            </div>`)
+
+        }
+        // END EMAG HARDCODED
+
         const api_data = json[0]
         const sensorCounter = api_data.sensorIdListLength
         sensorList = api_data.sensorIdList
@@ -1885,6 +1926,22 @@ let mainLoader = (async () => {
 
                 // Append the default sensor view (current value + graph) for each sensor
                 $(".card-container").append(defaultSensorView(sensorData[0].sensorQueried, sensorData[0].sensorType, sensorData[0].sensorZone));
+
+                // EMAG HARCODED
+                if (username == 'emag') {
+                    // Go through all values and add them
+                    let workingMinutes = 0
+                    sensorData[0].sensorAverage.forEach((item, index) => {
+                        if (item.sensorValue)
+                            workingMinutes += item.sensorValue
+                    })
+
+                    // Add minutes to live update box
+                    console.log(sensorData[0].sensorQueried, workingMinutes)
+                    $("#"+sensorData[0].sensorQueried+"-floatinBall").html(`<span>`+workingMinutes+`</span> min today`)
+                }
+                // END AMG HARDCODED
+
 
                 // Turn On alert sliders
                 // sliderAlerts(".live-card-" + sensorData[0].sensorQueried + " #slider-optim")
@@ -2384,9 +2441,30 @@ socket.on(socketChannel, async (data) => {
             var updatedAt = liveDate
             updateValueSvgGauge(gauge[0], gauge[1], parseFloat(data.message).toFixed(1), updatedAt)
             // Append topic
-            var sensorId = gauge[1][0].parentElement.id.split("-")[0]
             $("article[sensorId='" + sensorId + "']").attr("topic", data.topic)
+
+            // EMAG HARDODED
+            console.log(gauge[0])
+            // END EMAG AHRDCODED
         }
     })
 
+})
+
+// EMAG HARDCODED
+$(".small-box-container").on('click', (e) => {
+    let command = $(e.target).html()
+    if (command == 'Start') {
+        // SEND 1 on emag/switch
+        sendMessage("socketChannel", {
+            topic: username + "/switch",
+            message: "start"
+        })
+    } else if (command == 'Stop') {
+        // SEND 0 on emag/switch
+        sendMessage("socketChannel", {
+            topic: username + "/switch",
+            message: "stop"
+        })
+    }
 })

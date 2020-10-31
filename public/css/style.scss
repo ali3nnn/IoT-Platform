@@ -5742,11 +5742,11 @@ div[class*='-currentValue'] {
 div[id*="-floatinBall"] {
   /* background: var(--body-bg); */
   /* background: var(--nav-bg); */
-  background: var(--pulse-blue);
-  padding: 50px;
+  // background: var(--pulse-blue);
+  // padding: 50px;
   float: left;
   position: relative;
-  border-radius: 100%;
+  // border-radius: 100%;
   left: 50%;
   top: calc(50% - 20px);
   position: absolute;
@@ -5756,6 +5756,8 @@ div[id*="-floatinBall"] {
   /* box-shadow: var(--neuro); */
   -webkit-box-shadow: 0 0 0 0 rgba(90, 153, 212, 0.5);
   box-shadow: 0 0 0 0 rgba(90, 153, 212, 0.5);
+  font-size: 36px;
+  text-align: center;
 }
 
 .pulse-effect {
@@ -6282,3 +6284,40 @@ border-bottom: 1px dotted black; */
 }
 
 /* End Scanner Page */
+
+
+// EMAG HARDCODED THINGS
+.uvlamp-buttons div {
+  display: inline-block;
+  border: 1px solid black;
+  padding: 3px 40px;
+  border-radius: 13px;
+  /* background: rebeccapurple; */
+  /* margin: 6px 10px; */
+}
+
+.uvlamp-buttons {
+  /* background: pink; */
+  position: relative;
+  float: left;
+  /* width: 156px; */
+  /* margin: 0 auto; */
+  /* padding: 0px 25px 5px; */
+  top: -6px;
+  left: 13px;
+}
+
+.uvlamp-buttons div:hover {
+  cursor: pointer;
+  background: #80808057;
+}
+
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+}
