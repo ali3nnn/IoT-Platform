@@ -6312,7 +6312,20 @@ border-bottom: 1px dotted black; */
 
 .uvlamp-buttons div:hover {
   cursor: pointer;
-  background: #80808057;
+}
+
+.uvlamp-start {
+   background: var(--success);
+   &:hover {
+    background:#28a745ab
+   }
+}
+
+.uvlamp-stop {
+  background: var(--danger);
+  &:hover {
+    background: #dc3545ab;
+   }
 }
 
 .noselect {

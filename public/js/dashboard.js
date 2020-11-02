@@ -1891,7 +1891,7 @@ let mainLoader = (async () => {
         if (username == 'emag') {
             $(".small-box-container").append(`<div class="small-box bg-info box-shadow-5 send-command">
                                 <div class="inner">
-                                    <h3>Send</h3>
+                                    <h3>Command</h3>
                                 </div>
                                 <div class="uvlamp-buttons">
                                     <div class="uvlamp-start noselect">Start</div>
