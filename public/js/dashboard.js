@@ -1931,14 +1931,26 @@ let mainLoader = (async () => {
                 if (username == 'emag') {
                     // Go through all values and add them
                     let workingMinutes = 0
-                    sensorData[0].sensorAverage.forEach((item, index) => {
-                        if (item.sensorValue)
-                            workingMinutes += item.sensorValue
-                    })
+                    // console.log(sensorData[0])
+                    if(sensorData[0].sensorReadings) {
+                        sensorData[0].sensorAverage.forEach((item, index) => {
+                            if (item.sensorValue)
+                                workingMinutes += item.sensorValue
+                        })
+                    } else {
+                        workingMinutes = 0
+                    }
+                    
 
                     // Add minutes to live update box
                     console.log(sensorData[0].sensorQueried, workingMinutes)
-                    $("#"+sensorData[0].sensorQueried+"-floatinBall").html(`<span>`+workingMinutes+`</span> min today`)
+                    if(workingMinutes >= 60) {
+                        let hours = workingMinutes/60
+                        hours = hours.toFixed(2)
+                        $("#"+sensorData[0].sensorQueried+"-floatinBall").html(`<span>`+hours+`</span><br> hours today`)
+                    } else {
+                        $("#"+sensorData[0].sensorQueried+"-floatinBall").html(`<span>`+workingMinutes+`</span><br> min today`)
+                    }
                 }
                 // END AMG HARDCODED
 
