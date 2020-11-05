@@ -19,14 +19,13 @@ var searchObj = (0, _utils.searchToObj)(window.location.search);
 var splash = "<div class='splash-inner'>\n\n<div class='ol-option'>\n  <h4>World map</h4>\n  <button type=\"button\" class='map-picker map-picker-ol'>I want this map</button>\n  <div class='ol-map'>\n    <img src='../images/ol.jpeg' />\n    <background></background>\n  </div>\n</div>\n<div class='path-option'>\n    <h4>Custom Map</h4>\n    <button type=\"button\" class='map-picker map-picker-custom'>I want my custom map</button>\n    <div class='path-map'>\n      <img src='../images/custom.jpeg' />\n      <background></background>\n    </div>\n</div>\n\n</div>"; // Check map option (null, ol, custom)
 
 var mapOption;
-userData_raw.forEach(function (sensor) {
+if (!userData_raw.error) userData_raw.forEach(function (sensor) {
   if (sensor.zoneId == searchObj.id) {
     mapOption = sensor.map;
   }
-}); // console.log(mapOption)
-// Do magic stuff
+}); // Do magic stuff
 
-if (!mapOption || mapOption == 'NULL') {
+if ((!mapOption || mapOption == 'NULL') && searchObj.id) {
   // show splash
   $("#map").append(splash); // button functionality - ol
 
@@ -78,10 +77,12 @@ if (!mapOption || mapOption == 'NULL') {
   var params = new URLSearchParams(location.search);
   var id = params.get('id');
   $("#map").append("<div><form enctype=\"multipart/form-data\" action=\"/api/upload-image\" method=\"post\">\n                      <input id=\"image-file\" name=\"map\" type=\"file\"><br>\n                      <input id=\"zone-id\" class='hidden' name=\"id\" type=\"number\" readonly value=\"" + id + "\">\n                      <input type=\"submit\" id=\"send-image\">\n                  </form></div>");
-} else if (mapOption != 'NULL') {
+} else if (mapOption != 'NULL' && searchObj.id) {
   // console.log(userData_raw)
   var src = mapOption.split('./public')[1];
   $("#map").append("<div class='custom-map'> <img src='" + src + "' /> </div>");
+} else {
+  $("div#map").append("<span>choose an option</span>");
 } // ============================
 // END Display Map
 // Display unassigned sensors
@@ -126,9 +127,10 @@ if ($("#map .custom-map")) {
   var sensorsInThisZone = [];
   var sensorsWithUndefinedLocation = []; // Filter JSON with sensors by zoneId
 
-  var userDataFinal = userData_raw.filter(function (item, index) {
+  var userDataFinal;
+  if (!userData_raw.error) userDataFinal = userData_raw.filter(function (item, index) {
     if (item.zoneId == zoneId) return item;
-  });
+  });else userDataFinal = [];
   userDataFinal.forEach(function _callee(sensor, index) {
     var position;
     return regeneratorRuntime.async(function _callee$(_context) {

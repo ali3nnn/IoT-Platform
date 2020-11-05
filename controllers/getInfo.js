@@ -133,20 +133,39 @@ const getUserData = async (req, res, next) => {
     // select company from users where username='"+sess.username+"'
     if (sess.role == 'superadmin') {
         // const query = "select sensors.*, locations.*, users.company from sensors join locations on sensors.zoneId=locations.zoneId join userAccess on sensors.sensorId=userAccess.sensorId join users on userAccess.username = users.username where users.company=(select company from users where username='" + sess.username + "');"
-        const query = "select DISTINCTROW sensors.*, locations.*, users.company from sensors join locations on sensors.zoneId=locations.zoneId join userAccess on sensors.sensorId=userAccess.sensorId join users on userAccess.username = users.username where users.company=(select company from users where username='" + sess.username + "');"
+        // const query = "select DISTINCTROW sensors.*, locations.*, users.company from sensors join locations on sensors.zoneId=locations.zoneId join userAccess on sensors.sensorId=userAccess.sensorId join users on userAccess.username = users.username where users.company=(select company from users where username='" + sess.username + "');"
+        const query = "select sensors.*, locations.*, GROUP_CONCAT(userAccess.username) as userList, GROUP_CONCAT(users.email) as emailListfrom from sensors join userAccess on userAccess.sensorId = sensors.sensorId join users on userAccess.username = users.username and users.company = (select company from users where username='" + sess.username + "') join locations where sensors.zoneId=locations.zoneId group by sensors.sensorId;"
         mysqlReader(query).then(async (rows) => {
             if (rows.length) {
                 userData = rows
                 userData["error"] = false
+                sess.userData = userData
             } else {
-                userData["error"] = "No data found"
+                mysqlReader(`select sensors.*, locations.*
+                from sensors 
+                join locations where sensors.zoneId=locations.zoneId and locations.createdBy = (select company from users where username='`+sess.username+`')
+                group by sensors.sensorId;`).then((result)=>{
+                    console.log(result)
+                    if(result) {
+                        userData = result
+                        userData["error"] = false
+                    } else {
+                        userData["error"] = "No data found"
+                    }
+                    sess.userData = userData
+                })
             }
+        }).then(()=>{            
 
             // Set session varriable
-            sess.userData = userData // set list of sensors that are assignet to this user
-            sess.company = userData[0].company // set company
+            // sess.userData = userData // set list of sensors that are assigned to company of superadmin
 
-            next()
+            // Set sess.company variable
+            mysqlReader("SELECT company FROM users where username='" + sess.username + "'").then((result) => {
+                sess.company = result[0].company
+            }).then(() => {
+                next()
+            })
         })
     } else {
         const query = "select userAccess.username, sensors.*, locations.* from userAccess inner join sensors on sensors.sensorId=userAccess.sensorId and userAccess.username='" + sess.username + "' inner join locations on locations.zoneId=sensors.zoneId;"
@@ -157,12 +176,15 @@ const getUserData = async (req, res, next) => {
             } else {
                 userData["error"] = "No data found"
             }
-
-            // Set session variables
-            sess.userData = userData
-            // [ ] TODO: get company of user sess.company
-
-            next()
+            // set list of sensors that are assigned to this user
+            sess.userData = userData 
+        }).then(() => {
+            // Set sess.company variable
+            mysqlReader("SELECT company FROM users where username='" + sess.username + "'").then((result) => {
+                sess.company = result[0].company
+            }).then(() => {
+                next()
+            })
         })
     }
 }
@@ -368,7 +390,7 @@ const getSensorLocation = async (req, res, next) => {
 
 const isScaleAvailable = async (req, res, next) => {
     next()
-    // sess = req.session;
+    // sess = req.sessio n;
     // var time = new Date()
     // var data = {}
     // if (sess.username) {

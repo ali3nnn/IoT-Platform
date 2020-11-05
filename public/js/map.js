@@ -206,16 +206,16 @@ let splash = `<div class='splash-inner'>
 
 // Check map option (null, ol, custom)
 let mapOption
-userData_raw.forEach(sensor => {
-  if (sensor.zoneId == searchObj.id) {
-    mapOption = sensor.map
-  }
-})
+if(!userData_raw.error)
+  userData_raw.forEach(sensor => {
+    if (sensor.zoneId == searchObj.id) {
+      mapOption = sensor.map
+    }
+  })
 
-// console.log(mapOption)
 
 // Do magic stuff
-if (!mapOption || mapOption == 'NULL') {
+if ((!mapOption || mapOption == 'NULL') && searchObj.id) {
 
   // show splash
   $("#map").append(splash)
@@ -273,10 +273,12 @@ if (!mapOption || mapOption == 'NULL') {
                       <input id="zone-id" class='hidden' name="id" type="number" readonly value="`+ id + `">
                       <input type="submit" id="send-image">
                   </form></div>`)
-} else if (mapOption != 'NULL') {
+} else if (mapOption != 'NULL' && searchObj.id) {
   // console.log(userData_raw)
   let src = mapOption.split('./public')[1]
   $("#map").append(`<div class='custom-map'> <img src='` + src + `' /> </div>`)
+} else {
+  $("div#map").append(`<span>choose an option</span>`)
 }
 
 // ============================
@@ -291,7 +293,7 @@ if ($("#map .custom-map")) {
   let undefinedSensorsTemplate = (sensorList) => {
     let sensorToDisplay = ''
     for (let sensor of sensorList) {
-      sensorToDisplay += `<span class='sensor-item' type="` + sensor.sensorType + `" sensor='` + sensor.sensorId + `'><i class="fad fa-signal-stream"></i><span class='sensorName'>`+sensor.sensorName+`</span><span class='sensorValue'>@val</span></span>`
+      sensorToDisplay += `<span class='sensor-item' type="` + sensor.sensorType + `" sensor='` + sensor.sensorId + `'><i class="fad fa-signal-stream"></i><span class='sensorName'>` + sensor.sensorName + `</span><span class='sensorValue'>@val</span></span>`
     }
     return `<div class='undefinedSensorsWrapper'><div class='undefinedSensorsInner hidden'>` + sensorToDisplay + `</div><div class='undefinedButton'><i class="fas fa-map-marker-question"></i></div></div>`
   }
@@ -304,10 +306,14 @@ if ($("#map .custom-map")) {
   let sensorsWithUndefinedLocation = []
 
   // Filter JSON with sensors by zoneId
-  let userDataFinal = userData_raw.filter((item, index) => {
-    if (item.zoneId == zoneId)
-      return item
-  })
+  let userDataFinal
+  if(!userData_raw.error)
+    userDataFinal = userData_raw.filter((item, index) => {
+      if (item.zoneId == zoneId)
+        return item
+    })
+  else
+    userDataFinal = []
 
   userDataFinal.forEach(async (sensor, index) => {
 
@@ -338,7 +344,7 @@ if ($("#map .custom-map")) {
           $(".custom-map").append(`
                   <div sensor="` + sensorId + `" class="sensor-item draggable ui-widget-content" data-toggle="tooltip" data-placement="top"  title="` + sensorId + `">
                     <i class="fad fa-signal-stream"></i>
-                    <span class='sensorName'>`+sensorName+`</span>
+                    <span class='sensorName'>`+ sensorName + `</span>
                     <span class='sensorValue'>@val</span>
                   </div>`)
 

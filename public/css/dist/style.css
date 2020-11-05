@@ -6287,3 +6287,15 @@ div#map .splash-inner > div:hover div {
     grid-template-areas: "ol-option" "path-option";
   }
 }
+#map > span {
+  text-align: center;
+  position: relative;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: block;
+  font-size: 100px;
+  color: #d8d8d8;
+  letter-spacing: 0.1em;
+  text-shadow: -1px -1px 1px #696969, 2px 2px 1px #e9e9e9;
+}

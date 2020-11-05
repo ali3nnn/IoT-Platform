@@ -19,7 +19,7 @@ $(window).on('load', function () {
 // ============================
 
 var getUserData = function getUserData() {
-  var response;
+  var response, json;
   return regeneratorRuntime.async(function getUserData$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
@@ -29,9 +29,10 @@ var getUserData = function getUserData() {
 
         case 2:
           response = _context.sent;
-          return _context.abrupt("return", response.json());
+          json = response.json();
+          return _context.abrupt("return", json);
 
-        case 4:
+        case 5:
         case "end":
           return _context.stop();
       }
@@ -46,12 +47,8 @@ var getUserData = function getUserData() {
     while (1) {
       switch (_context2.prev = _context2.next) {
         case 0:
-          _context2.next = 2;
-          return regeneratorRuntime.awrap(getUserData());
-
-        case 2:
-          userData = _context2.sent;
-          // console.log(userData)
+          // let userData = await getUserData()
+          userData = userData_raw;
           zoneEl = $("#zones-list");
           sensorAlertEl = $("#sensor-alert");
           unsetSensors = 0;
@@ -89,7 +86,7 @@ var getUserData = function getUserData() {
             zoneEl.append("<div class=\"zone-item\">\n                        <a href=\"#\" class='no-zone'><i class=\"fas fa-exclamation-circle\"></i><span>No sensors available</span></a>\n                    </div>");
           }
 
-        case 8:
+        case 6:
         case "end":
           return _context2.stop();
       }
@@ -147,8 +144,10 @@ for (var i = 0; i < mapItem.length; i++) {
 // $("form.location-container").submit(function(e) {
 //     e.preventDefault();
 // });
+// console.log(userData_raw)
 
 
+if (!userData_raw.error) $("form.location-container").append("<input type=\"charInput\" class='hidden' name=\"company\" placeholder=\"Company\" value=\"" + userData_raw[0].createdBy + "\"/>");
 $("form.location-container #zone").on('input', function (e) {
   var optionSelected = $("option:selected", this)[0].text;
 

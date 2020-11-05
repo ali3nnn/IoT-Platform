@@ -22,14 +22,17 @@ $(window).on('load', function () {
 
 // Aside LOCATIONS
 // ============================
+
 let getUserData = async () => {
     let response = await fetch("/api/v3/get-user-data")
-    return response.json()
+    let json = response.json()
+    return json
 }
 
 (async () => {
-    let userData = await getUserData()
-    // console.log(userData)
+    // let userData = await getUserData()
+    let userData = userData_raw
+
     const zoneEl = $("#zones-list")
     const sensorAlertEl = $("#sensor-alert")
     let unsetSensors = 0
@@ -152,6 +155,10 @@ for (let i = 0; i < mapItem.length; i++) {
 //     e.preventDefault();
 // });
 
+// console.log(userData_raw)
+if(!userData_raw.error)
+    $("form.location-container").append(`<input type="charInput" class='hidden' name="company" placeholder="Company" value="`+userData_raw[0].createdBy+`"/>`)
+
 $("form.location-container #zone").on('input', function (e) {
     const optionSelected = $("option:selected", this)[0].text
     if (optionSelected != 'Nothing selected') {
@@ -176,6 +183,7 @@ $("form.location-container #zone").on('input', function (e) {
         $("form.location-container input[name=location3]").attr("readonly", false)
     }
 });
+
 // ============================
 // END Init sensor form
 

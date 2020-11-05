@@ -24,6 +24,7 @@ const formidable = require('formidable');
 const removeDiacritics = require('diacritics').remove;
 // global.fetch = require("node-fetch");
 var mime = require('mime');
+const { exec } = require("child_process");
 
 const Handlebars = require('handlebars');
 const HandlebarsIntl = require('handlebars-intl');
@@ -652,6 +653,7 @@ app.get('/api/v3/get-user-data', cookieChecker, authDashboard, getUserData, (req
     sess = req.session;
     var userData = {}
     userData = sess.userData
+    // console.log(userData)
     if (userData['error']) {
         res.status(403).send(userData);
     } else {
@@ -669,13 +671,17 @@ app.get('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, asy
     // [*] TODO 2: set a new location or pick an old one from other sensors that users has access to
     // [*] TODO 3: insert into sensors and userAccess
 
+    // console.log(sess)
+
     if (sess.username && sess.role == 'admin') {
         const userData = sess.userData
         // console.log(userData)
         const sensorExist = await mysqlReader("select * from sensors where sensorId='" + getQuery.sensorid + "';")
         if (!sensorExist.length) {
             // Get locations
-            mysqlReader("select distinct locations.* from locations inner join sensors on sensors.zoneId = locations.zoneId inner join userAccess on userAccess.sensorId = sensors.sensorId and userAccess.username = '" + sess.username + "';")
+            // const query = "select distinct locations.* from locations inner join sensors on sensors.zoneId = locations.zoneId inner join userAccess on userAccess.sensorId = sensors.sensorId and userAccess.username = '" + sess.username + "'";
+            const query = "select locations.* from locations where createdBy = (select company from users where username='" + sess.username + "');"
+            mysqlReader(query)
                 .then(locations => {
                     // console.log("locations",locations)
                     res.render('initsensor-qr', {
@@ -700,11 +706,12 @@ app.get('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, asy
 })
 
 // [ ] TODO: Show alert messages in different cases
+// [*] TODO: Add company to mysql
 //  api to initialize sensor
-app.post('/api/v3/init-sensor-qr', (req, res) => {
+app.post('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, (req, res) => {
     sess = req.session
     const postQuery = req.body
-    console.log(postQuery)
+    // console.log(postQuery)
     if (postQuery.location1 && postQuery.location2 && postQuery.location2 && postQuery.location3 && postQuery.sensorName) {
         // Location from dropdown
         if (postQuery.zone == "Nothing selected") {
@@ -715,19 +722,24 @@ app.post('/api/v3/init-sensor-qr', (req, res) => {
             postQuery.location3 = postQuery.location3.normalize('NFKD').replace(/[\u0300-\u036f]/g, "");
             postQuery.sensorName = postQuery.sensorName.normalize('NFKD').replace(/[\u0300-\u036f]/g, "");
 
-            if (postQuery.zoneId) {
+            if (postQuery.zoneId) { //idk when goes here
                 // Insert into sensors
                 mysqlReader("INSERT INTO sensors (sensorId, sensorType, sensorName, zoneId) values ('" + postQuery.sensorid + "','" + postQuery.type + "','" + postQuery.sensorName + "'," + int(postQuery.zoneId) + ")")
                     .then(() => {
                         // Insert into userAccess
                         mysqlReader("INSERT INTO userAccess (sensorId, username) values ('" + postQuery.sensorid + "','" + sess.username + "')")
                             .then(() => {
-                                res.redirect("/map")
+                                // Insert into VerneMQ Table
+                                mysqlReader(`INSERT INTO vmq_auth_acl (mountpoint, client_id, username, password, publish_acl, subscribe_acl) VALUES ('', '` + postQuery.sensorid + `', '` + postQuery.sensorid + `', md5('dasstecb2b'), '[{"pattern":"#"}]', '[{"pattern":"#"}]');`)
+                                    .then(() => {
+                                        res.redirect("/map")
+                                    })
                             })
                     })
             } else {
                 // Insert into locations
-                mysqlReader("INSERT INTO locations (location1, location2, location3) values ('" + postQuery.location1 + "','" + postQuery.location2 + "','" + postQuery.location3 + "')")
+                // console.log("INSERT INTO locations (location1, location2, location3, createdBy) values ('" + postQuery.location1 + "','" + postQuery.location2 + "','" + postQuery.location3 + "', '"+sess.company+"')")
+                mysqlReader("INSERT INTO locations (location1, location2, location3, createdBy) values ('" + postQuery.location1 + "','" + postQuery.location2 + "','" + postQuery.location3 + "', '" + sess.company + "')")
                     .then(() => {
                         // Get zoneId
                         mysqlReader("select zoneId from locations order by zoneId desc limit 1;").then(result => {
@@ -737,7 +749,11 @@ app.post('/api/v3/init-sensor-qr', (req, res) => {
                                     // Insert into userAccess
                                     mysqlReader("INSERT INTO userAccess (sensorId, username) values ('" + postQuery.sensorid + "','" + sess.username + "')")
                                         .then(() => {
-                                            res.redirect("/map")
+                                            // Insert into VerneMQ Table
+                                            mysqlReader(`INSERT INTO vmq_auth_acl (mountpoint, client_id, username, password, publish_acl, subscribe_acl) VALUES ('', '` + postQuery.sensorid + `', '` + postQuery.sensorid + `', md5('dasstecb2b'), '[{"pattern":"#"}]', '[{"pattern":"#"}]');`)
+                                                .then(() => {
+                                                    res.redirect("/map")
+                                                })
                                         })
                                 })
                         })
@@ -758,7 +774,11 @@ app.post('/api/v3/init-sensor-qr', (req, res) => {
                             // Insert into userAccess
                             mysqlReader("INSERT INTO userAccess (sensorId, username) values ('" + postQuery.sensorid + "','" + sess.username + "')")
                                 .then(() => {
-                                    res.redirect("/map")
+                                    // Insert into VerneMQ Table
+                                    mysqlReader(`INSERT INTO vmq_auth_acl (mountpoint, client_id, username, password, publish_acl, subscribe_acl) VALUES ('', '` + postQuery.sensorid + `', '` + postQuery.sensorid + `', md5('dasstecb2b'), '[{"pattern":"#"}]', '[{"pattern":"#"}]');`)
+                                        .then(() => {
+                                            res.redirect("/map")
+                                        })
                                 })
                         })
                 })
@@ -780,11 +800,11 @@ app.get('/api/v3/get-sensor-data', (req, res) => {
 
     // Process time
     let todayRaw = new Date();
-    let todayQuery = todayRaw.getFullYear() + '-' + (todayRaw.getMonth() + 1) + '-' + todayRaw.getDate() + ' ' + '00:00:00'
+    let todayQuery = todayRaw.getFullYear() + '-' + (todayRaw.getMonth() + 1) + '-' + (todayRaw.getDate() < 10 ? '0' + todayRaw.getDate() : todayRaw.getDate()) + ' ' + '00:00:00'
 
     let influxQuery = "SELECT mean(value) as value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQuery + "' and time<now() group by time(5m) order by time desc;"
 
-    console.log(influxQuery)
+    // console.log(influxQuery)
 
     influxReader(influxQuery).then(result => {
         res.send(result)
@@ -2908,19 +2928,33 @@ app.post('/api/create-admin', (req, res) => {
 // Get distinct locations for sensors that belong to company of superadmin
 app.get('/api/get-zones', function (req, res) {
     sess = req.session;
+    // console.log(sess.userData)
     if (sess.role == "superadmin") {
-        // select distinct locations.*, users.username, userAccess.sensorId from users  inner join userAccess on userAccess.username = users.username inner join sensors on sensors.sensorId = userAccess.sensorId inner join locations on sensors.zoneId = locations.zoneId where users.company = '`+sess.company+`'; 
-        // select userAccess.username, locations.* from userAccess  inner join sensors on sensors.sensorId = userAccess.sensorId  inner join locations on locations.zoneId = sensors.zoneId inner join users on users.company = '`+sess.company+`';
-        mysqlReader(`select distinct locations.*, users.username, userAccess.sensorId from users  inner join userAccess on userAccess.username = users.username inner join sensors on sensors.sensorId = userAccess.sensorId inner join locations on sensors.zoneId = locations.zoneId where users.company = '` + sess.company + `' order by locations.zoneId; `)
-            .then(result => {
-                res.status(200).send(result)
-            })
+
+        // It returns a list of locations and users associated with that location
+        let getZonesAndUserList = mysqlReader(`select locations.*, GROUP_CONCAT(users.username) as usersList
+            from sensors
+            join locations on locations.zoneId = sensors.zoneId
+            join userAccess on sensors.sensorId = userAccess.sensorId
+            join users on users.company = '`+ sess.company + `' and users.username = userAccess.username
+            group by sensors.zoneId;`)
+
+        // It returns a list of locations created by a user
+        let getZones = mysqlReader(`select * from locations where createdBy='` + sess.company + `'`)
+
+
+        Promise.all([getZonesAndUserList, getZones]).then(result => {
+            // console.log(result[0].length, result[0])
+            res.status(200).send(result) 
+        })
+
     } else {
         res.status(401).send("You are not logged in!")
     }
 
 })
 
+// Route active
 app.post('/api/edit-zone', async (req, res) => {
 
     sess = req.session
@@ -2931,12 +2965,14 @@ app.post('/api/edit-zone', async (req, res) => {
 
         // console.log(fields)
 
-        // Get username list
+        // Get username list raw
         const { zoneid, location1, location2, location3, map, ...userList } = fields;
-        console.log(userList)
+        // console.log(fields.zoneid, userList)
 
         // Get all sensors in a zoneId
         let getSensorList = await mysqlReader("select group_concat(sensors.sensorId) as sensorId from sensors where sensors.zoneId = " + fields.zoneid)
+        // [ ] TODO: each zone MUST be associated with a sensorId, otherwise there will be problem with assigantion of user @ that zone
+
         let finalSensorList = ''
         getSensorList[0].sensorId.split(',').forEach((item, index) => {
             finalSensorList += `'` + item + `'`
@@ -2944,30 +2980,30 @@ app.post('/api/edit-zone', async (req, res) => {
                 finalSensorList += ','
         })
 
-        // Drop access for sensors in this zone
-        console.log("DROP ACCESS FOR: ", finalSensorList)
-        console.log("delete from userAccess where sensorId IN (" + finalSensorList + ")")
+        // Drop all access for sensors in this zone
+        // console.log("DROP ACCESS FOR: ", finalSensorList)
         let dropUserAccess = await mysqlReader("delete from userAccess where sensorId IN (" + finalSensorList + ")")
 
         // Grant superamdin access
-        let valuesToInsertForSuperAdmin = () => {
-            let returnRaw = ``
-            getSensorList[0].sensorId.split(',').forEach((item, index) => {
-                returnRaw += `('` + item + `','alex.barbu')`
-                if (index != getSensorList[0].sensorId.split(',').length - 1)
-                    returnRaw += ','
-            })
-            return returnRaw
-        }
-        console.log("GRANT SUPER ADMIN: ", valuesToInsertForSuperAdmin())
-        let grantSuperAdminAccess = await mysqlReader("insert into userAccess (sensorId, username) VALUES " + valuesToInsertForSuperAdmin())
+        // let valuesToInsertForSuperAdmin = () => {
+        //     let returnRaw = ``
+        //     getSensorList[0].sensorId.split(',').forEach((item, index) => {
+        //         returnRaw += `('` + item + `','alex.barbu')`
+        //         if (index != getSensorList[0].sensorId.split(',').length - 1)
+        //             returnRaw += ','
+        //     })
+        //     return returnRaw
+        // }
+        // console.log("GRANT SUPER ADMIN: ", valuesToInsertForSuperAdmin())
+        // let grantSuperAdminAccess = await mysqlReader("insert into userAccess (sensorId, username) VALUES " + valuesToInsertForSuperAdmin())
 
-        // Grant admin access
+        // Get user list
         let userListFinal = []
         for (const key in userList) {
             userListFinal.push(userList[key])
         }
 
+        // Prepare values for sql query: ('DAS008TCORA','alex.barbu3'),('DAS008TCORA','alex.barbu2')
         let valuesToInsert = () => {
             let returnRaw = ``
             userListFinal.forEach((user, index) => {
@@ -2980,10 +3016,20 @@ app.post('/api/edit-zone', async (req, res) => {
             return returnRaw
         }
 
-        console.log("GRANT ADMIN: ", valuesToInsert())
-        let grantUserAccess = await mysqlReader("insert into userAccess (sensorId, username) VALUES " + valuesToInsert())
+        // if there are user to give access for => grant access for them
+        // if leave sensor access dropped from above
+        let grantUserAccess
+        if (valuesToInsert()) {
+            // console.log("GRANT ADMIN FOR:", valuesToInsert())
+            grantUserAccess = await mysqlReader("insert into userAccess (sensorId, username) VALUES " + valuesToInsert())
+        } else {
+            grantUserAccess = true
+        }
 
-        Promise.all([dropUserAccess, grantSuperAdminAccess, grantUserAccess]).then(result => {
+
+        Promise.all([dropUserAccess, grantUserAccess]).then(result => {
+            // console.log("PROMISE ALL", fields)
+
             if (fields.map == 'custom') {
 
                 if (files.mapimage.size) {
@@ -3008,11 +3054,17 @@ app.post('/api/edit-zone', async (req, res) => {
                         }
                     });
                 } else {
-                    mysqlReader("UPDATE locations SET map='custom' where zoneId=" + fields.zoneid + "").then((result) => {
-                        res.redirect("/settings")
-                    }).catch((err) => {
-                        res.status(200).send({ error: err });
-                    })
+                    let hasImageSetted = false
+                    if (hasImageSetted) {
+                        console.log("Map has the same image")
+                    } else {
+                        mysqlReader("UPDATE locations SET map='custom' where zoneId=" + fields.zoneid + "").then((result) => {
+                            res.redirect("/settings")
+                        }).catch((err) => {
+                            res.status(200).send({ error: err });
+                        })
+                    }
+
                 }
 
 
@@ -3020,14 +3072,16 @@ app.post('/api/edit-zone', async (req, res) => {
                 mysqlReader("UPDATE locations SET map='ol' where zoneId=" + fields.zoneid + "").then((result) => {
                     res.redirect("/settings")
                 }).catch((err) => {
-                    res.status(200).send({ error: err });
+                    res.status(400).send({ error: err });
                 })
             } else {
-                mysqlReader("UPDATE locations SET map='NULL' where zoneId=" + fields.zoneid + "").then((result) => {
-                    res.redirect("/settings")
-                }).catch((err) => {
-                    res.status(200).send({ error: err });
-                })
+                console.log("No map selected")
+                res.redirect("/settings")
+                // mysqlReader("UPDATE locations SET map='NULL' where zoneId=" + fields.zoneid + "").then((result) => {
+                //     res.redirect("/settings")
+                // }).catch((err) => {
+                //     res.status(200).send({ error: err });
+                // })
             }
         })
 
@@ -3766,4 +3820,47 @@ const PORT = process.env.PORT;
 
 var server = app.listen(PORT, console.log(`NodeJS started on port ${PORT}`)).on('error', function (err) {
     console.log(err)
+    // let restart = () => {
+    //     exec('netstat -ltnup | grep 5000', (error, stdout, stderr) => {
+    //         if (error) {
+    //             console.log(`error: ${error.message}`)
+    //             return
+    //         }
+    //         if (stderr) {
+    //             console.log(`stderr: ${stderr}`)
+    //             return
+    //         }
+    //         let pid = parseInt(String(stdout).split('LISTEN')[1].split('/node')[0])
+    //         console.log(`kill ${pid}`)
+
+    //         exec(`kill ${pid}`, (error2, stdout2, stderr2) => {
+    //             if (error2) {
+    //                 console.log(`error2: ${error2.message}`)
+    //                 return
+    //             }
+    //             if (stderr2) {
+    //                 console.log(`stderr2: ${stderr2}`)
+    //                 return
+    //             }
+    //             console.log(`stdout2: ${stdout2}`)
+    //             // exec(`npm run dev`, (error3, stdout3, stderr3) => {
+    //             //     if (error3) {
+    //             //         console.log(`error3: ${error3.message}`)
+    //             //         return
+    //             //     }
+    //             //     if (stderr3) {
+    //             //         console.log(`stderr3: ${stderr3}`)
+    //             //         return
+    //             //     }
+    //             //     console.log(`stdout3: ${stdout3}`)
+
+    //             // })
+    //         })
+
+    //     })
+    // }
+
+    // if (err) {
+    //     restart()
+    // }
 });

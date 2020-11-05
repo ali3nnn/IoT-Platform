@@ -5,12 +5,17 @@ import {
     passwordCheckerPromise,
     allTrue,
     getDistinctValuesFromObject,
-    generateUniqueId
+    generateUniqueId,
+    getValuesFromObject
 } from './utils.js'
 
 // $(function () {
 // document ready
 // });
+
+// [ ] TODO: get zones of comapny independetly
+// [ ] TODO: get users of company
+// [ ] TODO: get user that has access to zone
 
 // Fetch
 let fetchAdmins = async () => {
@@ -18,6 +23,8 @@ let fetchAdmins = async () => {
     return (await response).json()
 }
 
+// [ ] TODO: should get zones from sess.userData
+// console.log("userData_raw",userData_raw)
 let fetchZones = async () => {
     let response = fetch('/api/get-zones')
     return (await response).json()
@@ -44,10 +51,9 @@ $(function () {
 // Append admin list
 let company = ''
 let listOfUsers
-fetchAdmins().then(listOfAdmins => {
+let fetchAdminsPromise = fetchAdmins().then(listOfAdmins => {
     listOfUsers = listOfAdmins
     listOfAdmins.forEach(admin => {
-        // console.log(admin)
 
         // Add company in form
         if (!company) {
@@ -85,6 +91,7 @@ fetchAdmins().then(listOfAdmins => {
                 });
         })
     })
+    listOfUsers = getDistinctValuesFromObject('username', listOfUsers)
 })
 
 // END ADMIN TAB
@@ -114,7 +121,7 @@ let zoneModal = (id, zoneid, location1, location2, location3, custommap, olmap, 
 
     // Checkbox for user list template
     let checkboxesTemplate = (name, username, checked) => {
-        return '<label><input type="checkbox" ' + checked + ' name="'+name+'" value="' + username + '">' + username + '</label>'
+        return '<label><input type="checkbox" ' + checked + ' name="' + name + '" value="' + username + '">' + username + '</label>'
     }
 
     // Init checkboxes
@@ -128,34 +135,120 @@ let zoneModal = (id, zoneid, location1, location2, location3, custommap, olmap, 
     let userBuffer = []
 
     // Build Checkboxes w/ username
-    listOfZoneAccess.forEach(zone => {
+    // listOfUsers
+    // listOfZoneAccess   
 
-        // se parcurge fiecare zona
+    // console.log(listOfZoneAccess)
+    // console.log(listOfUsers)
 
-        // if (zone.zoneId == zoneid) { // se verifica daca zona iterata este egala cu zona din modal, daca da
-        //     // se preia usernamul zonei si se face append in checkboxes_checked, daca nu s-a facut deja
-        //     if (usersUnchecked.indexOf(zone.username) == -1 && usersChecked.indexOf(zone.username) == -1) {
-        //         usersChecked.push(zone.username)
-        //         checkboxes_checked += checkboxesTemplate(zone.username, 'checked')
-        //     }
-        // } else { // se verifica daca zona iterata este egala cu zona din modal, daca nu
-        //     // se preaia usernameul zonei si se face append in checkboxes_unchecked daca nu s-a facut deja
-        if (userBuffer.indexOf(zone.username) == -1) {
-            userBuffer.push(zone.username)
-            let idsForUser = getZones(zone.username, listOfZoneAccess)
-            if (idsForUser.indexOf(zoneid) !== -1) {
-                checkboxes += checkboxesTemplate('username'+userBuffer.indexOf(zone.username),zone.username, 'checked')
-            } else {
-                checkboxes += checkboxesTemplate('username'+userBuffer.indexOf(zone.username),zone.username, '')
+    // userData_raw - returns a list of unique sensors with data associated with it (location, users)
+    // listOfZoneAccess (/api/get-zones) - returns a list of locations and users associated with that location
+
+    // WARNING: users that have access to a sensor in a zone, are displayed as having access to all the sensor in zone   
+
+    // if (!userData_raw.error) {
+    // console.log(listOfZoneAccess, listOfUsers)
+    // console.log(listOfZoneAccess[0].usersList)
+
+    // if (listOfZoneAccess[0].usersList) {
+    //     let usersMergedRaw = getValuesFromObject('usersList', listOfZoneAccess)
+    //     let usersMerged = []
+
+    //     // console.log(listOfZoneAccess, usersMergedRaw)
+
+    //     usersMergedRaw.map((item, index) => {
+    //         let users = item.split(',')
+    //         users.forEach((user, idx) => {
+    //             if (usersMerged.indexOf(user) == -1) {
+    //                 usersMerged.push(user)
+    //             }
+    //         })
+    //     })
+    // }
+
+    console.log(listOfZoneAccess)
+
+    // if (listOfZoneAccess[0].length == 0) {
+    //     // No user assigned to zone
+    //     // Append all users w/o checked attribute
+
+    //     listOfUsers.forEach((user, index) => {
+    //         if (index != 0) { // index != 0 because i dont want to show superadmin of this company
+    //             checkboxes += checkboxesTemplate('username' + index, user, '')
+    //         }
+    //     })
+
+    // } else {
+    // There are some users for some zones
+    listOfZoneAccess[1].forEach((location, index) => {
+        if (location.zoneId == zoneid) {
+
+            // Get row with this zone id from list of locations and users
+            let zone = listOfZoneAccess[0].filter((location, idx) => {
+                return location.zoneId == zoneid ? location : false
+            })
+
+            // If current zone has usersList
+            if (zone[0]) {
+                // Get unqiue users of it 
+                let userAssignated = zone[0].usersList.split(',')
+                userAssignated = new Set(userAssignated)
+
+                // Loop through each user and check who is assignated and who is not
+                listOfUsers.forEach((user, index) => {
+                    if (index != 0) { // index != 0 because i dont want to show superadmin of this company
+                        if (userAssignated.has(user)) {
+                            checkboxes += checkboxesTemplate('username' + index, user, 'checked')
+                        } else {
+                            checkboxes += checkboxesTemplate('username' + index, user, '')
+                        }
+                    }
+                })
+            } else { // if current zone has not an usersList
+                listOfUsers.forEach((user, index) => {
+                    if (index != 0) { // index != 0 because i dont want to show superadmin of this company
+                        checkboxes += checkboxesTemplate('username' + index, user, '')
+                    }
+                })
             }
+
         }
-        // }
-
-        // console.log(zoneid, usersChecked, usersUnchecked)
-
     })
+    // }
 
-    // let checkboxes = checkboxes_checked + checkboxes_unchecked
+    // console.log("usersMerged",usersMerged)
+
+    // if (listOfZoneAccess) {
+    //     listOfZoneAccess.forEach((location, index) => {
+    //         if (location.zoneId == zoneid) {
+
+    //             let userAssignated
+    //             try {
+    //                 userAssignated = location.usersList.split(',')
+    //             } catch {
+    //                 userAssignated = []
+    //             }
+    //             userAssignated = new Set(userAssignated)
+    //             // console.log(userAssignated, listOfUsers)
+
+    //             listOfUsers.forEach((user, index) => {
+    //                 if (index != 0) { // index != 0 because i dont want to show superadmin of this company
+    //                     if (userAssignated.has(user)) {
+    //                         checkboxes += checkboxesTemplate('username' + index, user, 'checked')
+    //                     } else {
+    //                         checkboxes += checkboxesTemplate('username' + index, user, '')
+    //                     }
+    //                 }
+    //             })
+
+    //         }
+    //     })
+    // } else {
+    //     listOfUsers.forEach((user, index) => {
+    //         if (index != 0)
+    //             checkboxes += checkboxesTemplate('username' + index, user, '')
+    //     })
+    // }
 
     // Modal Template
     return `<div class='zone-modal' modalid='` + id + `'>
@@ -191,7 +284,7 @@ let zoneModal = (id, zoneid, location1, location2, location3, custommap, olmap, 
                                 </div>
 
                                 <div class="form-group">
-                                    <input type="radio" `+ custommap + ` name="map" value="custom"> Custom Map ` + (() => { return path ? '(<a target="_blank" rel="noopener noreferrer" href="/images/custom-maps/' + path + '">Image</a>)' : '' })() + ` </input> <br>
+                                    <input type="radio" `+ custommap + ` name="map" value="` + (() => { return (path == 'NULL' || !path) ? 'custom' : path })() + `"> Custom Map ` + (() => { return (path == 'NULL' || !path) ? '' : '(<a target="_blank" rel="noopener noreferrer" href="/images/custom-maps/' + path + '">Image</a>)' })() + ` </input> <br>
                                     <input type="radio" `+ olmap + ` name="map" value="ol"> OL Map </input>
                                 </div>
 
@@ -217,42 +310,39 @@ let zoneModal = (id, zoneid, location1, location2, location3, custommap, olmap, 
                 </div>
             </div>
             </div>`
-}
+} // END ZONE MODAL
 
 // console.log(userData_raw)
+let zonesOfCompany = getDistinctValuesFromObject('zoneId', userData_raw)
+// console.log(zonesOfCompany)
+
+// [ ] TODO: get all locations created by a company
+// [ ] TODO: list all locations and display them
+// [ ] TODO: further checks...
 
 // Append zone list
-fetchZones().then((result) => {
-    // console.log(result)
+fetchAdminsPromise.then(() => {
+    fetchZones().then((result) => {
 
-    // Append modal for zone access
-    // $(".zone-tab").append(zoneAccessModal())
+        let zonesAndUserList = result[0]
+        let zonesRaw = result[1]
 
-    // Trigger modal zone access
-    // $(function () {
-    // $(`.edit-zone-access`).on('click', function () {
-    //     $(`#edit-zoneAccess-modal`).modal({
-    //         backdrop: 'static'
-    //     });
-    // });
-    // });
+        let bufferAppendedZones = []
 
-    let bufferAppendedZones = []
+        // console.log(result)
+        // console.log(userData_raw)
 
-    console.log(result)
+        if (!zonesRaw.length) {
+            // Append rows to zone-tab
+            $(".zone-tab .mid-container table tbody").append(`<tr><td>No zone for this team</td><td></td><td></td></tr>`)
+        }
 
-    result.forEach(zone => {
-        // Generate unique Id
-        let date = new Date()
-        let modalId = date.getTime() + Math.floor((Math.random() * 100) + 1)
+        zonesRaw.forEach(zone => {
+            // console.log(zone)
 
-        // Prevet double insert of zones
-        let aux_checker = JSON.stringify(bufferAppendedZones);
-        let aux_item = JSON.stringify([zone.location3, zone.location2, zone.location1]);
-        let hasBeenAppended = aux_checker.indexOf(aux_item)
-
-        if (hasBeenAppended == -1) {
-            bufferAppendedZones.push([zone.location3, zone.location2, zone.location1])
+            // Generate unique Id
+            let date = new Date()
+            let modalId = date.getTime() + Math.floor((Math.random() * 100) + 1)
 
             // Append rows to zone-tab
             $(".zone-tab .mid-container table tbody").append(`<tr zoneid='` + zone.zoneId + `'>
@@ -260,98 +350,243 @@ fetchZones().then((result) => {
                     <td>` + (() => { return zone.map == 'custom' ? 'You need to set and image' : (zone.map == 'ol' ? "Standard map" : (zone.map == 'NULL' ? "Set a map" : 'Custom map')) })() + `</td>
                     <td><span class='edit-zone' zoneid='` + zone.zoneId + `' modalid='` + modalId + `'><i class="fas fa-edit"></i></span></td>
                 </tr>`)
+            // }
 
-        }
-        // Check zone.map
-        let custommap, olmap, path
-        if (zone.map == 'ol') {
-            custommap = ''
-            olmap = 'checked'
-            path = ''
-        }
-        else if (zone.map == 'custom') {
-            custommap = 'checked'
-            olmap = ''
-            path = ''
-        } else if (zone.map) {
-            custommap = 'checked'
-            olmap = ''
-            path = zone.map.split('/')[zone.map.split('/').length - 1]
-        } else {
-            custommap = ''
-            olmap = ''
-            path = ''
-        }
+            // Check zone.map
+            let custommap, olmap, path
+            if (zone.map == 'ol') {
+                custommap = ''
+                olmap = 'checked'
+                path = ''
+            }
+            else if (zone.map == 'custom') {
+                custommap = 'checked'
+                olmap = ''
+                path = ''
+            } else if (zone.map != null) {
+                custommap = 'checked'
+                olmap = ''
+                path = zone.map.split('/')[zone.map.split('/').length - 1]
+            } else {
+                custommap = ''
+                olmap = ''
+                path = ''
+            }
 
-        // Disable input file if custommap is unchecked initially
-        if (custommap == 'unchecked')
-            $(".zone-modal #image-file").attr("disabled", true)
+            // Disable input file if custommap is unchecked initially [??? idk what is this doing]
+            if (custommap == 'unchecked')
+                $(".zone-modal #image-file").attr("disabled", true)
 
-        // Append edit zone modal with unique id
-        $(".zone-settings .inner-settings").append(zoneModal(modalId, zone.zoneId, zone.location1, zone.location2, zone.location3, custommap, olmap, path, result))
+            // Append edit zone modal with unique id
+            $(".zone-settings .inner-settings").append(zoneModal(modalId, zone.zoneId, zone.location1, zone.location2, zone.location3, custommap, olmap, path, result))
 
-        // Open Modal Trigger
-        $(`.edit-zone[modalid='` + modalId + `']`).on('click', function () {
-            $(`#edit-zone-modal-` + modalId).modal({
-                backdrop: 'static'
-            });
-        });
+            // Mark user checked
+            // let usersList
+            // result.forEach((zone, index) => {
+            //     usersList = new Set(zone.usersList.split(','));
+            // })
 
-        // Save data
-        $(`#edit-zone-modal-` + modalId + ` button[type='submit']`).on('click', function (e) {
-            // e.preventDefault();
-            // console.log("clicked!!!")
-            // $.ajax({
-            //     method: "POST",
-            //     url: "/api/edit-zone",
-            //     data: { id: zone.zoneId }
-            // }).done(function (msg) {
-            //     console.log("Data Saved: ", msg);
-            // });
-        });
+            // console.log(usersList)
 
-    })
-
-    // Toggle input file
-    $("input[name='map']").on('change', (e) => {
-        if (e.target.defaultValue == 'custom') {
-            $(".zone-modal input[value='custom']").prop("checked", true)
-            $(".zone-modal input[value='ol']").prop("checked", false)
-            $(".zone-modal #image-file").attr("disabled", false)
-        }
-        else {
-            $(".zone-modal input[value='custom']").prop("checked", false)
-            $(".zone-modal input[value='ol']").prop("checked", true)
-            $(".zone-modal #image-file").attr("disabled", true)
-        }
-    })
-
-})
-    .then(() => {
-        timeoutAsync(1000, function () {
-
-            // console.log($(".team-container tr .zones-col .zone").length)
-            // for (var i = 0; i < $(".team-container tr .zones-col").length; i++) {
-            //     for (var j = 0; j < $(".team-container tr .zones-col")[i].children.length; j++) {
-            //         var username = $(".team-container tr .zones-col")[i].className.split(" ")[1].split('zones-')[1]
-            //         var zone = $(".team-container tr .zones-col")[i].children[j].innerHTML
-            //         if (zone != 'No zone assigned')
-            //             $(`.modal-` + username + ` input[id="` + zone + `"]`).prop("checked", true);
-            //         else
-            //             $(`.modal-` + username + ` input[id="` + zone + `"]`).prop("checked", false);
+            // let labels = $(".zone-settings .inner-settings .form-checkboxes label input")
+            // for (let item of labels) {
+            //     let username = $(item).attr("value")
+            //     if (usersList.has(username)) {
+            //         $(item).attr('checked', true)
             //     }
-            // }    
+            // }
 
-            let counterZoneModal = $(".zone-modal").length
+            // Open Modal Trigger
+            $(`.edit-zone[modalid='` + modalId + `']`).on('click', function () {
+                $(`#edit-zone-modal-` + modalId).modal({
+                    backdrop: 'static'
+                });
+            });
 
-            $(".zone-modal").each((index, element) => {
-                // let e = $(this)
-                // console.log( $(element.className).attr() )
-            })
+            // Save data
+            $(`#edit-zone-modal-` + modalId + ` button[type='submit']`).on('click', function (e) {
+                // e.preventDefault();
+                // console.log("clicked!!!")
+                // $.ajax({
+                //     method: "POST",
+                //     url: "/api/edit-zone",
+                //     data: { id: zone.zoneId }
+                // }).done(function (msg) {
+                //     console.log("Data Saved: ", msg);
+                // });
+            });
 
         })
 
+        // Toggle input file
+        $("input[name='map']").on('change', (e) => {
+            if (e.target.defaultValue == 'custom') {
+                $(".zone-modal input[value='custom']").prop("checked", true)
+                $(".zone-modal input[value='ol']").prop("checked", false)
+                $(".zone-modal #image-file").attr("disabled", false)
+            }
+            else {
+                $(".zone-modal input[value='custom']").prop("checked", false)
+                $(".zone-modal input[value='ol']").prop("checked", true)
+                $(".zone-modal #image-file").attr("disabled", true)
+            }
+        })
+
     })
+        .then(() => {
+            timeoutAsync(1000, function () {
+
+                // console.log($(".team-container tr .zones-col .zone").length)
+                // for (var i = 0; i < $(".team-container tr .zones-col").length; i++) {
+                //     for (var j = 0; j < $(".team-container tr .zones-col")[i].children.length; j++) {
+                //         var username = $(".team-container tr .zones-col")[i].className.split(" ")[1].split('zones-')[1]
+                //         var zone = $(".team-container tr .zones-col")[i].children[j].innerHTML
+                //         if (zone != 'No zone assigned')
+                //             $(`.modal-` + username + ` input[id="` + zone + `"]`).prop("checked", true);
+                //         else
+                //             $(`.modal-` + username + ` input[id="` + zone + `"]`).prop("checked", false);
+                //     }
+                // }    
+
+                let counterZoneModal = $(".zone-modal").length
+
+                $(".zone-modal").each((index, element) => {
+                    // let e = $(this)
+                    // console.log( $(element.className).attr() )
+                })
+
+            })
+
+        })
+})
+// fetchAdminsPromise.then(() => {
+//     fetchZones().then((result) => {
+
+//         let bufferAppendedZones = []
+
+
+//         if(!result.length) {
+//             // Append rows to zone-tab
+//             $(".zone-tab .mid-container table tbody").append(`<tr><td>No zone for this team</td><td></td><td></td></tr>`)
+//         }
+
+//         result.forEach(zone => {
+//             // compare user assiganted to location with all users to get the users unassignated
+//             // console.log(zone)
+
+//             // Generate unique Id
+//             let date = new Date()
+//             let modalId = date.getTime() + Math.floor((Math.random() * 100) + 1)
+
+//             // Prevet double insert of zones
+//             let aux_checker = JSON.stringify(bufferAppendedZones);
+//             let aux_item = JSON.stringify([zone.location3, zone.location2, zone.location1]);
+//             let hasBeenAppended = aux_checker.indexOf(aux_item)
+
+//             if (hasBeenAppended == -1) {
+//                 bufferAppendedZones.push([zone.location3, zone.location2, zone.location1])
+
+//                 // Append rows to zone-tab
+//                 $(".zone-tab .mid-container table tbody").append(`<tr zoneid='` + zone.zoneId + `'>
+//                         <td>` + zone.location1 + ` / ` + zone.location2 + ` / ` + zone.location3 + `</td>
+//                         <td>` + (() => { return zone.map == 'custom' ? 'You need to set and image' : (zone.map == 'ol' ? "Standard map" : (zone.map == 'NULL' ? "Set a map" : 'Custom map')) })() + `</td>
+//                         <td><span class='edit-zone' zoneid='` + zone.zoneId + `' modalid='` + modalId + `'><i class="fas fa-edit"></i></span></td>
+//                     </tr>`)
+
+//             }
+//             // Check zone.map
+//             let custommap, olmap, path
+//             if (zone.map == 'ol') {
+//                 custommap = ''
+//                 olmap = 'checked'
+//                 path = ''
+//             }
+//             else if (zone.map == 'custom') {
+//                 custommap = 'checked'
+//                 olmap = ''
+//                 path = ''
+//             } else if (zone.map != null) {
+//                 custommap = 'checked'
+//                 olmap = ''
+//                 path = zone.map.split('/')[zone.map.split('/').length - 1]
+//             } else {
+//                 custommap = ''
+//                 olmap = ''
+//                 path = ''
+//             }
+
+//             // console.log("zone.map",zone.map)
+
+//             // Disable input file if custommap is unchecked initially
+//             if (custommap == 'unchecked')
+//                 $(".zone-modal #image-file").attr("disabled", true)
+
+//             // Append edit zone modal with unique id
+//             $(".zone-settings .inner-settings").append(zoneModal(modalId, zone.zoneId, zone.location1, zone.location2, zone.location3, custommap, olmap, path, result))
+
+//             // Open Modal Trigger
+//             $(`.edit-zone[modalid='` + modalId + `']`).on('click', function () {
+//                 $(`#edit-zone-modal-` + modalId).modal({
+//                     backdrop: 'static'
+//                 });
+//             });
+
+//             // Save data
+//             $(`#edit-zone-modal-` + modalId + ` button[type='submit']`).on('click', function (e) {
+//                 // e.preventDefault();
+//                 // console.log("clicked!!!")
+//                 // $.ajax({
+//                 //     method: "POST",
+//                 //     url: "/api/edit-zone",
+//                 //     data: { id: zone.zoneId }
+//                 // }).done(function (msg) {
+//                 //     console.log("Data Saved: ", msg);
+//                 // });
+//             });
+
+//         })
+
+//         // Toggle input file
+//         $("input[name='map']").on('change', (e) => {
+//             if (e.target.defaultValue == 'custom') {
+//                 $(".zone-modal input[value='custom']").prop("checked", true)
+//                 $(".zone-modal input[value='ol']").prop("checked", false)
+//                 $(".zone-modal #image-file").attr("disabled", false)
+//             }
+//             else {
+//                 $(".zone-modal input[value='custom']").prop("checked", false)
+//                 $(".zone-modal input[value='ol']").prop("checked", true)
+//                 $(".zone-modal #image-file").attr("disabled", true)
+//             }
+//         })
+
+//     })
+//         .then(() => {
+//             timeoutAsync(1000, function () {
+
+//                 // console.log($(".team-container tr .zones-col .zone").length)
+//                 // for (var i = 0; i < $(".team-container tr .zones-col").length; i++) {
+//                 //     for (var j = 0; j < $(".team-container tr .zones-col")[i].children.length; j++) {
+//                 //         var username = $(".team-container tr .zones-col")[i].className.split(" ")[1].split('zones-')[1]
+//                 //         var zone = $(".team-container tr .zones-col")[i].children[j].innerHTML
+//                 //         if (zone != 'No zone assigned')
+//                 //             $(`.modal-` + username + ` input[id="` + zone + `"]`).prop("checked", true);
+//                 //         else
+//                 //             $(`.modal-` + username + ` input[id="` + zone + `"]`).prop("checked", false);
+//                 //     }
+//                 // }    
+
+//                 let counterZoneModal = $(".zone-modal").length
+
+//                 $(".zone-modal").each((index, element) => {
+//                     // let e = $(this)
+//                     // console.log( $(element.className).attr() )
+//                 })
+
+//             })
+
+//         })
+// })
 
 // END ZONES TAB
 // ==============================

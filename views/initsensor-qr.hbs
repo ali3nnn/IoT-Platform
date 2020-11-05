@@ -41,12 +41,20 @@
                     {{this.zoneId}}/{{this.location1}}/{{this.location2}}/{{this.location3}}</option>
                 {{/each}}
             </select><br>
-            <input type="charInput" class='hidden' name="zoneId" placeholder="zoneId" value="{{userData.zoneId}}" />
-            <input type="charInput" name="location1" placeholder="Region/County" value="{{userData.location1}}" /><br>
-            <input type="charInput" name="location2" placeholder="City" value="{{userData.location2}}" /><br>
-            <input type="charInput" name="location3" placeholder="Location" value="{{userData.location3}}" /><br>
-            <input type="charInput" name="sensorName" placeholder="Sensor name" value="{{userData.sensorName}}" /><br>
+            <!-- Appended by scripts.js:155 <input type="charInput" class='hidden' name="company" placeholder="Company" value="`+userData_raw[0].createdBy+`"/> -->
+            <input type="charInput" class='hidden' name="zoneId" placeholder="zoneId" />
+            <input type="charInput" name="location1" placeholder="Region/County" /><br>
+            <input type="charInput" name="location2" placeholder="City" /><br>
+            <input type="charInput" name="location3" placeholder="Location" /><br>
+            <input type="charInput" name="sensorName" placeholder="Sensor name" /><br>
             <input type="submit" name="button" value="Set location">
+
+            {{!-- value="{{userData.zoneId}}"
+            value="{{userData.zoneId}}"
+            value="{{userData.location1}}"
+            value="{{userData.location2}}"
+            value="{{userData.location3}}"
+            value="{{userData.sensorName}}" --}}
         </form>
 
 
