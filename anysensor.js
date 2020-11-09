@@ -1474,11 +1474,11 @@ app.get('/api/v2/get-data/:county/:sensorQuery', (req, res) => {
 
         // cannot query for today date starting at 00:00 because influx tz is -1h than romanian tz
         // set today 00:00 as yesterday 23:00
-        today__raw.setDate(today__raw.getDate() - 1)
+        today__raw.setDate(today__raw.getDate())
         var dd = String(today__raw.getDate()).padStart(2, '0');
         var mm = String(today__raw.getMonth() + 1).padStart(2, '0'); //January is 0!
         var yyyy = today__raw.getFullYear();
-        today = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
+        today = yyyy + '-' + mm + '-' + dd + 'T00:00:00Z';
 
         var dd = String(today__raw_2.getDate()).padStart(2, '0');
         var mm = String(today__raw_2.getMonth() + 1).padStart(2, '0'); //January is 0!
@@ -1486,11 +1486,13 @@ app.get('/api/v2/get-data/:county/:sensorQuery', (req, res) => {
             minimumIntegerDigits: 2,
             useGrouping: false
         })
-        todayEnd = "'" + yyyy + '-' + mm + '-' + dd + 'T23:00:00Z' + "'";
+        todayEnd = "'" + yyyy + '-' + mm + '-' + dd + 'T23:59:59Z' + "'";
         // todayEnd = "now()"
 
-        // console.log(">> TODAY start:", today)
-        // console.log(">> TODAY end:", todayEnd)
+        console.log("")
+        console.log(">> TODAY start:", today)
+        console.log(">> TODAY end:", todayEnd)
+        console.log("")
 
         // Mean of last week - experiment
         // ==========================================

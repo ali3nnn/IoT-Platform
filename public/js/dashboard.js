@@ -1334,15 +1334,16 @@ function timeIntervalChanger(sensorId, chartList) {
 
         // console.log(start, end)
 
-        var startAux = new Date(start) - (4 * 60 * 60 * 1000)
-        var endAux = new Date(end) - (4 * 60 * 60 * 1000)
+        let offsetH = 2
+        var startAux = new Date(start) - (offsetH * 60 * 60 * 1000)
+        var endAux = new Date(end) - (offsetH * 60 * 60 * 1000)
 
-        // console.log(startAux, endAux)
+        console.log(startAux, endAux)
 
         start = moment(new Date(startAux)).format('YYYY-MM-DD' + 'T' + 'HH:mm').split("+")[0] + ':00.000000000Z'
         end = moment(new Date(endAux)).format('YYYY-MM-DD' + 'T' + 'HH:mm').split("+")[0] + ':00.000000000Z'
 
-        // console.log(start, end)
+        console.log(start, end)
 
         reloadDataCustomCalendar(start, end, countyName, sensorId, chartList)
     }
@@ -1588,7 +1589,7 @@ let getData = async () => {
     return response.json()
 }
 
-// get all values of a sensor
+// Get today' values of a sensor API v2
 let getSensorData = async (sensor) => {
     // console.log("getSensorData")
     let response = await fetch("/api/v2/get-data/" + countyName + "/" + sensor)
