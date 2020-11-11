@@ -1,6 +1,9 @@
 // require('./jquery-3.3.1.js')
 const path = require('path');
 
+let href = window.location.pathname
+console.log(href)
+
 require('./svgGauge/gauge.min.js')
 require('./scripts.js')
 require('./fetch3.1.0.js')
@@ -32,6 +35,11 @@ if ($(".dashboard-page").length) {
 }
 
 if ($("#zones-list").length) {
+    // console.log("map.js added")
+    // require("./map")
+}
+
+if ($(".map-page").length) {
     console.log("map.js added")
     require("./map")
 }
@@ -39,4 +47,19 @@ if ($("#zones-list").length) {
 if ($(".settings-page").length) {
     console.log("settings.js added")
     require("./settings")
+}
+
+if(href == '/register') {
+    console.log('register.js added')
+    require("./register")
+}
+
+if( $("#mySidenav").length ) {
+    console.log('aside.js added')
+    require("./aside")
+}
+
+if( $(".custom-map").length ) {
+    console.log('scrollByDrag.js added')
+    require("./scrollByDrag")
 }

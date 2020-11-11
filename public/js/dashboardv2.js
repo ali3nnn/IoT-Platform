@@ -1,3 +1,4 @@
+import { deprecationHandler } from 'moment'
 import {
     getDistinctValuesFromObject,
     getValuesFromObject,
@@ -9,25 +10,34 @@ let getSensorData = async (id) => {
     return response.json()
 }
 
+// console.log(userData_raw)
+
 function defaultSensorView(sensor) {
 
     // sensorId = String(sensorId)
     let sensorData = JSON.stringify(sensor.sensorData)
 
+    // Sensor state 0/1/2/3
     let alertClass = ''
-    if(sensor.sensorMeta.alerts==1)
-        alertClass = 'alert-active' 
-    else if(sensor.sensorMeta.alerts==2)
-        alertClass = 'alarm-active'
-    
-    // alertClass = 'alert-active'
+    let alertClass2 = ''
+    if (sensor.sensorMeta.alerts == 1) {
+        // alertClass = 'alert-active' 
+        alertClass2 = 'alert-active'
+    }
+    else if (sensor.sensorMeta.alerts == 2) {
+        // alertClass = 'alarm-active'
+        alertClass2 = 'alarm-active'
+    }
+    else if ([3, 4].includes(sensor.sensorMeta.alerts))
+        alertClass2 = 'no-power'
 
+    // alertClass = 'alert-active'
 
     // current value gauge component
     var currentValueView = `
-    <article class="card height-control live-card-` + sensor.sensorMeta.sensorId + `" sensorId="` + sensor.sensorMeta.sensorId + `" sensortype="` + sensor.sensorMeta.sensorType + `">
+    <article class="card height-control `+ alertClass2 + ` live-card-` + sensor.sensorMeta.sensorId + `" sensorId="` + sensor.sensorMeta.sensorId + `" sensortype="` + sensor.sensorMeta.sensorType + `">
 
-        <div class="card-header `+alertClass+`">
+        <div class="card-header `+ alertClass + `">
             <h3 class="card-title">
                 <i class='update-icon'></i>
                 Current Value
@@ -64,14 +74,14 @@ function defaultSensorView(sensor) {
                 <div class="slidecontainer">
 
                     <p class='label-input'>Min: </p>
-                    <input type="number" name="minAlert" `+ (() => { return sensor.sensorMeta.min ? 'value="'+sensor.sensorMeta.min+'"' : 'placeholder="Set min alert"' })() + ` class="input input-min">
+                    <input type="number" name="minAlert" `+ (() => { return sensor.sensorMeta.min ? 'value="' + sensor.sensorMeta.min + '"' : 'placeholder="Set min alert"' })() + ` class="input input-min">
                     <p class='label-input'>Max: </p>
-                    <input type="number" name="maxAlert" `+ (() => { return sensor.sensorMeta.max ? 'value="'+sensor.sensorMeta.max+'"' : 'placeholder="Set max alert"' })() + ` class="input input-max">
+                    <input type="number" name="maxAlert" `+ (() => { return sensor.sensorMeta.max ? 'value="' + sensor.sensorMeta.max + '"' : 'placeholder="Set max alert"' })() + ` class="input input-max">
 
                     <p class='label-input'>Lat: </p>
-                    <input type="number" name="xLat" `+ (() => { return sensor.sensorMeta.x ? 'value="'+sensor.sensorMeta.x+'"' : 'placeholder="Set x position"' })() + ` class="input input-lat">
+                    <input type="number" name="xLat" `+ (() => { return sensor.sensorMeta.x ? 'value="' + sensor.sensorMeta.x + '"' : 'placeholder="Set x position"' })() + ` class="input input-lat">
                     <p class='label-input'>Long: </p>
-                    <input type="number" name="yLong" `+ (() => { return sensor.sensorMeta.y ? 'value="'+sensor.sensorMeta.y+'"' : 'placeholder="Set y position"' })() + ` class="input input-long">
+                    <input type="number" name="yLong" `+ (() => { return sensor.sensorMeta.y ? 'value="' + sensor.sensorMeta.y + '"' : 'placeholder="Set y position"' })() + ` class="input input-long">
 
                 </div>
             </div>
@@ -215,12 +225,12 @@ function triggerSensorView(sensorId) {
 
         // console.log(sensorData)
 
-        let filename = "Report-"+sensorId+".csv"
+        let filename = "Report-" + String(sensorId) + ".csv"
 
         downloadCSV({
             filename,
-            xlabels: getValuesFromObject('time',sensorData),
-            ylabels: getValuesFromObject('value',sensorData)
+            xlabels: getValuesFromObject('time', sensorData),
+            ylabels: getValuesFromObject('value', sensorData)
         })
 
     })
@@ -250,9 +260,9 @@ let getSensorDataCustomInterval = async (sensor, start, end) => {
 
         // Insert data into attributes of html element
         let sensorData = JSON.stringify(msg.result)
-        console.log("initial attr:", $("article.graph-"+sensor).attr("sensorData"))
-        $("article.graph-"+sensor).attr("sensorData",sensorData)
-        console.log("after attr:", $("article.graph-"+sensor).attr("sensorData"))
+        // console.log("initial attr:", $("article.graph-"+sensor).attr("sensorData"))
+        $("article.graph-" + sensor).attr("sensorData", sensorData)
+        // console.log("after attr:", $("article.graph-"+sensor).attr("sensorData"))
 
         // Split the dataset
         let values = getValuesFromObject('value', msg.result)
@@ -427,15 +437,15 @@ function plotData(sensorId, source = 'attr') {
 
 }
 
-function appendInfoBox(label, value, fontAwesome = false) {
-    var component = `<div class="small-box bg-info county-detail box-shadow-5">
+function appendInfoBox(args) {
+    var component = `<div class="small-box ` + args.class + ` bg-info box-shadow-5">
         <div class="inner">
-            <h3>` + value + `</h3>
-            <p>` + label + `</p>
+            <h3>` + args.message + `</h3>
+            <p>` + args.title + `</p>
         </div>`
 
-    if (fontAwesome) {
-        component += `<div class="icon">` + fontAwesome + `</div>`
+    if (args.icon) {
+        component += `<div class="icon">` + args.icon + `</div>`
     }
 
     component += `</div>`
@@ -468,15 +478,47 @@ socket.on(socketChannel, async (data) => {
 
     let currentValueBox = $("article[class*='live-card']")
 
+    // OLD WAY - @depracated
     // Loop through each current value box
     currentValueBox.each((index, item) => {
+
         // get sensor id for each current value box 
         let sensorid = $(item).attr("sensorid")
+
         // get value of topic that contains this sensorid
         if (data.topic.includes(sensorid)) {
             updateCurrentValue(sensorid, parseFloat(data.message).toFixed(1))
         }
+
     })
+
+    // NEW TOPIC dataPub
+    // dataPub {cId: "DAS001TCORA", value: 23.992979}
+    let msg
+    if (data.topic == 'dataPub') {
+        msg = JSON.parse(data.message)
+        updateCurrentValue(msg.cId, parseFloat(msg.value).toFixed(1))
+    }
+
+    if (data.topic == 'dataPub/power') {
+        msg = JSON.parse(data.message)
+        if (parseInt(msg.value)) {
+            // add class no power to cId
+            if (!$(".live-card-" + msg.cId).hasClass('no-power')) {
+                $(".live-card-" + msg.cId).removeClass("alert-active").removeClass("alarm-active").addClass("no-power")
+                let currentPower = $(".battery-info h3").html().split('/')
+                currentPower[0] = Math.min(parseInt(currentPower[0]) + 1, currentPower[1])
+                $(".battery-info h3").html(currentPower[0] + ' / ' + currentPower[1])
+            }
+        } else {
+            if ($(".live-card-" + msg.cId).hasClass('no-power')) {
+                let currentPower = $(".battery-info h3").html().split('/')
+                currentPower[0] = Math.max(parseInt(currentPower[0]) - 1, 0)
+                $(".battery-info h3").html(currentPower[0] + ' / ' + currentPower[1])
+                $(".live-card-" + msg.cId).removeClass("no-power")
+            }
+        }
+    }
 
 })
 
@@ -490,7 +532,7 @@ function saveSensorSettings(sensorid) {
 
     let url = "/api/v3/save-settings?sensorId='" + sensorid + "' " + (() => { return min ? '&min=' + min : '' })() + (() => { return max ? '&max=' + max : '' })() + (() => { return xLat ? '&xlat=' + xLat : '' })() + (() => { return yLong ? '&ylong=' + yLong : '' })()
     url = url.replace(' ', '')
-    console.log(url)
+    // console.log(url)
 
 
     $.ajax({
@@ -537,14 +579,15 @@ let mainLoader = async () => {
     // console.log(userData_raw)
     // let zoneData = JSON.parse('{{{zoneData}}}')
 
-    // Get query from URL
+    // Get zoneId from URL
     const url = new URL(location.href)
     const zoneId = url.searchParams.get('zoneid')
 
     // Preprocess data to extract sensors from current zone only
     let sensorMetaRaw = []
     let sensorBuffer = [] // this buffer is use to prevent double inserting of sensors
-    console.log(userData_raw)
+
+    // console.log(userData_raw)
     userData_raw.forEach(sensor => {
         // Iterate through each result and save unique sensorId rows
         if (sensorBuffer.indexOf(sensor.sensorId) == -1) {
@@ -560,9 +603,20 @@ let mainLoader = async () => {
         sensorDataRaw.push({ sensorMeta: sensor, sensorData })
     }
 
-    console.log(sensorDataRaw)
+    // console.log(sensorDataRaw)
 
     for (const sensor of sensorDataRaw) {
+        // Testing
+        // if(sensor.sensorMeta.sensorId=='DAS001TCORA') {[
+        //     sensor.sensorMeta.alerts = 3
+        // ]}
+        // if(sensor.sensorMeta.sensorId=='DAS003TCORA') {[
+        //     sensor.sensorMeta.alerts = 1
+        // ]}
+        // if(sensor.sensorMeta.sensorId=='DAS005TCORA') {[
+        //     sensor.sensorMeta.alerts = 2
+        // ]}
+
         // Append the default sensor view (current value + graph) for each sensor
         $(".card-container").append(defaultSensorView(sensor));
 
@@ -577,17 +631,44 @@ let mainLoader = async () => {
     // Add info box
     let location3 = sensorDataRaw[0].sensorMeta.location3
     let location2 = sensorDataRaw[0].sensorMeta.location2
-    appendInfoBox(location2, location3, '<i class="fas fa-compass"></i>')
 
-    let alert = 0, alarm = 0
+    appendInfoBox({
+        title: location2,
+        message: location3,
+        icon: '<i class="fas fa-compass"></i>',
+        class: ''
+    })
+
+    let alert = 0, alarm = 0, power = 0
     sensorDataRaw.forEach(item => {
         if (item.sensorMeta.alerts == 1)
             alert++
         if (item.sensorMeta.alerts == 2)
             alarm++
+        if ([3, 4].includes(item.sensorMeta.alerts))
+            power++
     })
-    appendInfoBox('Warning alert', alert + ' / ' + sensorDataRaw.length, '<i class="fas fa-exclamation"></i>')
-    appendInfoBox('Limits exeeded', alarm + ' / ' + sensorDataRaw.length, '<i class="fas fa-exclamation-triangle"></i>')
+
+    appendInfoBox({
+        title: 'Warning alert',
+        message: alert + ' / ' + sensorDataRaw.length,
+        icon: '<i class="fas fa-exclamation"></i>',
+        class: ''
+    })
+
+    appendInfoBox({
+        title: 'Limits exeeded',
+        message: alarm + ' / ' + sensorDataRaw.length,
+        icon: '<i class="fas fa-exclamation-triangle"></i>',
+        class: ''
+    })
+
+    appendInfoBox({
+        title: 'On battery',
+        message: power + ' / ' + sensorDataRaw.length,
+        icon: '<i class="fas fa-battery-quarter"></i>',
+        class: 'battery-info'
+    })
 
     // return sensorDataRaw
 

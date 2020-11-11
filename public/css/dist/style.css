@@ -1,10 +1,4 @@
 @charset "UTF-8";
-/*
-* Prefixed by https://autoprefixer.github.io
-* PostCSS: v7.0.29,
-* Autoprefixer: v9.7.6
-* Browsers: last 4 version
-*/
 @import "bootstrap.css";
 :root {
   --ol-map: require("../images/ol.jpeg");
@@ -118,6 +112,10 @@ h2 {
 /* width */
 ::-webkit-scrollbar {
   display: none;
+}
+
+.custom-map::-webkit-scrollbar {
+  display: block;
 }
 
 /* Track */
@@ -396,6 +394,12 @@ h2.active {
   /* float: left; */
   margin: 35px 5px 35px !important;
   padding: 15px 50px !important;
+}
+
+input[type=date] {
+  background: #ffffff00;
+  border: 1px solid black;
+  padding: 5px;
 }
 
 input[type=button],
@@ -1436,13 +1440,15 @@ form.update-container > input[type=submit] {
 
 .sidenav-opened .sidenav-wrapper {
   left: 0;
+  display: -ms-grid;
+  display: grid;
+  grid-template-rows: 53px 1fr 1fr 123px;
 }
 
 .sidenav-wrapper {
   width: 100%;
   position: absolute;
   left: 0px;
-  display: block;
   height: 100%;
   -webkit-transition: all 0.2s ease;
   -o-transition: all 0.2s ease;
@@ -1673,7 +1679,6 @@ img.img-circle {
 
 /* settings items */
 .settings-items {
-  position: absolute;
   bottom: 0;
   /* padding: 5px 0px; */
   width: 100%;
@@ -1685,11 +1690,13 @@ img.img-circle {
 }
 
 .logout-btn {
-  border-top: 1px solid gray;
   /* box-shadow: 0px 11px 8px -10px #00000082, inset 0px -11px 8px -10px #00000082; */
   padding: 10px 0px;
   /* box-shadow: 0px 0px 10px #00000082; */
   margin-bottom: 0px;
+  bottom: 0;
+  position: absolute;
+  width: 100%;
 }
 
 .logout-btn > button {
@@ -3769,6 +3776,46 @@ article[class*=live] {
   transition: all 0.5s ease;
   border: 0;
 }
+article[class*=live].no-power div.card-body:after, article[class*=live].alert-active div.card-body:after, article[class*=live].alarm-active div.card-body:after {
+  color: black;
+  top: 10px;
+  left: 0%;
+  display: block;
+  /* width: 100%; */
+  transform: translateY(-50%);
+  position: absolute;
+  /* font-size: 17px; */
+  font-size: 1.1rem;
+  font-weight: 400;
+  margin: 0;
+  color: #343a3f;
+  padding: 5px 21px;
+  border-top-right-radius: 13px;
+  border-bottom-right-radius: 13px;
+}
+article[class*=live].no-power .currentValue {
+  color: var(--gray);
+}
+article[class*=live].no-power div.card-body:after {
+  content: "No power";
+  background: var(--gray);
+  color: #ffffff;
+}
+article[class*=live].alert-active .currentValue {
+  color: var(--yellow);
+}
+article[class*=live].alert-active div.card-body:after {
+  content: "Near the limits";
+  background: var(--yellow);
+}
+article[class*=live].alarm-active .currentValue {
+  color: var(--danger);
+}
+article[class*=live].alarm-active div.card-body:after {
+  content: "Alarm";
+  background: var(--danger);
+  color: #ffffff;
+}
 article[class*=live] .card-header.alarm-active {
   background: -webkit-linear-gradient(left, #dc3545 0%, rgba(0, 0, 0, 0) 51%);
   background: -o-linear-gradient(left, #dc3545 0%, rgba(0, 0, 0, 0) 51%);
@@ -4085,6 +4132,7 @@ span.currentValue {
   transform: translate(-50%, -50%);
   top: 50%;
   font-size: 4.7vw;
+  text-shadow: 3px 3px 6px #343a407d;
 }
 
 span.currentValue:after {
@@ -4596,6 +4644,16 @@ article[sensortype=voltage] span.noAlertGauge {
   overflow: hidden;
 }
 
+.portrait {
+  min-height: 100%;
+  width: 100%;
+}
+
+.landscape {
+  min-width: 100%;
+  height: 100%;
+}
+
 div#map > div {
   display: block;
   overflow: scroll;
@@ -4710,7 +4768,6 @@ div#map > div.custom-map > .sensor-item span {
 div#maps-list {
   padding: 5px 0px;
   position: relative;
-  max-height: 236px;
   overflow-y: scroll;
 }
 div#maps-list > div {
@@ -4757,7 +4814,6 @@ div#zones-list {
   box-shadow: inset 0px 11px 8px -10px #00000082, inset 0px -11px 8px -10px #00000082;
   padding: 5px 0px;
   position: relative;
-  max-height: 236px;
   overflow-y: scroll;
 }
 div#zones-list > div {
@@ -5374,7 +5430,6 @@ article[class*=graph-]:not([class*=live]) {
   box-shadow: var(--neuro);
   border-radius: 13px;
 }
-
 article[class*=graph-]:not([class*=live]) .card-body {
   overflow: hidden;
   background: var(--gray-dark);
@@ -5383,9 +5438,13 @@ article[class*=graph-]:not([class*=live]) .card-body {
   border-radius: 13px;
   -webkit-box-shadow: var(--neuro);
   box-shadow: var(--neuro);
+  transform: scale(1);
 }
-
-article[class*=graph-] .card-body canvas {
+article[class*=graph-]:not([class*=live]) .card-body:hover {
+  transform: scale(1.01);
+  cursor: pointer;
+}
+article[class*=graph-]:not([class*=live]) .card-body canvas {
   max-width: 100%;
   min-height: 200px;
 }
@@ -6075,8 +6134,8 @@ label.switch-label:active:after {
   display: -ms-grid;
   display: grid;
   padding: 1rem 1rem 1rem 1rem;
-  -ms-grid-columns: 1.3fr 1.2fr 0.5fr;
-  grid-template-columns: 1.3fr 1.2fr 0.5fr;
+  -ms-grid-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   grid-column-gap: 1rem;
   grid-row-gap: 1rem;
 }
@@ -6094,6 +6153,12 @@ label.switch-label:active:after {
 .settings-container .inner-settings .top-container {
   padding: 0.75rem 0.75rem 0 0.75rem;
 }
+.settings-container .inner-settings .mid-container td, .settings-container .inner-settings .mid-container th {
+  padding: 0.45rem 0.75rem;
+}
+.settings-container .inner-settings .mid-container > *:not(.table) {
+  padding: 0rem 0rem 0rem 0.75rem;
+}
 .settings-container .inner-settings .mid-container thead th {
   font-size: 14px;
   text-transform: lowercase;
@@ -6103,8 +6168,15 @@ label.switch-label:active:after {
   font-size: 14px;
   position: relative;
 }
+.settings-container .inner-settings .mid-container tbody td p {
+  word-break: break-word;
+  margin: 0;
+}
 .settings-container .inner-settings .lower-container {
   padding: 0.75rem 0.75rem 0.75rem 0.75rem;
+}
+.settings-container .inner-settings .lower-container .btn {
+  margin: 0;
 }
 .settings-container .zone-settings span {
   padding: 0px 10px;
@@ -6136,6 +6208,9 @@ label.switch-label:active:after {
 .settings-container .admin-settings span.remove-user i:hover {
   color: var(--danger);
 }
+.settings-container .report-settings td, .settings-container .report-settings th {
+  padding: 0.1rem 0.75rem !important;
+}
 .settings-container .input-invalid.form-control {
   border-color: var(--red);
   box-shadow: 0 0 0 0.2rem #dc35458a;
@@ -6145,6 +6220,27 @@ label.switch-label:active:after {
   box-shadow: 0 0 0 0.2rem #28a7458a;
 }
 
+@media screen and (max-width: 900px) {
+  .settings-container {
+    display: -ms-grid;
+    display: grid;
+    padding: 1rem 1rem 1rem 1rem;
+    -ms-grid-columns: 1fr;
+    grid-template-columns: 1fr;
+    grid-column-gap: 1rem;
+    grid-row-gap: 1rem;
+  }
+}
+@media only screen and (max-width: 600px) {
+  .settings-container {
+    -ms-grid-columns: 1fr;
+    grid-template-columns: 1fr;
+  }
+}
+.report-settings .form-checkboxes label {
+  margin: 0;
+}
+
 .form-checkboxes label {
   padding: 5px 10px;
   margin-right: 2px;
@@ -6152,9 +6248,9 @@ label.switch-label:active:after {
   position: relative;
   padding-left: 12px;
   border-radius: 13px;
+  border: 1px solid transparent;
 }
 .form-checkboxes label:hover {
-  background: #e9ecef;
   cursor: pointer;
 }
 .form-checkboxes label input {
@@ -6164,12 +6260,6 @@ label.switch-label:active:after {
   top: 1px;
 }
 
-@media only screen and (max-width: 600px) {
-  .settings-container {
-    -ms-grid-columns: 1fr;
-    grid-template-columns: 1fr;
-  }
-}
 div#map .splash-inner {
   display: grid !important;
   grid-template-columns: 1fr 1fr;
@@ -6238,6 +6328,7 @@ div#map .splash-inner > div .map-picker {
 div#map .splash-inner > div .map-picker:hover {
   background: #ffc008;
   transform: translate(-50%, -50%) scale(1.1);
+  cursor: pointer;
 }
 div#map .splash-inner > div background {
   width: 100%;
@@ -6298,4 +6389,161 @@ div#map .splash-inner > div:hover div {
   color: #d8d8d8;
   letter-spacing: 0.1em;
   text-shadow: -1px -1px 1px #696969, 2px 2px 1px #e9e9e9;
+}
+
+@media only screen and (max-width: 600px) {
+  #map > span {
+    font-size: 60px;
+  }
+}
+@font-face {
+  font-family: "Source Code Pro";
+  font-style: normal;
+  font-weight: 400;
+  src: local("Source Code Pro Regular"), local("SourceCodePro-Regular"), url(https://fonts.gstatic.com/s/sourcecodepro/v13/HI_SiYsKILxRpg3hIP6sJ7fM7PqlPevT.ttf) format("truetype");
+}
+@font-face {
+  font-family: "Source Code Pro";
+  font-style: normal;
+  font-weight: 500;
+  src: local("Source Code Pro Medium"), local("SourceCodePro-Medium"), url(https://fonts.gstatic.com/s/sourcecodepro/v13/HI_XiYsKILxRpg3hIP6sJ7fM7PqtzsjDs-cv.ttf) format("truetype");
+}
+@-webkit-keyframes roll {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0;
+    -webkit-transform: translate(-150%, -50%) rotate(-90deg) scale(0.3);
+    transform: translate(-150%, -50%) rotate(-90deg) scale(0.3);
+    box-shadow: none;
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: translate(-50%, -50%) rotate(0deg) scale(1);
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+  }
+}
+@keyframes roll {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0;
+    -webkit-transform: translate(-150%, -50%) rotate(-90deg) scale(0.3);
+    transform: translate(-150%, -50%) rotate(-90deg) scale(0.3);
+    box-shadow: none;
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: translate(-50%, -50%) rotate(0deg) scale(1);
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+  }
+}
+#map > div > form .custom-file {
+  -webkit-animation: roll 1s;
+  animation: roll 1s;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  padding: 21px;
+  background: var(--gray-dark);
+  border-radius: 50%;
+  box-shadow: 0px -1px 20px 3px rgba(0, 0, 0, 0.52);
+  width: 230px;
+  height: 230px;
+  transition: all 0.2s ease;
+}
+#map > div > form .custom-file:hover {
+  top: 48%;
+}
+#map > div > form .custom-file:before {
+  content: "Upload your map";
+  position: absolute;
+  color: white;
+  z-index: 99;
+  left: 50%;
+  display: block;
+  bottom: -35%;
+  transform: translate(-50%, -50%);
+  width: 150%;
+  text-align: center;
+  color: var(--gray-dark);
+  font-size: 36px;
+  font-weight: bold;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+}
+#map > div > form .custom-file:hover:before {
+  visibility: visible;
+  opacity: 1;
+  bottom: -45%;
+}
+#map > div > form .custom-file.input-hovered {
+  width: 2000px;
+  height: 2000px;
+  border-radius: 0;
+  padding: 907px;
+}
+#map > div > form .custom-file span {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: var(--yellow);
+  border-radius: 100%;
+  /* padding: 65px; */
+  box-shadow: inset 0px 0px 19px 0px rgba(0, 0, 0, 0.89);
+}
+#map > div > form .custom-file span i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: block;
+  font-size: 5.7rem;
+  color: var(--gray-dark);
+}
+#map > div > form .custom-file input#image-file {
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 3;
+  cursor: pointer;
+}
+#map > div > form .wrapper button:active {
+  box-shadow: none;
+  margin-top: 24px;
+  padding: 8px;
+}
+#map > div > form .show-button {
+  background: #264974;
+  border: none;
+  color: #fff;
+  padding: 10px 20px;
+  float: right;
+  display: none;
+}
+#map > div > form .upload-result {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  overflow-y: auto;
+}
+#map > div > form .upload-result__content {
+  word-break: break-all;
+  font-family: "Source Code Pro";
+  overflow-wrap: break-word;
 }

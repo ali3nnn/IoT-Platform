@@ -59,9 +59,11 @@
     "socketio-wildcard": "^2.0.0"
   },
   "devDependencies": {
+    "autoprefixer": "^10.0.1",
     "css-loader": "^4.3.0",
     "node-sass": "^4.14.1",
     "nodemon": "^2.0.3",
+    "postcss-loader": "^4.0.4",
     "sass": "^1.26.11",
     "sass-loader": "^10.0.2",
     "style-loader": "^1.2.1",

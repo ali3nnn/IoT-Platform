@@ -227,6 +227,49 @@ export function filterColumn(id_input, id_table, tableColumn) {
     }
 }
 
+export const monthChanger = (number) => {
+    var b = ''
+    switch (number) {
+        case 1:
+            b = "January";
+            break;
+        case 2:
+            b = "February";
+            break;
+        case 3:
+            b = "March";
+            break;
+        case 4:
+            b = "April";
+            break;
+        case 5:
+            b = "May";
+            break;
+        case 6:
+            b = "June";
+            break;
+        case 7:
+            b = "July";
+            break;
+        case 8:
+            b = "August";
+            break;
+        case 9:
+            b = "September";
+            break;
+        case 10:
+            b = "October";
+            break;
+        case 11:
+            b = "November";
+            break;
+        case 12:
+            b = "December";
+            break;
+    }
+    return b
+}
+
 // insert status of conveyor into mysql
 export let insertStatus = async (status) => {
     // status = on / off
@@ -421,7 +464,16 @@ export function generateUniqueId() {
     return uniqueId
 }
 
+function roundToTwo(num) {
+    let result = +(Math.round(num + "e+2") + "e-2");
+    if (Number.isInteger(result)) {
+        result += '.00'
+    }
+    return result
+}
+
 export function downloadCSV(args) {
+
     var data, filename, link;
     var csv = "";
 
@@ -429,13 +481,13 @@ export function downloadCSV(args) {
     var xlabels = args.xlabels
 
     xlabels = xlabels.map(time => {
-        return time ? time.replace(":00.000Z","").replace("T"," ") : time
+        return time ? time.replace(":00.000Z", "").replace("T", " ") : time
     })
 
     ylabels = ylabels.map(value => {
         return value ? value.toFixed(1) : "not recorded"
     })
- 
+
     // console.log(xlabels)
 
     // Header of table
@@ -461,3 +513,128 @@ export function downloadCSV(args) {
     link.click();
     document.body.removeChild(link);
 }
+
+export function downloadCSVMulti(args) {
+
+    // console.log(args)
+
+    var data, filename, link;
+    var csv = "";
+
+    // Header of table
+    csv = "Date,"
+    args.sensors.forEach((item, index) => {
+        csv += item
+        if (index != args.sensors.length - 1)
+            csv += ","
+    })
+    csv += "\n"
+
+    // Build each row independetly
+    let daysToReport = Object.values(args.xlabels)[0].rows.length
+    for (let rowIndex = 0; rowIndex < daysToReport; rowIndex++) {
+
+        // Get timestamp for each row
+        let timestamp = Object.values(args.xlabels)[0].rows[rowIndex].time
+        timestamp = timestamp.split('T')[0]
+        let row = timestamp + ','
+
+        // Build each column of row
+        let columnIndex = 0
+
+        for (const sensor of args.sensors) {
+
+            if (args.xlabels[sensor])
+                row += roundToTwo(parseFloat(args.xlabels[sensor].rows[rowIndex].value))
+            else
+                row += "NaN"
+
+            if (columnIndex != args.sensors.length - 1)
+                row += ","
+
+            columnIndex++
+        }
+
+        // Append row to final csv
+        csv += row + "\n"
+    }
+
+    filename = 'Report.csv';
+
+    if (!csv.match(/^data:text\/csv/i)) {
+        csv = 'data:text/csv;charset=utf-8,' + csv;
+    }
+
+    data = encodeURI(csv);
+    link = document.createElement('a');
+    link.setAttribute('href', data);
+    link.setAttribute('download', filename);
+    document.body.appendChild(link); // Required for FF
+    link.click();
+    document.body.removeChild(link);
+}
+
+export function getMultiReport(listOfZones, date=[]) {
+    if (listOfZones) {
+
+        let sensorsRaw = userData_raw.filter((item, index) => {
+            if (listOfZones.indexOf(item.zoneId) != -1)
+                return item
+        })
+
+        let listOfSensors = getDistinctValuesFromObject('sensorId', sensorsRaw)
+
+        $.ajax({
+            url: "/api/v3/multi-report",
+            type: 'POST',
+            data: {
+                listOfSensors,
+                date
+            }
+        }).done(function (res) {
+
+            console.log(res)
+            
+            if (res.result.length) {
+                if (typeof listOfSensors == 'string') {
+                    listOfSensors = new Array(listOfSensors)
+                }
+
+                // Rename keys
+                res.result.forEach((item, index) => {
+                    // console.log(item)
+                    delete Object.assign(res.result, { [item.tags.sensorId]: res.result[index] })[index];
+                })
+
+                // console.log(res.result)
+
+                downloadCSVMulti({
+                    sensors: listOfSensors,
+                    xlabels: res.result,
+                    ylabels: res.result
+                })
+            } else {
+                alert("No data for selected zones")
+            }
+
+        });
+
+        // if(date.length) {
+
+        // } else {
+            
+        // }
+
+    } else {
+        return 'There is no zone selected!'
+    }
+
+}
+
+export function getDaysInMonth(month, year) {
+    // Here January is 1 based
+    //Day 0 is the last day in the previous month
+    return new Date(year, month, 0).getDate();
+    // Here January is 0 based
+    // return new Date(year, month+1, 0).getDate();
+};

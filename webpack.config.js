@@ -1,4 +1,5 @@
 const path = require('path');
+const autoprefixer = require('autoprefixer');
 
 module.exports = {
     entry: {
@@ -14,13 +15,24 @@ module.exports = {
             test: /\.scss$/,
             use: [
                 "style-loader", // inject css into dom
+                // "postcss-loader",
                 "css-loader", // take css and insert it into js
-                "sass-loader" // convert sass to css
+                "sass-loader", // convert sass to css
+                
             ]
         }, {
             test: /\.(png|jpg|jpeg)$/,
             loader: 'url-loader'
-        }]
+        }],
+        // plugins: [
+        //     new webpack.LoaderOptionsPlugin({
+        //       options: {
+        //         postcss: [
+        //           autoprefixer(),
+        //         ]
+        //       }
+        //     })
+        //   ]
     },
     watch: true
 };

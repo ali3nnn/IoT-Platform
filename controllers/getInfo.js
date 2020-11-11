@@ -134,28 +134,42 @@ const getUserData = async (req, res, next) => {
     if (sess.role == 'superadmin') {
         // const query = "select sensors.*, locations.*, users.company from sensors join locations on sensors.zoneId=locations.zoneId join userAccess on sensors.sensorId=userAccess.sensorId join users on userAccess.username = users.username where users.company=(select company from users where username='" + sess.username + "');"
         // const query = "select DISTINCTROW sensors.*, locations.*, users.company from sensors join locations on sensors.zoneId=locations.zoneId join userAccess on sensors.sensorId=userAccess.sensorId join users on userAccess.username = users.username where users.company=(select company from users where username='" + sess.username + "');"
-        const query = "select sensors.*, locations.*, GROUP_CONCAT(userAccess.username) as userList, GROUP_CONCAT(users.email) as emailListfrom from sensors join userAccess on userAccess.sensorId = sensors.sensorId join users on userAccess.username = users.username and users.company = (select company from users where username='" + sess.username + "') join locations where sensors.zoneId=locations.zoneId group by sensors.sensorId;"
-        mysqlReader(query).then(async (rows) => {
-            if (rows.length) {
-                userData = rows
-                userData["error"] = false
-                sess.userData = userData
-            } else {
-                mysqlReader(`select sensors.*, locations.*
+
+        // const query = "select sensors.*, locations.*, GROUP_CONCAT(userAccess.username) as userList, GROUP_CONCAT(users.email) as emailListfrom from sensors join userAccess on userAccess.sensorId = sensors.sensorId join users on userAccess.username = users.username and users.company = (select company from users where username='" + sess.username + "') join locations where sensors.zoneId=locations.zoneId group by sensors.sensorId;"
+        // mysqlReader(query).then(async (rows) => {
+        //     if (rows.length) {
+        //         userData = rows
+        //         userData["error"] = false
+        //         sess.userData = userData
+        //     } else {
+        //         mysqlReader(`select sensors.*, locations.*
+        //         from sensors 
+        //         join locations where sensors.zoneId=locations.zoneId and locations.createdBy = (select company from users where username='`+sess.username+`')
+        //         group by sensors.sensorId;`).then((result)=>{
+        //             // console.log(result)
+        //             if(result) {
+        //                 userData = result
+        //                 userData["error"] = false
+        //             } else {
+        //                 userData["error"] = "No data found"
+        //             }
+        //             sess.userData = userData
+        //         })
+        //     }
+        // }).
+        mysqlReader(`select sensors.*, locations.*
                 from sensors 
-                join locations where sensors.zoneId=locations.zoneId and locations.createdBy = (select company from users where username='`+sess.username+`')
-                group by sensors.sensorId;`).then((result)=>{
-                    console.log(result)
-                    if(result) {
-                        userData = result
-                        userData["error"] = false
-                    } else {
-                        userData["error"] = "No data found"
-                    }
-                    sess.userData = userData
-                })
+                join locations where sensors.zoneId=locations.zoneId and locations.createdBy = (select company from users where username='`+ sess.username + `')
+                group by sensors.sensorId;`).then((result) => {
+            // console.log(result)
+            if (result) {
+                userData = result
+                userData["error"] = false
+            } else {
+                userData["error"] = "No data found"
             }
-        }).then(()=>{            
+            sess.userData = userData
+        }).then(() => {
 
             // Set session varriable
             // sess.userData = userData // set list of sensors that are assigned to company of superadmin
@@ -177,7 +191,7 @@ const getUserData = async (req, res, next) => {
                 userData["error"] = "No data found"
             }
             // set list of sensors that are assigned to this user
-            sess.userData = userData 
+            sess.userData = userData
         }).then(() => {
             // Set sess.company variable
             mysqlReader("SELECT company FROM users where username='" + sess.username + "'").then((result) => {
@@ -544,6 +558,13 @@ const replaceDiacritics = (str, ignore) => {
     return result
 }
 
+const getDaysInMonth = (m, y) => {
+     // Here January is 1 based
+    //Day 0 is the last day in the previous month
+   return new Date(year, month, 0).getDate();
+   // Here January is 0 based
+   // return new Date(year, month+1, 0).getDate();
+}
 // Keep track url
 // const trackurl = (req,res,next) => {
 //     if(req.originalUrl!='undefined')
@@ -566,6 +587,7 @@ module.exports = {
     test,
     getDistinctValuesFromObject,
     replaceAll,
-    replaceDiacritics
+    replaceDiacritics,
+    getDaysInMonth
     // trackurl
 }

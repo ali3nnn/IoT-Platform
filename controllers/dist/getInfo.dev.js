@@ -143,11 +143,10 @@ function mysqlWriter(query) {
 
 
 var getUserData = function getUserData(req, res, next) {
-  var userData, query, _query;
-
-  return regeneratorRuntime.async(function getUserData$(_context3) {
+  var userData, query;
+  return regeneratorRuntime.async(function getUserData$(_context2) {
     while (1) {
-      switch (_context3.prev = _context3.next) {
+      switch (_context2.prev = _context2.next) {
         case 0:
           sess = req.session;
           userData = {}; // select company from users where username='"+sess.username+"'
@@ -155,37 +154,38 @@ var getUserData = function getUserData(req, res, next) {
           if (sess.role == 'superadmin') {
             // const query = "select sensors.*, locations.*, users.company from sensors join locations on sensors.zoneId=locations.zoneId join userAccess on sensors.sensorId=userAccess.sensorId join users on userAccess.username = users.username where users.company=(select company from users where username='" + sess.username + "');"
             // const query = "select DISTINCTROW sensors.*, locations.*, users.company from sensors join locations on sensors.zoneId=locations.zoneId join userAccess on sensors.sensorId=userAccess.sensorId join users on userAccess.username = users.username where users.company=(select company from users where username='" + sess.username + "');"
-            query = "select sensors.*, locations.*, GROUP_CONCAT(userAccess.username) as userList, GROUP_CONCAT(users.email) as emailListfrom from sensors join userAccess on userAccess.sensorId = sensors.sensorId join users on userAccess.username = users.username and users.company = (select company from users where username='" + sess.username + "') join locations where sensors.zoneId=locations.zoneId group by sensors.sensorId;";
-            mysqlReader(query).then(function _callee(rows) {
-              return regeneratorRuntime.async(function _callee$(_context) {
-                while (1) {
-                  switch (_context.prev = _context.next) {
-                    case 0:
-                      if (rows.length) {
-                        userData = rows;
-                        userData["error"] = false;
-                        sess.userData = userData;
-                      } else {
-                        mysqlReader("select sensors.*, locations.*\n                from sensors \n                join locations where sensors.zoneId=locations.zoneId and locations.createdBy = (select company from users where username='" + sess.username + "')\n                group by sensors.sensorId;").then(function (result) {
-                          console.log(result);
+            // const query = "select sensors.*, locations.*, GROUP_CONCAT(userAccess.username) as userList, GROUP_CONCAT(users.email) as emailListfrom from sensors join userAccess on userAccess.sensorId = sensors.sensorId join users on userAccess.username = users.username and users.company = (select company from users where username='" + sess.username + "') join locations where sensors.zoneId=locations.zoneId group by sensors.sensorId;"
+            // mysqlReader(query).then(async (rows) => {
+            //     if (rows.length) {
+            //         userData = rows
+            //         userData["error"] = false
+            //         sess.userData = userData
+            //     } else {
+            //         mysqlReader(`select sensors.*, locations.*
+            //         from sensors 
+            //         join locations where sensors.zoneId=locations.zoneId and locations.createdBy = (select company from users where username='`+sess.username+`')
+            //         group by sensors.sensorId;`).then((result)=>{
+            //             // console.log(result)
+            //             if(result) {
+            //                 userData = result
+            //                 userData["error"] = false
+            //             } else {
+            //                 userData["error"] = "No data found"
+            //             }
+            //             sess.userData = userData
+            //         })
+            //     }
+            // }).
+            mysqlReader("select sensors.*, locations.*\n                from sensors \n                join locations where sensors.zoneId=locations.zoneId and locations.createdBy = (select company from users where username='" + sess.username + "')\n                group by sensors.sensorId;").then(function (result) {
+              // console.log(result)
+              if (result) {
+                userData = result;
+                userData["error"] = false;
+              } else {
+                userData["error"] = "No data found";
+              }
 
-                          if (result) {
-                            userData = result;
-                            userData["error"] = false;
-                          } else {
-                            userData["error"] = "No data found";
-                          }
-
-                          sess.userData = userData;
-                        });
-                      }
-
-                    case 1:
-                    case "end":
-                      return _context.stop();
-                  }
-                }
-              });
+              sess.userData = userData;
             }).then(function () {
               // Set session varriable
               // sess.userData = userData // set list of sensors that are assigned to company of superadmin
@@ -197,11 +197,11 @@ var getUserData = function getUserData(req, res, next) {
               });
             });
           } else {
-            _query = "select userAccess.username, sensors.*, locations.* from userAccess inner join sensors on sensors.sensorId=userAccess.sensorId and userAccess.username='" + sess.username + "' inner join locations on locations.zoneId=sensors.zoneId;";
-            mysqlReader(_query).then(function _callee2(rows) {
-              return regeneratorRuntime.async(function _callee2$(_context2) {
+            query = "select userAccess.username, sensors.*, locations.* from userAccess inner join sensors on sensors.sensorId=userAccess.sensorId and userAccess.username='" + sess.username + "' inner join locations on locations.zoneId=sensors.zoneId;";
+            mysqlReader(query).then(function _callee(rows) {
+              return regeneratorRuntime.async(function _callee$(_context) {
                 while (1) {
-                  switch (_context2.prev = _context2.next) {
+                  switch (_context.prev = _context.next) {
                     case 0:
                       if (rows.length) {
                         userData = rows;
@@ -215,7 +215,7 @@ var getUserData = function getUserData(req, res, next) {
 
                     case 2:
                     case "end":
-                      return _context2.stop();
+                      return _context.stop();
                   }
                 }
               });
@@ -231,7 +231,7 @@ var getUserData = function getUserData(req, res, next) {
 
         case 3:
         case "end":
-          return _context3.stop();
+          return _context2.stop();
       }
     }
   });
@@ -239,9 +239,9 @@ var getUserData = function getUserData(req, res, next) {
 
 var getCounties = function getCounties(req, res, next) {
   var time, data, query;
-  return regeneratorRuntime.async(function getCounties$(_context5) {
+  return regeneratorRuntime.async(function getCounties$(_context4) {
     while (1) {
-      switch (_context5.prev = _context5.next) {
+      switch (_context4.prev = _context4.next) {
         case 0:
           sess = req.session;
           sess.counties = [];
@@ -251,10 +251,10 @@ var getCounties = function getCounties(req, res, next) {
 
           if (sess.username) {
             query = "select userAccess.username, sensors.*, locations.* from userAccess inner join sensors on sensors.sensorId=userAccess.sensorId and userAccess.username='" + sess.username + "' inner join locations on locations.zoneId=sensors.zoneId;";
-            mysqlReader(query).then(function _callee3(rows) {
-              return regeneratorRuntime.async(function _callee3$(_context4) {
+            mysqlReader(query).then(function _callee2(rows) {
+              return regeneratorRuntime.async(function _callee2$(_context3) {
                 while (1) {
-                  switch (_context4.prev = _context4.next) {
+                  switch (_context3.prev = _context3.next) {
                     case 0:
                       if (rows.length) {
                         // TODO - continue from here
@@ -310,7 +310,7 @@ var getCounties = function getCounties(req, res, next) {
 
                     case 1:
                     case "end":
-                      return _context4.stop();
+                      return _context3.stop();
                   }
                 }
               });
@@ -323,16 +323,16 @@ var getCounties = function getCounties(req, res, next) {
 
         case 6:
         case "end":
-          return _context5.stop();
+          return _context4.stop();
       }
     }
   });
 };
 
 var getSensorLocation = function getSensorLocation(req, res, next) {
-  return regeneratorRuntime.async(function getSensorLocation$(_context6) {
+  return regeneratorRuntime.async(function getSensorLocation$(_context5) {
     while (1) {
-      switch (_context6.prev = _context6.next) {
+      switch (_context5.prev = _context5.next) {
         case 0:
           // sess = req.session;
           // sess.sensors = []
@@ -407,16 +407,16 @@ var getSensorLocation = function getSensorLocation(req, res, next) {
 
         case 1:
         case "end":
-          return _context6.stop();
+          return _context5.stop();
       }
     }
   });
 };
 
 var isScaleAvailable = function isScaleAvailable(req, res, next) {
-  return regeneratorRuntime.async(function isScaleAvailable$(_context7) {
+  return regeneratorRuntime.async(function isScaleAvailable$(_context6) {
     while (1) {
-      switch (_context7.prev = _context7.next) {
+      switch (_context6.prev = _context6.next) {
         case 0:
           next(); // sess = req.sessio n;
           // var time = new Date()
@@ -452,16 +452,16 @@ var isScaleAvailable = function isScaleAvailable(req, res, next) {
 
         case 1:
         case "end":
-          return _context7.stop();
+          return _context6.stop();
       }
     }
   });
 };
 
 var isConveyorAvailable = function isConveyorAvailable(req, res, next) {
-  return regeneratorRuntime.async(function isConveyorAvailable$(_context8) {
+  return regeneratorRuntime.async(function isConveyorAvailable$(_context7) {
     while (1) {
-      switch (_context8.prev = _context8.next) {
+      switch (_context7.prev = _context7.next) {
         case 0:
           next(); // sess = req.session;
           // var time = new Date()
@@ -497,16 +497,16 @@ var isConveyorAvailable = function isConveyorAvailable(req, res, next) {
 
         case 1:
         case "end":
-          return _context8.stop();
+          return _context7.stop();
       }
     }
   });
 };
 
 var isScannerAvailable = function isScannerAvailable(req, res, next) {
-  return regeneratorRuntime.async(function isScannerAvailable$(_context9) {
+  return regeneratorRuntime.async(function isScannerAvailable$(_context8) {
     while (1) {
-      switch (_context9.prev = _context9.next) {
+      switch (_context8.prev = _context8.next) {
         case 0:
           next(); // sess = req.session;
           // var time = new Date()
@@ -545,7 +545,7 @@ var isScannerAvailable = function isScannerAvailable(req, res, next) {
 
         case 1:
         case "end":
-          return _context9.stop();
+          return _context8.stop();
       }
     }
   });
@@ -596,6 +596,13 @@ var replaceDiacritics = function replaceDiacritics(str, ignore) {
     result = str.replace(new RegExp(letter.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g, "\\$&"), ignore ? "gi" : "g"), typeof str2 == "string" ? str.replace(/\$/g, "$$$$") : str);
   });
   return result;
+};
+
+var getDaysInMonth = function getDaysInMonth(m, y) {
+  // Here January is 1 based
+  //Day 0 is the last day in the previous month
+  return new Date(year, month, 0).getDate(); // Here January is 0 based
+  // return new Date(year, month+1, 0).getDate();
 }; // Keep track url
 // const trackurl = (req,res,next) => {
 //     if(req.originalUrl!='undefined')
@@ -618,6 +625,7 @@ module.exports = {
   test: test,
   getDistinctValuesFromObject: getDistinctValuesFromObject,
   replaceAll: replaceAll,
-  replaceDiacritics: replaceDiacritics // trackurl
+  replaceDiacritics: replaceDiacritics,
+  getDaysInMonth: getDaysInMonth // trackurl
 
 };

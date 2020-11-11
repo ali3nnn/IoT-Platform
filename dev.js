@@ -117,7 +117,8 @@ const {
     test,
     getValuesFromObject,
     replaceAll,
-    replaceDiacritics
+    replaceDiacritics,
+    getDaysInMonth
     // trackurl
 } = require('./controllers/getInfo');
 const {
@@ -138,7 +139,7 @@ const influx = new Influx.InfluxDB({
 
 // Influx Write - ASYNC
 function influxWriter(measurement, country, county, city, location, zone, username, type, sensorId, value, database = 'anysensor3', precision = 's') {
-    console.log('Influx Write')
+    // console.log('Influx Write')
     influx.writePoints([{
         measurement,
         tags: {
@@ -194,6 +195,13 @@ config_db = {
     database: process.env.DATABASE
 }
 
+config_verne = {
+    host: process.env.DATABASE_HOST,
+    user: process.env.DATABASE_USER,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_VERNE
+}
+
 // Set the connection to DB - Async
 // let db = mysql.createConnection(config_db)
 
@@ -231,6 +239,7 @@ class Database {
 
 // Set and connect to DB - Promise
 const database = new Database(config_db)
+const verne = new Database(config_verne)
 
 // Second connection to DB
 const db = mysql.createConnection(config_db)
@@ -239,6 +248,19 @@ function mysqlReader(query) {
     return new Promise((resolve, reject) => {
         // console.log(query)
         database.query(query)
+            .then(result => {
+                return resolve(result)
+            })
+            .catch(error => {
+                return reject(error)
+            });
+    })
+}
+
+function addUserVerne(query) {
+    return new Promise((resolve, reject) => {
+        // console.log(query)
+        verne.query(query)
             .then(result => {
                 return resolve(result)
             })
@@ -619,9 +641,9 @@ app.post('/update', async (req, res) => {
             }
         })
     } else {
-        console.log("password changed")
+        // console.log("password changed")
         let hashedPassword = await bcrypt.hash(req.body.password, 10)
-        console.log(hashedPassword)
+        // console.log(hashedPassword)
         db.query("UPDATE users SET Name='" + req.body.name + "', Username='" + req.body.username + "', Email='" + req.body.email + "', User_role='" + req.body.role + "', Password='" + hashedPassword + "' WHERE Id='" + req.body.id + "'", (err, result) => {
             if (err) console.error(err)
             else {
@@ -730,7 +752,7 @@ app.post('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, (r
                         mysqlReader("INSERT INTO userAccess (sensorId, username) values ('" + postQuery.sensorid + "','" + sess.username + "')")
                             .then(() => {
                                 // Insert into VerneMQ Table
-                                mysqlReader(`INSERT INTO vmq_auth_acl (mountpoint, client_id, username, password, publish_acl, subscribe_acl) VALUES ('', '` + postQuery.sensorid + `', '` + postQuery.sensorid + `', md5('dasstecb2b'), '[{"pattern":"#"}]', '[{"pattern":"#"}]');`)
+                                addUserVerne(`INSERT INTO vmq_auth_acl (mountpoint, client_id, username, password, publish_acl, subscribe_acl) VALUES ('', '` + postQuery.sensorid + `', '` + postQuery.sensorid + `', md5('dasstecb2b'), '[{"pattern":"#"}]', '[{"pattern":"#"}]');`)
                                     .then(() => {
                                         res.redirect("/map")
                                     })
@@ -750,7 +772,7 @@ app.post('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, (r
                                     mysqlReader("INSERT INTO userAccess (sensorId, username) values ('" + postQuery.sensorid + "','" + sess.username + "')")
                                         .then(() => {
                                             // Insert into VerneMQ Table
-                                            mysqlReader(`INSERT INTO vmq_auth_acl (mountpoint, client_id, username, password, publish_acl, subscribe_acl) VALUES ('', '` + postQuery.sensorid + `', '` + postQuery.sensorid + `', md5('dasstecb2b'), '[{"pattern":"#"}]', '[{"pattern":"#"}]');`)
+                                            addUserVerne(`INSERT INTO vmq_auth_acl (mountpoint, client_id, username, password, publish_acl, subscribe_acl) VALUES ('', '` + postQuery.sensorid + `', '` + postQuery.sensorid + `', md5('dasstecb2b'), '[{"pattern":"#"}]', '[{"pattern":"#"}]');`)
                                                 .then(() => {
                                                     res.redirect("/map")
                                                 })
@@ -775,7 +797,7 @@ app.post('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, (r
                             mysqlReader("INSERT INTO userAccess (sensorId, username) values ('" + postQuery.sensorid + "','" + sess.username + "')")
                                 .then(() => {
                                     // Insert into VerneMQ Table
-                                    mysqlReader(`INSERT INTO vmq_auth_acl (mountpoint, client_id, username, password, publish_acl, subscribe_acl) VALUES ('', '` + postQuery.sensorid + `', '` + postQuery.sensorid + `', md5('dasstecb2b'), '[{"pattern":"#"}]', '[{"pattern":"#"}]');`)
+                                    addUserVerne(`INSERT INTO vmq_auth_acl (mountpoint, client_id, username, password, publish_acl, subscribe_acl) VALUES ('', '` + postQuery.sensorid + `', '` + postQuery.sensorid + `', md5('dasstecb2b'), '[{"pattern":"#"}]', '[{"pattern":"#"}]');`)
                                         .then(() => {
                                             res.redirect("/map")
                                         })
@@ -797,6 +819,8 @@ app.post('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, (r
 
 // Get influx data for sensorId
 app.get('/api/v3/get-sensor-data', (req, res) => {
+
+    // [ ] TODO: Case when there are two series with same sensorId
 
     // Process time
     let todayRaw = new Date();
@@ -820,7 +844,7 @@ app.get('/api/v3/save-settings', (req, res) => {
     if (sess.username) {
         // let query = "UPDATE sensors SET " + (() => { return req.query.min ? 'min=' + req.query.min : '' })() + (() => { return req.query.max ? 'max=' + req.query.max : '' })() + (() => { return req.query.xlat ? 'x=\'' + req.query.xlat + '\' ' : '' })() + (() => { return req.query.ylong ? 'y=\'' + req.query.ylong + '\'' : '' })() + " WHERE sensorId=" + req.query.sensorId
         let query = "UPDATE sensors SET " + (() => { return req.query.min ? 'min=' + req.query.min : 'min=NULL' })() + "," + (() => { return req.query.max ? ' max=' + req.query.max : ' max=NULL' })() + "," + (() => { return req.query.xlat ? ' x=\'' + req.query.xlat + '\' ' : ' x=NULL' })() + "," + (() => { return req.query.ylong ? ' y=\'' + req.query.ylong + '\'' : ' y=NULL' })() + " WHERE sensorId=" + req.query.sensorId
-        console.log(query)
+        // console.log(query)
         mysqlReader(query)
             .then((res) => {
                 res.status(200).send("Values updated!");
@@ -877,7 +901,7 @@ app.get('/api/v3/get-interval', async (req, res) => {
 
     let query = "select mean(value) as value from sensors where sensorId='" + req.query.sensorId + "' and time<='" + req.query.end + "' and time>='" + req.query.start + "' group by time(" + averageTimeInterval(diff) + ") order by time desc"
 
-    console.log(query)
+    // console.log(query)
 
     if (sess.username) {
         influxReader(query).then(result => {
@@ -1068,7 +1092,7 @@ app.get('/api/get-data/type/:sensorId', (req, res) => {
     sess = req.session
     let data = []
     var time = new Date()
-    console.log(req.originalUrl)
+    // console.log(req.originalUrl)
 
     if (sess.username) {
 
@@ -1151,7 +1175,7 @@ app.get('/api/v2/get-data/sensorId/:county', (req, res) => {
 
             }
 
-            console.log(influxQuery)
+            // console.log(influxQuery)
 
             // Get all types of sensors of logged in user and from requested county
             let sensorsData = influxReader(influxQuery).then((result) => {
@@ -1242,7 +1266,7 @@ app.get('/api/get-data/sensorId/:county', (req, res) => {
         // console.log("if",new Date()-time)
 
         // req.params.county = req.params.county.toLowerCase()
-        console.log(req.originalUrl)
+        // console.log(req.originalUrl)
         // console.log("User:", sess.username);
 
         // Create the query based on user type
@@ -1379,7 +1403,7 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', (req, res) => {
         // we decide about sensorId template
         var isCounter = (req.params.sensorQuery.split('-')[1] == 'c' ? true : false)
 
-        console.log(req.originalUrl)
+        // console.log(req.originalUrl)
         // console.log('/api/get-data/' + req.params.county + '/' + req.params.sensorQuery)
         // console.log("User:", sess.username);
         // console.log("Access to sensorId:", sess.sensorAccess);
@@ -1395,7 +1419,7 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', (req, res) => {
         var yyyy = today.getFullYear();
         today = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
 
-        console.log(">> TODAY start:", today)
+        // console.log(">> TODAY start:", today)
 
         // Mean of last week - experiment
         // ==========================================
@@ -1406,7 +1430,7 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', (req, res) => {
         var yyyy = lastweekTodayStart.getFullYear();
         lastweekTodayStart = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
 
-        console.log(">> lastweekTodayStart start:", lastweekTodayStart)
+        // console.log(">> lastweekTodayStart start:", lastweekTodayStart)
 
         var lastweekTodayStop = new Date();
         lastweekTodayStop.setDate(lastweekTodayStop.getDate() - 7)
@@ -1415,7 +1439,7 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', (req, res) => {
         var yyyy = lastweekTodayStop.getFullYear();
         lastweekTodayStop = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
 
-        console.log(">> lastweekTodayStop start:", lastweekTodayStop)
+        // console.log(">> lastweekTodayStop start:", lastweekTodayStop)
         // ==========================================
         // END Mean of last week - experiment
 
@@ -1545,7 +1569,7 @@ app.get('/api/get-data/:county/:sensorQuery', (req, res) => {
         // we decide about sensorId template
         var isCounter = (req.params.sensorQuery.split('-')[1] == 'c' ? true : false)
 
-        console.log(req.originalUrl)
+        // console.log(req.originalUrl)
         // console.log('/api/get-data/' + req.params.county + '/' + req.params.sensorQuery)
         // console.log("User:", sess.username);
         // console.log("Access to sensorId:", sess.sensorAccess);
@@ -1711,7 +1735,7 @@ app.get('/api/v2/get-data/:county/:sensorQuery', (req, res) => {
         // we decide about sensorId template
         var isCounter = (req.params.sensorQuery.split('-')[1] == 'c' ? true : false)
 
-        console.log(req.originalUrl)
+        // console.log(req.originalUrl)
         // console.log('/api/get-data/' + req.params.county + '/' + req.params.sensorQuery)
         // console.log("User:", sess.username);
         // console.log("Access to sensorId:", sess.sensorAccess);
@@ -1885,7 +1909,7 @@ app.get('/api/get-data/last/:county/:sensorQuery', (req, res) => {
         // Server side log
         req.params.county = req.params.county.toLowerCase()
         // req.params.sensorQuery = req.params.sensorQuery.toLowerCase()
-        console.log(req.originalUrl)
+        // console.log(req.originalUrl)
         // console.log("User:", sess.username);
         // console.log("Access to sensorId:", sess.sensorAccess);
         // console.log(req.params)
@@ -2025,7 +2049,7 @@ app.get('/api/get-interval/:step', (req, res) => {
             // check what sensor type for the user
             var influxQuery = `select mean(value) as value from sensors ` + whereQuery + ` ` + groupBy + ` `
 
-            console.log(influxQuery)
+            // console.log(influxQuery)
 
         } else {
 
@@ -2114,7 +2138,7 @@ app.get("/graficMail", (req, res) => {
             res.writeHead(400, {
                 'Content-type': 'text/html'
             })
-            console.log(err);
+            // console.log(err);
             res.end("No such image");
         } else {
             //specify the content type in the response will be an image
@@ -2359,7 +2383,7 @@ app.get('/api/get-last-value', (req, res) => {
 // get avg on last 10 min and compare with limits
 app.get('/api/v2/sensors-alert', async (req, res) => {
 
-    console.log(req.url)
+    // console.log(req.url)
 
     var time = new Date()
     // var data = []
@@ -2396,7 +2420,7 @@ app.get('/api/v2/sensors-alert', async (req, res) => {
 
     // var influxQuery = `select mean(value), last(county) as county, last(country) as country, last(city) as city, last(location) as location, last(zone) as zone, last(username) as username, last(sensorId) as sensorId, last(type) as type, last(time) as time from (select * from sensors where (` + whereQuery + `) and time>`+timeStart+` and time<now()) group by sensorId, username order by time desc`
     var influxQuery = `select country, county, city, location, zone, type, sensorId, username, value from sensors where (` + whereQuery + `) and (time > now()-5s and time < now()) group by sensorId,username order by time desc limit 600`
-    console.log(influxQuery)
+    // console.log(influxQuery)
 
     let resultInfluxDb = influxReader(influxQuery).then((result) => {
 
@@ -2533,6 +2557,81 @@ app.get('/api/v2/sensors-alert', async (req, res) => {
 // Sensor Settings
 //=========================================
 
+// Device makes a get request to /api/sensor-config?get=1 to get a new configuration
+// When device received the configuration it makes a new get request to /api/sensor-config?ack=sensorid with ack param = with sensorId previously received
+// When ack param received, store that sensorId in database
+// And next time when api is called it will return a new sensorId
+
+// [ ] TODO: store sensors in database
+let sensorIncrement = 1
+
+app.get('/api/sensor-config', (req, res) => {
+
+    function pad(n, width, z) {
+        z = z || '0';
+        n = n + '';
+        return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+    }
+
+    function getId() {
+        let id = sensorIncrement
+        return pad(id, 3, 0)
+    }
+
+    if (req.query.get) {
+        // A device wants to be alive
+
+        let sensorId = "DAS" + getId() + "TCORA"
+
+        let config = {
+            "network":
+            {
+                "ssid": "onef",
+                "pass": "cersenin"
+            },
+
+            "server":
+            {
+                "host": "anysensor.ro",
+                "port": 883
+            },
+
+            "sensor":
+            {
+                "calibration": 1,
+                "interval": 1000,
+                "client_id": sensorId,
+                "user_id": sensorId,
+                "user_key": "dasstecb2b"
+            }
+        }
+
+        res.status(200).send(config);
+
+    } else if (req.query.ack) {
+
+        sensorIncrement++
+
+        // Device succesfully received the configuration. Store it in database.
+        let config = {
+            message: "Sensor " + req.query.ack + " stored in database"
+        }
+        res.status(200).send(config);
+    } else if (req.query.inc) {
+        res.status(400).send({
+            inc: sensorIncrement
+        });
+    } else {
+        res.status(400).send({
+            error: "no parameters received",
+            get: req.query.get,
+            ack: req.query.ack
+        });
+    }
+
+
+})
+
 // Manage Sensor API
 app.get('/api/manage-sensors', authDashboard, (req, res) => {
 
@@ -2617,7 +2716,7 @@ app.get('/set-new-device', authDashboard, (req, res) => {
         user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0
     }
     req.session.message = ''
-    console.log(data)
+    // console.log(data)
     res.render('set-new-device', data)
 })
 
@@ -2673,7 +2772,7 @@ app.get('/api/set-alerts', (req, res) => {
 
     sess = req.session
 
-    console.log(req.query)
+    // console.log(req.query)
 
     var mysqlReturn = []
 
@@ -2867,11 +2966,11 @@ app.post('/api/create-admin', (req, res) => {
             password
         } = req.body
 
-        console.log(name,
-            username,
-            email,
-            company,
-            password)
+        // console.log(name,
+        //     username,
+        //     email,
+        //     company,
+        //     password)
 
         // password do not match
         // if (password != passwordConfirm) {
@@ -2915,7 +3014,7 @@ app.post('/api/create-admin', (req, res) => {
                     if (err)
                         return res.status(412).send("Try again!")
                     else {
-                        console.log("New user registration")
+                        // console.log("New user registration")
                         return res.status(200).send("User registered!")
                     }
                 })
@@ -2945,7 +3044,7 @@ app.get('/api/get-zones', function (req, res) {
 
         Promise.all([getZonesAndUserList, getZones]).then(result => {
             // console.log(result[0].length, result[0])
-            res.status(200).send(result) 
+            res.status(200).send(result)
         })
 
     } else {
@@ -3056,7 +3155,7 @@ app.post('/api/edit-zone', async (req, res) => {
                 } else {
                     let hasImageSetted = false
                     if (hasImageSetted) {
-                        console.log("Map has the same image")
+                        // console.log("Map has the same image")
                     } else {
                         mysqlReader("UPDATE locations SET map='custom' where zoneId=" + fields.zoneid + "").then((result) => {
                             res.redirect("/settings")
@@ -3075,7 +3174,7 @@ app.post('/api/edit-zone', async (req, res) => {
                     res.status(400).send({ error: err });
                 })
             } else {
-                console.log("No map selected")
+                // console.log("No map selected")
                 res.redirect("/settings")
                 // mysqlReader("UPDATE locations SET map='NULL' where zoneId=" + fields.zoneid + "").then((result) => {
                 //     res.redirect("/settings")
@@ -3116,7 +3215,7 @@ app.post('/api/update-map', async (req, res) => {
     } else if (sess.username) {
         // [ ] check if user has access to map id
         let hasUserAccess = await mysqlReader("select locations.zoneId from locations inner join sensors on sensors.zoneId = locations.zoneId inner join userAccess on (userAccess.sensorId = sensors.sensorId and userAccess.username = '" + sess.username + "');")
-        console.log(hasUserAccess)
+        // console.log(hasUserAccess)
     }
 })
 
@@ -3124,7 +3223,7 @@ app.post('/api/upload-image', (req, res) => {
     const form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
 
-        console.log(fields, files)
+        // console.log(fields, files)
 
         const oldpath = files.map.path;
 
@@ -3135,7 +3234,7 @@ app.post('/api/upload-image', (req, res) => {
         filename = date.getTime() + '_' + asciiStr + '.' + filename[1]
         const newpath = './public/images/custom-maps/' + filename;
 
-        console.log(fields.id, oldpath, newpath)
+        // console.log(fields.id, oldpath, newpath)
 
         // Save image
         fs.rename(oldpath, newpath, function (err) {
@@ -3143,7 +3242,8 @@ app.post('/api/upload-image', (req, res) => {
                 res.status(404).send({ error: err })
             else {
                 mysqlReader("UPDATE locations SET map='" + newpath + "' where zoneId=" + fields.id + "").then((result) => {
-                    res.status(200).send({ error: false });
+                    // res.status(200).send({ error: false });
+                    res.redirect('/map?id=' + fields.id)
                 }).catch((err) => {
                     res.status(200).send({ error: err });
                 })
@@ -3151,6 +3251,36 @@ app.post('/api/upload-image', (req, res) => {
         });
     })
     // console.log(req.body)
+})
+
+app.post('/api/v2/upload-image', (req, res) => {
+    const form = new formidable.IncomingForm();
+    form.parse(req, function (err, fields, files) {
+        var reader = new FileReader(fields.userfile);
+        console.log(reader)
+        console.log(fields, files)
+        const oldpath = files.map.path;
+        // Build path of image
+        let filename = files.map.name.toLowerCase().split('.')
+        const asciiStr = filename[0].normalize('NFKD').replace(/[^\w]/g, '');
+        let date = new Date()
+        filename = date.getTime() + '_' + asciiStr + '.' + filename[1]
+        const newpath = './public/images/custom-maps/' + filename;
+        // Save image
+        fs.rename(oldpath, newpath, function (err) {
+            if (err)
+                res.status(404).send({ "href": fields.href });
+            else {
+                console.log("UPDATE locations SET map='" + newpath + "' where zoneId=" + fields.id + "")
+                res.status(200).send({ "href": fields.href });
+                // mysqlReader().then((result) => {
+                //     res.status(200).send({ error: false });
+                // }).catch((err) => {
+                //     res.status(200).send({ error: err });
+                // })
+            }
+        });
+    })
 })
 
 // Mysql interface
@@ -3257,7 +3387,7 @@ app.get('/api/sensors-access', (req, res) => {
         })
 
         Promise.all([mysqlResult]).then(result => {
-            console.log(new Date() - time)
+            // console.log(new Date() - time)
             if (result[0].length) {
                 var sensorQuery = 'or ';
                 resultCounter = 0
@@ -3277,12 +3407,12 @@ app.get('/api/sensors-access', (req, res) => {
             // console.log(influxQuery)
 
             let influxResult = influxReader(influxQuery).then(async (result) => {
-                console.log(await result)
+                // console.log(await result)
                 return await result
             })
 
             Promise.all([influxResult]).then(result => {
-                console.log(new Date() - time)
+                // console.log(new Date() - time)
                 // console.log(result[0])
                 result[0].forEach(element => {
                     data.push({
@@ -3331,14 +3461,14 @@ app.get('/api/edit-user', getCounties, async (req, res) => {
 
     sess = req.session
 
-    console.log(req.url)
+    // console.log(req.url)
 
     if (req.query.password.length == 0) {
 
         // get the sensorIds of selected zone
         if (req.query.zones) {
 
-            console.log(req.query.zones)
+            // console.log(req.query.zones)
 
             if (typeof req.query.zones == 'string') {
                 var influxQuery = `show series where zone='` + req.query.zones + `' and username='` + sess.username + `'`
@@ -3501,7 +3631,7 @@ app.get('/api/edit-user', getCounties, async (req, res) => {
 app.get('/api/add-user', (req, res) => {
     sess = req.session
     if (sess.username) {
-        console.log(req.query)
+        // console.log(req.query)
         var sql = `SELECT Username from users where username='` + req.query.username + `'`
         mysqlReader(sql).then(async (response) => {
             if (response.length) {
@@ -3809,10 +3939,103 @@ app.get("/api/csv", (req, res) => {
             let row = rowArray.join(",");
             csvContent += row + "\r\n";
         });
-        console.log("csvContent:", csvContent.length)
+        // console.log("csvContent:", csvContent.length)
         res.send(csvContent)
     })
 
+})
+
+app.post('/api/v3/multi-report', (req, res) => {
+    sess = req.session
+    // if (sess.username) {
+
+        console.log(req.body)
+
+        function changeTimezone(date, ianatz) {
+
+            // suppose the date is 12:00 UTC
+            var invdate = new Date(date.toLocaleString('en-US', {
+                timeZone: ianatz
+            }));
+
+            // then invdate will be 07:00 in Toronto
+            // and the diff is 5 hours
+            var diff = date.getTime() - invdate.getTime();
+
+            // so 12:00 in Toronto is 17:00 UTC
+            return new Date(date.getTime() - diff); // needs to substract
+
+        }
+
+        // Get date custom or predefined
+        let today, year, month, hOffset, start, end, customDate = req.body['date[]']
+        if(customDate) {    
+            start = customDate[0] + ' 00:00:00'
+            end = customDate[1] + ' 23:59:59'
+        } else {
+            today = new Date();
+
+            year = today.getFullYear();
+            month = today.getMonth();
+    
+            hOffset = 0
+    
+            start = new Date(year, month - 1, 1, 0 + hOffset, 0, 0);
+            end = new Date(year, month, 0, 23 + hOffset, 59, 59);
+    
+            start = changeTimezone(start, "Europe/Bucharest");
+            end = changeTimezone(end, "Europe/Bucharest");
+    
+            // start = start.toLocaleString('ro-RO', {
+            //     hour12: false
+            // })
+            // end = end.toLocaleString('ro-RO', {
+            //     hour12: false
+            // })
+    
+            // console.log(start.toISOString(), start.getMonth(), start.getDate())
+    
+            start = start.getFullYear() + '-' + (start.getMonth() + 1) + '-' + (start.getDate() < 10 ? '0' + start.getDate() : start.getDate()) + ' ' + '00:00:00'
+            end = end.getFullYear() + '-' + (end.getMonth() + 1) + '-' + (end.getDate() < 10 ? '0' + end.getDate() : end.getDate()) + ' ' + '23:59:59'
+    
+            // start = start.replaceAll('/','-').replaceAll(',','').replace('-1 ','-01 ')
+            // end = end.replaceAll('/','-').replaceAll(',','')
+        }
+
+        // Prepare sensor list for Influx query
+        let sensors = ``
+        let listOfSensors = req.body['listOfSensors[]']
+
+        if(typeof listOfSensors == 'string')
+            listOfSensors = new Array(listOfSensors)
+
+        listOfSensors.forEach((item, index) => {
+            if (index == 0)
+                sensors += `/`
+            sensors += item
+            if (index != listOfSensors.length - 1)
+                sensors += '|'
+            else if (index == listOfSensors.length - 1)
+                sensors += `/`
+        })
+
+        // Do the query
+        let query = "select mean(value) as value from sensors where sensorId =~ " + sensors + " and time<='" + end + "' and time>='" + start + "' group by sensorId,time(1d) order by time desc"
+
+        influxReader(query).then((resultRaw)=>{
+
+            let result
+            if(listOfSensors.length > 1)
+                result = resultRaw.groupRows
+            else
+                result = resultRaw               
+
+            res.status(200).send({ start, end, query, result });
+        })
+
+    // } else {
+    //     res.status(400).send({ error: "You are not logged in" });
+    // }
 })
 
 

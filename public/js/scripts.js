@@ -1,5 +1,6 @@
 console.log("script.js added")
 
+import { deprecationHandler } from 'moment';
 // BIG TODO: This file should be organized differently. Split code in different files.
 
 // Start imports
@@ -8,9 +9,10 @@ import {
     getDistinctValuesFromObject,
     getValuesFromObject
 } from './utils.js'
-var Checker = require('password-checker');
-var checker = new Checker();
+
 // End Imports
+
+let href = window.location.pathname
 
 // Window loader
 // ============================
@@ -20,332 +22,43 @@ $(window).on('load', function () {
 // ============================
 // END Window loader
 
-// Aside LOCATIONS
-// ============================
-
-let getUserData = async () => {
-    let response = await fetch("/api/v3/get-user-data")
-    let json = response.json()
-    return json
-}
-
-(async () => {
-    // let userData = await getUserData()
-    let userData = userData_raw
-
-    const zoneEl = $("#zones-list")
-    const sensorAlertEl = $("#sensor-alert")
-    let unsetSensors = 0
-
-    if (!userData['error']) {
-
-        // [*] TODO: display multiple locationsÎ
-        let location2 = getDistinctValuesFromObject('location2', userData).length
-        let location1 = getDistinctValuesFromObject('location1', userData).length
-
-        // console.log(location1, location2, location3, userData.length)
-
-        let bufferAppendedLocations = []
-
-        userData.forEach(user => {
-
-            let aux_checker = JSON.stringify(bufferAppendedLocations);
-            let aux_item = JSON.stringify([user.location1, user.location2, user.location3]);
-            let hasBeenAppended = aux_checker.indexOf(aux_item)
-
-            if (user.zoneId == 1) {
-                // TODO: warning message for unset sensors
-                // TIP: normally this shouldnt exists because sensors are assignated when zone is set
-                unsetSensors++;
-            } else if (hasBeenAppended == -1) {
-
-                bufferAppendedLocations.push([user.location1, user.location2, user.location3])
-
-                let name
-                if (location1 > 1) // when there are > 1 counties / regions and not matter how many cities
-                    name = `<span class='multi-location'>` + user.location3 + `<span class='location-detail'>` + user.location1 + `, ` + user.location2 + `</span>` + `</span>`
-                else if (location1 == 1 && location2 > 1) // when there is one county and more cities
-                    name = `<span class='multi-location'>` + user.location3 + `<span class='location-detail'>` + user.location2 + `</span>` + `</span>`
-                else
-                    name = `<span class=''>` + user.location3 + `</span>`
-                // name = `<span class='multi-location'>`+user.location3+`<span class='location-detail'>`+user.location2+`</span>`+`</span>`
-
-                zoneEl.append(`<div class="zone-item">
-                                <a href="/map/zone?zoneid=` + user.zoneId + `" class='county-item'><i class="fas fa-layer-group"></i>` + name + `</a>
-                            </div>`)
-            }
-        })
-
-        // console.log(bufferAppendedLocations)
-    }
-
-    if (unsetSensors) {
-        zoneEl.append(`<div class="zone-item">
-                        <a href="/set-location" class='no-zone'><i class="fas fa-exclamation-circle"></i><span>You have ` + unsetSensors + ` new sensors</span></a>
-                    </div>`)
-    } else if (zoneEl.children().length == 0) {
-        zoneEl.append(`<div class="zone-item">
-                        <a href="#" class='no-zone'><i class="fas fa-exclamation-circle"></i><span>No sensors available</span></a>
-                    </div>`)
-    }
-
-})().then(() => {
-    let hrefZone = window.location.href
-    let zoneItem = $(".zone-item a[href]")
-    // console.log(zoneItem.length)
-    for (let i = 0; i < zoneItem.length; i++) {
-        // console.log(zoneItem[i].href, hrefZone)
-        if (zoneItem[i].href == hrefZone) {
-            zoneItem[i].classList.add('link-selected')
-        }
-    }
-})
-// ============================
-// END Aside LOCATIONS
-
-// Aside MAPS
-// ============================
-
-// [ ] TODO: choose userData or userData_row for maps and locations
-
-// let maps = getValuesFromObject('map', userData_raw)
-let zones = getValuesFromObject('zoneId', userData_raw)
-let location1 = getValuesFromObject('location1', userData_raw)
-let location2 = getValuesFromObject('location2', userData_raw)
-let location3 = getValuesFromObject('location3', userData_raw)
-
-// [*] TODO: display multiple maps
-
-let bufferAppendedMaps = []
-// console.log(zones)
-zones.forEach((id, index) => {
-
-    // Check double append
-    let aux_checker = JSON.stringify(bufferAppendedMaps);
-    let aux_item = JSON.stringify([location3[index], location2[index], location1[index]]);
-    let hasBeenAppended = aux_checker.indexOf(aux_item)
-
-    if (hasBeenAppended == -1) {
-        bufferAppendedMaps.push([location3[index], location2[index], location1[index]])
-        let mapsEl = $("#mySidenav #maps-list")
-        let name = `<span class='multi-location'>Map ` + location3[index] + `<span class='location-detail'>` + location2[index] + `</span>` + `</span>`
-        mapsEl.append(`<div class="map-item">
-                            <a href="/map?id=` + id + `" class='map-button'>
-                            <i class="fas fa-map-marked"></i>
-                                ` + name + `
-                            </a>
-                        </div>`)
-    }
-})
-
-// Color yellow menu item
-let href = window.location.href
-let mapItem = $(".map-item a[href]")
-for (let i = 0; i < mapItem.length; i++) {
-    if (mapItem[i].href == href) {
-        mapItem[i].classList.add('link-selected')
-    }
-}
-// ============================
-// END Aside maps
-
 // Init sensor form
 // ============================
-// $("form.location-container").submit(function(e) {
-//     e.preventDefault();
-// });
 
-// console.log(userData_raw)
-if(!userData_raw.error)
-    $("form.location-container").append(`<input type="charInput" class='hidden' name="company" placeholder="Company" value="`+userData_raw[0].createdBy+`"/>`)
+if (href.includes('init')) {
 
-$("form.location-container #zone").on('input', function (e) {
-    const optionSelected = $("option:selected", this)[0].text
-    if (optionSelected != 'Nothing selected') {
-        const zoneId = optionSelected.split('/')[0]
-        const location1 = optionSelected.split('/')[1]
-        const location2 = optionSelected.split('/')[2]
-        const location3 = optionSelected.split('/')[3]
-        $("form.location-container input[name=zoneId]").attr("value", zoneId)
-        $("form.location-container input[name=location1]").attr("value", location1)
-        $("form.location-container input[name=location2]").attr("value", location2)
-        $("form.location-container input[name=location3]").attr("value", location3)
-        $("form.location-container input[name=location1]").attr("readonly", 'readonly')
-        $("form.location-container input[name=location2]").attr("readonly", 'readonly')
-        $("form.location-container input[name=location3]").attr("readonly", 'readonly')
-    } else {
-        $("form.location-container input[name=zoneId]").attr("value", '')
-        $("form.location-container input[name=location1]").attr("value", '')
-        $("form.location-container input[name=location2]").attr("value", '')
-        $("form.location-container input[name=location3]").attr("value", '')
-        $("form.location-container input[name=location1]").attr("readonly", false)
-        $("form.location-container input[name=location2]").attr("readonly", false)
-        $("form.location-container input[name=location3]").attr("readonly", false)
-    }
-});
+    if (userData_raw.length)
+        $("form.location-container").append(`<input type="charInput" class='hidden' name="company" placeholder="Company" value="` + userData_raw[0].createdBy + `"/>`)
+
+    $("form.location-container #zone").on('input', function (e) {
+        const optionSelected = $("option:selected", this)[0].text
+        if (optionSelected != 'Nothing selected') {
+            const zoneId = optionSelected.split('/')[0]
+            const location1 = optionSelected.split('/')[1]
+            const location2 = optionSelected.split('/')[2]
+            const location3 = optionSelected.split('/')[3]
+            $("form.location-container input[name=zoneId]").attr("value", zoneId)
+            $("form.location-container input[name=location1]").attr("value", location1)
+            $("form.location-container input[name=location2]").attr("value", location2)
+            $("form.location-container input[name=location3]").attr("value", location3)
+            $("form.location-container input[name=location1]").attr("readonly", 'readonly')
+            $("form.location-container input[name=location2]").attr("readonly", 'readonly')
+            $("form.location-container input[name=location3]").attr("readonly", 'readonly')
+        } else {
+            $("form.location-container input[name=zoneId]").attr("value", '')
+            $("form.location-container input[name=location1]").attr("value", '')
+            $("form.location-container input[name=location2]").attr("value", '')
+            $("form.location-container input[name=location3]").attr("value", '')
+            $("form.location-container input[name=location1]").attr("readonly", false)
+            $("form.location-container input[name=location2]").attr("readonly", false)
+            $("form.location-container input[name=location3]").attr("readonly", false)
+        }
+    });
+
+}
 
 // ============================
 // END Init sensor form
-
-// Password Checker Config
-checker.min_length = 6;
-checker.max_length = 20;
-checker.requireLetters(true);
-checker.requireNumbers(true);
-checker.requireSymbols(false);
-checker.checkLetters(true);
-checker.checkNumbers(true);
-checker.checkSymbols(true);
-// Change the letters that are allowed
-// Default is: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
-// checker.allowed_letters = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghkmnpqrstuvwxyz';
-// Default is: 0123456789
-// checker.allowed_numbers = '1234567890';
-// Default is: _- !\"?$%^&*()+={}[]:;@'~#|<>,.?\\/
-checker.allowed_symbols = '-.';
-// End Password Checker Config
-
-// var passwordField = document.querySelector('.login-container .charInput:nth-child(4)');
-// var otherPasswordFields = document.querySelectorAll('.login-container .charInput:not(:nth-child(4))');
-// var registerButton = document.querySelector('.login-container input:last-child');
-
-// var passwordRules = document.querySelector('.login-container .passwordRules');
-
-// var passwordUpperCase = document.querySelector('.login-container .passwordRules li:first-child');
-// var passwordLowerCase = document.querySelector('.login-container .passwordRules li:nth-child(2)');
-// var passwordDigit = document.querySelector('.login-container .passwordRules li:nth-child(3)');
-// var password8Char = document.querySelector('.login-container .passwordRules li:nth-child(4)');
-
-var passwordField = document.querySelector('.login-container .charInput[name="password"]');
-var passwordConfirm = document.querySelector('.login-container .charInput[name="passwordConfirm"]');
-var registerButton = document.querySelector('.login-container input[name="register"]');
-
-// Input Values
-let allInputs = () => {
-
-    let formName = $('.login-container input[name="name"]').val()
-    let formCompany = $('.login-container input[name="company"]').val()
-    let formUsername = $('.login-container input[name="username"]').val()
-    let formEmail = $('.login-container input[name="email"]').val()
-    let formPassword = $('.login-container input[name="password"]').val()
-    let formConfirm = $('.login-container input[name="passwordConfirm"]').val()
-
-    // console.log(formName)
-
-    let obj = {
-        formName,
-        formCompany,
-        formUsername,
-        formEmail,
-        formPassword,
-        formConfirm
-    }
-
-    return [obj, allTrue(obj)]
-}
-
-
-// Time Helper Debug
-function timeDebug(str) {
-    let date = new Date()
-    date = date.getMilliseconds()
-    console.log(str, date)
-}
-
-//hide the rules
-if (registerButton) {
-    registerButton.value = "Fill the inputs"
-    registerButton.disabled = true
-}
-
-var initialPassword = ''
-
-$('.login-container input').keyup(function (elem) {
-    let attrName = $(this)[0].name
-    console.log(attrName, allInputs()[1])
-    if (attrName != 'password' && attrName != 'passwordConfirm') {
-        if (allInputs()[1]) {
-            registerButton.value = "Register"
-            registerButton.disabled = false
-        } else {
-            registerButton.value = "Fill the inputs"
-            registerButton.disabled = true
-        }
-    } else if (attrName == 'password') {
-        var passwordMessage = ''
-        if (!checker.check(this.value)) {
-            passwordMessage = checker.errors[0].message
-            registerButton.value = passwordMessage
-            registerButton.disabled = true
-            registerButton.disabled__custom = false
-        } else {
-            registerButton.value = "Confirm the password"
-            registerButton.disabled = true
-            initialPassword = this.value
-        }
-    } else if (attrName == 'passwordConfirm') {
-        if (initialPassword == this.value) {
-            // console.log(initialPassword, this.value)
-
-            if (allInputs()[1]) {
-                registerButton.value = "Register"
-                registerButton.disabled = false
-            } else {
-                registerButton.value = "Fill the inputs"
-                registerButton.disabled = true
-            }
-
-        } else {
-            registerButton.value = "Confirm the password"
-            registerButton.disabled = true
-        }
-    }
-
-})
-
-if (passwordField) {
-
-    //show the rules when typing and check strongness
-    passwordField.addEventListener('input', function (e) {
-        e.preventDefault();
-
-        // var passwordMessage = ''
-        // if (!checker.check(this.value)) {
-        //     passwordMessage = checker.errors[0].message
-        //     registerButton.value = passwordMessage
-        //     registerButton.disabled = true
-        //     registerButton.disabled__custom = false
-        // } else {
-        //     registerButton.value = "Confirm the password"
-        //     registerButton.disabled = true
-        //     initialPassword = this.value
-        // }
-
-    });
-
-    //show the rules when typing and check strongness
-    passwordConfirm.addEventListener('input', function (e) {
-        e.preventDefault();
-        // if (initialPassword == this.value) {
-        //     // console.log(initialPassword, this.value)
-
-        //     if (allInputs()[1]) {
-        //         registerButton.value = "Register"
-        //         registerButton.disabled = false
-        //     } else {
-        //         registerButton.value = "Fill the inputs"
-        //         registerButton.disabled = true
-        //     }
-
-        // } else {
-        //     registerButton.value = "Confirm the password"
-        //     registerButton.disabled = true
-        // }
-    });
-}
-
-var editButton = document.querySelectorAll('.users-table tbody > tr .edit-btn');
-var editUserBox = document.querySelector('.edit-user');
 
 // $("#role_dropdown").prop("selectedIndex", 1);
 

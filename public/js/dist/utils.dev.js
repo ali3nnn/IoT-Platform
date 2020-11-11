@@ -19,7 +19,14 @@ exports.allTrue = allTrue;
 exports.getDistinctValuesFromObject = getDistinctValuesFromObject;
 exports.getValuesFromObject = getValuesFromObject;
 exports.searchToObj = searchToObj;
-exports.getConveyorStatus = exports.insertStatus = exports.timeoutAsync = void 0;
+exports.generateUniqueId = generateUniqueId;
+exports.downloadCSV = downloadCSV;
+exports.downloadCSVMulti = downloadCSVMulti;
+exports.getMultiReport = getMultiReport;
+exports.getDaysInMonth = getDaysInMonth;
+exports.getConveyorStatus = exports.insertStatus = exports.monthChanger = exports.timeoutAsync = void 0;
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 // Start imports
 var Checker = require('password-checker'); // End Imports
@@ -246,8 +253,66 @@ function filterColumn(id_input, id_table, tableColumn) {
       }
     }
   }
-} // insert status of conveyor into mysql
+}
 
+var monthChanger = function monthChanger(number) {
+  var b = '';
+
+  switch (number) {
+    case 1:
+      b = "January";
+      break;
+
+    case 2:
+      b = "February";
+      break;
+
+    case 3:
+      b = "March";
+      break;
+
+    case 4:
+      b = "April";
+      break;
+
+    case 5:
+      b = "May";
+      break;
+
+    case 6:
+      b = "June";
+      break;
+
+    case 7:
+      b = "July";
+      break;
+
+    case 8:
+      b = "August";
+      break;
+
+    case 9:
+      b = "September";
+      break;
+
+    case 10:
+      b = "October";
+      break;
+
+    case 11:
+      b = "November";
+      break;
+
+    case 12:
+      b = "December";
+      break;
+  }
+
+  return b;
+}; // insert status of conveyor into mysql
+
+
+exports.monthChanger = monthChanger;
 
 var insertStatus = function insertStatus(status) {
   return regeneratorRuntime.async(function insertStatus$(_context2) {
@@ -447,3 +512,177 @@ function searchToObj(val) {
 
   return searchobj;
 }
+
+function generateUniqueId() {
+  // Generate unique Id
+  var date = new Date();
+  var uniqueId = date.getTime() + Math.floor(Math.random() * 100 + 1);
+  return uniqueId;
+}
+
+function roundToTwo(num) {
+  var result = +(Math.round(num + "e+2") + "e-2");
+
+  if (Number.isInteger(result)) {
+    result += '.00';
+  }
+
+  return result;
+}
+
+function downloadCSV(args) {
+  var data, filename, link;
+  var csv = "";
+  var ylabels = args.ylabels;
+  var xlabels = args.xlabels;
+  xlabels = xlabels.map(function (time) {
+    return time ? time.replace(":00.000Z", "").replace("T", " ") : time;
+  });
+  ylabels = ylabels.map(function (value) {
+    return value ? value.toFixed(1) : "not recorded";
+  }); // console.log(xlabels)
+  // Header of table
+
+  csv = "Date,Value\n";
+
+  for (var i = 0; i < ylabels.length; i++) {
+    csv += xlabels[i] + "," + ylabels[i].toString() + "\n";
+  }
+
+  if (csv == null) return;
+  filename = args.filename || 'Report.csv';
+
+  if (!csv.match(/^data:text\/csv/i)) {
+    csv = 'data:text/csv;charset=utf-8,' + csv;
+  }
+
+  data = encodeURI(csv);
+  link = document.createElement('a');
+  link.setAttribute('href', data);
+  link.setAttribute('download', filename);
+  document.body.appendChild(link); // Required for FF
+
+  link.click();
+  document.body.removeChild(link);
+}
+
+function downloadCSVMulti(args) {
+  // console.log(args)
+  var data, filename, link;
+  var csv = ""; // Header of table
+
+  csv = "Date,";
+  args.sensors.forEach(function (item, index) {
+    csv += item;
+    if (index != args.sensors.length - 1) csv += ",";
+  });
+  csv += "\n"; // Build each row independetly
+
+  var daysToReport = Object.values(args.xlabels)[0].rows.length;
+
+  for (var rowIndex = 0; rowIndex < daysToReport; rowIndex++) {
+    // Get timestamp for each row
+    var timestamp = Object.values(args.xlabels)[0].rows[rowIndex].time;
+    timestamp = timestamp.split('T')[0];
+    var row = timestamp + ','; // Build each column of row
+
+    var columnIndex = 0;
+    var _iteratorNormalCompletion2 = true;
+    var _didIteratorError2 = false;
+    var _iteratorError2 = undefined;
+
+    try {
+      for (var _iterator2 = args.sensors[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        var sensor = _step2.value;
+        if (args.xlabels[sensor]) row += roundToTwo(parseFloat(args.xlabels[sensor].rows[rowIndex].value));else row += "NaN";
+        if (columnIndex != args.sensors.length - 1) row += ",";
+        columnIndex++;
+      } // Append row to final csv
+
+    } catch (err) {
+      _didIteratorError2 = true;
+      _iteratorError2 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+          _iterator2.return();
+        }
+      } finally {
+        if (_didIteratorError2) {
+          throw _iteratorError2;
+        }
+      }
+    }
+
+    csv += row + "\n";
+  }
+
+  filename = 'Report.csv';
+
+  if (!csv.match(/^data:text\/csv/i)) {
+    csv = 'data:text/csv;charset=utf-8,' + csv;
+  }
+
+  data = encodeURI(csv);
+  link = document.createElement('a');
+  link.setAttribute('href', data);
+  link.setAttribute('download', filename);
+  document.body.appendChild(link); // Required for FF
+
+  link.click();
+  document.body.removeChild(link);
+}
+
+function getMultiReport(listOfZones) {
+  var date = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+
+  if (listOfZones) {
+    var sensorsRaw = userData_raw.filter(function (item, index) {
+      if (listOfZones.indexOf(item.zoneId) != -1) return item;
+    });
+    var listOfSensors = getDistinctValuesFromObject('sensorId', sensorsRaw);
+    $.ajax({
+      url: "/api/v3/multi-report",
+      type: 'POST',
+      data: {
+        listOfSensors: listOfSensors,
+        date: date
+      }
+    }).done(function (res) {
+      console.log(res);
+
+      if (res.result.length) {
+        if (typeof listOfSensors == 'string') {
+          listOfSensors = new Array(listOfSensors);
+        } // Rename keys
+
+
+        res.result.forEach(function (item, index) {
+          // console.log(item)
+          delete Object.assign(res.result, _defineProperty({}, item.tags.sensorId, res.result[index]))[index];
+        }); // console.log(res.result)
+
+        downloadCSVMulti({
+          sensors: listOfSensors,
+          xlabels: res.result,
+          ylabels: res.result
+        });
+      } else {
+        alert("No data for selected zones");
+      }
+    }); // if(date.length) {
+    // } else {
+    // }
+  } else {
+    return 'There is no zone selected!';
+  }
+}
+
+function getDaysInMonth(month, year) {
+  // Here January is 1 based
+  //Day 0 is the last day in the previous month
+  return new Date(year, month, 0).getDate(); // Here January is 0 based
+  // return new Date(year, month+1, 0).getDate();
+}
+
+;

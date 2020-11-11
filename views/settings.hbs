@@ -169,14 +169,49 @@
                     </div>
 
                     {{!-- Modal form --}}
-                    
+
                 </div>
             </div>
 
-            {{!-- Edit sensors --}}
-            <div class='sensor-settings'>
+            {{!-- Report --}}
+            <div class='report-settings'>
                 <div class='inner-settings'>
+                    <div class='reports-list'>
+                        <div class='top-container'><i class="fas fa-users"></i> <span><b>Company</b> Reports</span>
+                        </div>
+                        <div class='mid-container'>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Location</th>
+                                        <th scope="col">Sensors</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{!-- appended via settings.js --}}
+                                </tbody>
+                            </table>
+                            <div class='input-dates'>
+                                    <input type="date" name="start-date">
+                                    <input type="date" name="end-date">
+                                </div>
+                        </div>
+                        <div class='lower-container'>
+                            {{!-- Buton create report --}}
+                            <div class='report-buttons'>
+                                <button type="button" class="btn btn-primary create-report">
+                                    <i class="fas fa-file-download"></i>
+                                    <span>Create report</span>
+                                </button>
 
+                                <button type="button" class="btn btn-primary create-quick-report">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>Last month report</span>
+                                </button>
+
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

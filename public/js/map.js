@@ -14,7 +14,8 @@ import {
   // getConveyorStatus,
   // showNotification,
   getLocationObj,
-  searchToObj
+  searchToObj,
+  timeoutAsync
 } from './utils.js'
 // End imports
 
@@ -204,9 +205,34 @@ let splash = `<div class='splash-inner'>
 
 </div>`
 
+// let imageUploader = (id, href) => `<div class='uploadOutter'><div class="uploadWrapper">
+// <form id="imageUploadForm" enctype="multipart/form-data" class="imageUploadForm" action="/api/v2/upload-image" method="post">
+//   <span class="helpText" id="helpText">Upload an image</span>
+//   <input id="file" name="map" type="file" class="uploadButton" />
+//   <input name="id" class='hidden' readonly value="`+ id + `" />
+//   <input name="href" class='hidden' readonly value="`+ href + `" />
+//   <div id="uploadedImg" class="uploadedImg">
+//     <span class="unveil"></span>
+//   </div>
+//   <span class="pickFile">
+//     <a href="#" class="pickFileButton">Pick file</a>
+//   </span>
+// </form>
+// </div></div>`
+
+let imageUploader = (id) => {
+  return `<div><form id="upload-form" enctype="multipart/form-data" action="/api/upload-image" method="post">
+  <div class="custom-file">
+    <span><i class="fas fa-file-image"></i></span>
+    <input id="image-file" name="map" type="file">
+  </div>
+  <input id="zone-id" class='hidden' name="id" type="number" readonly value="`+ id + `">
+  </form></div>`
+}
+
 // Check map option (null, ol, custom)
 let mapOption
-if(!userData_raw.error)
+if (!userData_raw.error)
   userData_raw.forEach(sensor => {
     if (sensor.zoneId == searchObj.id) {
       mapOption = sensor.map
@@ -235,7 +261,7 @@ if ((!mapOption || mapOption == 'NULL') && searchObj.id) {
     })
       .done(function (msg) {
         console.log("Data Saved: ", msg);
-        location.reload()
+        window.location.reload()
       });
     // [ ] reload the page with new query
   })
@@ -254,6 +280,7 @@ if ((!mapOption || mapOption == 'NULL') && searchObj.id) {
       data: { id, map }
     })
       .done(function (msg) {
+        window.location.reload()
         console.log("Data Saved: ", msg);
       });
     // [ ] reload the page with new query
@@ -264,22 +291,59 @@ if ((!mapOption || mapOption == 'NULL') && searchObj.id) {
   // console.log(userData_raw)
   createMap()
 } else if (mapOption == 'custom') {
-  // } else {
   // show prompt to upload the image
   let params = new URLSearchParams(location.search);
   let id = params.get('id')
-  $("#map").append(`<div><form enctype="multipart/form-data" action="/api/upload-image" method="post">
-                      <input id="image-file" name="map" type="file"><br>
-                      <input id="zone-id" class='hidden' name="id" type="number" readonly value="`+ id + `">
-                      <input type="submit" id="send-image">
-                  </form></div>`)
+  $("#map").append(imageUploader(id))
+  let fileInput = $('#image-file');
+  fileInput.on("input", (e) => {
+    let fileName = e.target.files[0].name;
+    console.log("file added", fileName, e.target.files[0])
+    $("#upload-form").trigger('submit')
+  })
+
+  // $('.custom-file > span').on({
+  //   'mouseenter': function () {
+  //     $('.custom-file').addClass('input-hovered');
+  //   },
+  //   'mouseleave': function () {
+  //     $('.custom-file').remove('input-hovered');
+  //   }
+  // })
+
 } else if (mapOption != 'NULL' && searchObj.id) {
   // console.log(userData_raw)
+
   let src = mapOption.split('./public')[1]
-  $("#map").append(`<div class='custom-map'> <img src='` + src + `' /> </div>`)
+
+  $("#map").append(`<div class='custom-map dragscroll'> <img class='custom-image' src='` + src + `' /> </div>`)
+
+  // [ ] TODO: to implement scroll by dragging: http://qnimate.com/javascript-scroll-by-dragging/
+
 } else {
   $("div#map").append(`<span>choose an option</span>`)
 }
+
+$(".dragscroll img").on('mouseover', (el) => {
+  $(el.target).parent().removeAttr('nochilddrag')
+})
+
+$(".dragscroll img").on('mouseout', (el) => {
+  $(el.target).parent().attr('nochilddrag', true)
+})
+
+// $(window).on('load',function(){
+//   let bh = $(".custom-map").height()
+//   let bw = $(".custom-map").width()
+//   let im = $(".custom-image")
+//   let ih = $(".custom-image").height()
+//   let iw = $(".custom-image").width()
+//   if(iw>ih){
+//     im.addClass("landscape")
+//   }else{
+//     im.addClass("portrait")
+//   }
+// })
 
 // ============================
 // END Display Map
@@ -307,7 +371,7 @@ if ($("#map .custom-map")) {
 
   // Filter JSON with sensors by zoneId
   let userDataFinal
-  if(!userData_raw.error)
+  if (!userData_raw.error)
     userDataFinal = userData_raw.filter((item, index) => {
       if (item.zoneId == zoneId)
         return item
@@ -380,8 +444,8 @@ if ($("#map .custom-map")) {
 
       // Get location of sensor
       const position = {
-        top: parseInt(sensor.y) + 5,
-        left: parseInt(sensor.x) + 5
+        top: parseInt(sensor.y),
+        left: parseInt(sensor.x)
       }
 
       // Sensor on map
@@ -396,18 +460,16 @@ if ($("#map .custom-map")) {
       $(`.draggable[sensor='` + sensor.sensorId + `']`).draggable({
         grid: [1, 1],
         create: function (event, ui) {
-          // console.log(sensor.sensorId, position, ui, $(this).position())
-          $(this).position({
-            my: "left+" + position.left + ", top+" + position.top,
-            at: "left top",
-            of: $('.custom-map')
-          });
+          
+          $(this).css('top',position.top)
+          $(this).css('left',position.left)
+
         },
         stop: function (event, ui) {
           const sensorId = $(this).attr('sensor')
           // Update position of sensor on map
           fetch("/api/v3/save-position?x=" + ui.position.left + "&y=" + ui.position.top + "&sensor=" + sensorId).then(result => {
-            console.log(result)
+            // console.log(result)
           })
         },
       });
@@ -479,13 +541,14 @@ if ($("#map .custom-map")) {
 var socketChannel = 'socketChannel'
 socket.on(socketChannel, async (data) => {
 
-  let currentValueBox = $(".sensor-item span.sensorValue")
-  // console.log(currentValueBox)
+  // OLD WAY - @depracated
   // Loop through each current value box
+  let currentValueBox = $(".sensor-item span.sensorValue")
   currentValueBox.each((index, item) => {
     // get sensor id for each current value box 
     let sensorId = $(item).parent().attr("sensor")
     let sensorType = $(item).parent().attr("type")
+
     // get value of topic that contains this I
     if (data.topic.includes(sensorId)) {
       // Generate symbol
@@ -498,9 +561,28 @@ socket.on(socketChannel, async (data) => {
       // Append value and symbol
       $(item).html(parseFloat(data.message).toFixed(1) + symbol())
     }
+
+    // NEW TOPIC dataPub
+    // dataPub {cId: "DAS001TCORA", value: 23.992979}
+    if (data.topic == 'dataPub') {
+      let msg = JSON.parse(data.message)
+      updateCurrentValueOnMap(msg.cId, parseFloat(msg.value).toFixed(1))
+    }
+
   })
 
 })
+
+let updateCurrentValueOnMap = (id,value) => {
+  let type = $("#map div.sensor-item[sensor='"+id+"']").attr("type")
+  let symbol = (type) => {
+    if (type == 'temperature')
+      return '°C'
+    else if (type != 'temperature')
+      return ' V'
+  }
+  $("#map div.sensor-item[sensor='"+id+"'] .sensorValue").html(value + symbol(type))
+}
 // ============================
 // END Connect sensor to MQTT
 
