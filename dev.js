@@ -831,8 +831,10 @@ app.get('/api/v3/get-sensor-data', (req, res) => {
 
     // Process time
     let todayRaw = new Date();
-    let todayQueryDoor = todayRaw.getFullYear() + '-' + (todayRaw.getMonth() + 1) + '-' + (todayRaw.getDate() - 1 < 10 ? '0' + todayRaw.getDate() - 1 : todayRaw.getDate() - 1) + ' ' + '00:00:00'
-    let todayQueryGeneral = todayRaw.getFullYear() + '-' + (todayRaw.getMonth() + 1) + '-' + (todayRaw.getDate() < 10 ? '0' + todayRaw.getDate() : todayRaw.getDate()) + ' ' + '00:00:00'
+    // let todayQueryDoor = todayRaw.getFullYear() + '-' + (todayRaw.getMonth() + 1) + '-' + (todayRaw.getDate() - 1 < 10 ? '0' + todayRaw.getDate() - 1 : todayRaw.getDate() - 1) + ' ' + '00:00:00'
+    // let todayQueryGeneral = todayRaw.getFullYear() + '-' + (todayRaw.getMonth() + 1) + '-' + (todayRaw.getDate()-1 < 10 ? '0' + todayRaw.getDate()-1 : todayRaw.getDate()-1) + ' ' + '00:00:00'
+    let todayQueryDoor = todayRaw.toISOString().split("T")[0] + ' 00:00:00'
+    let todayQueryGeneral = todayRaw.toISOString().split("T")[0] + ' 00:00:00'
 
     let influxQuery
     if (['door'].includes(req.query.type)) {
@@ -843,11 +845,11 @@ app.get('/api/v3/get-sensor-data', (req, res) => {
         influxQuery = "SELECT mean(value) as value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQueryGeneral + "' and time<now() group by time(5m) order by time desc;"
     }
 
-    // console.log(influxQuery)
+    console.log(influxQuery)
 
     if (req.query.type == 'door') {
 
-        console.log(req.query.type, influxQuery)
+        // console.log(req.query.type, influxQuery)
 
         influxReader(influxQuery).then(result => {
 
