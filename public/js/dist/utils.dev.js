@@ -24,13 +24,18 @@ exports.downloadCSV = downloadCSV;
 exports.downloadCSVMulti = downloadCSVMulti;
 exports.getMultiReport = getMultiReport;
 exports.getDaysInMonth = getDaysInMonth;
-exports.getConveyorStatus = exports.insertStatus = exports.monthChanger = exports.timeoutAsync = void 0;
+exports.getKeyByValue = getKeyByValue;
+exports.getConveyorStatus = exports.insertStatus = exports.monthChanger = exports.timeoutAsync = exports._ = void 0;
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 // Start imports
-var Checker = require('password-checker'); // End Imports
+var Checker = require('password-checker');
 
+var _ = require('lodash'); // End Imports
+
+
+exports._ = _;
 
 var timeoutAsync = function timeoutAsync(ms, f) {
   var sleep = new Promise(function (resolve) {
@@ -528,22 +533,50 @@ function roundToTwo(num) {
   }
 
   return result;
-}
+} // Used for exporting sensor charts
+
 
 function downloadCSV(args) {
+  console.log(args);
   var data, filename, link;
   var csv = "";
   var ylabels = args.ylabels;
   var xlabels = args.xlabels;
-  xlabels = xlabels.map(function (time) {
-    return time ? time.replace(":00.000Z", "").replace("T", " ") : time;
-  });
-  ylabels = ylabels.map(function (value) {
-    return value ? value.toFixed(1) : "not recorded";
-  }); // console.log(xlabels)
-  // Header of table
+  var json = [],
+      jsonUniqueByDate;
 
-  csv = "Date,Value\n";
+  if (args.sensorType == 'door') {
+    ylabels = ylabels.map(function (value) {
+      return value ? "closed" : value == null ? "not recorded" : "open";
+    });
+    xlabels = xlabels.map(function (time) {
+      return time ? time.split("T")[0] + " " + time.split("T")[1].split(".")[0] : time;
+    });
+    ylabels.forEach(function (item, index) {
+      json[index] = {
+        'time': xlabels[index],
+        'state': item
+      };
+    });
+    jsonUniqueByDate = _.uniqBy(json, 'time'); // Header of table
+
+    csv = "Date,State\n";
+  } else if (args.sensorType == 'temperature') {
+    ylabels = ylabels.map(function (value) {
+      return value ? value.toFixed(1) : "not recorded";
+    });
+    xlabels = xlabels.map(function (time) {
+      return time ? time.replace(":00.000Z", "").replace("T", " ") : time;
+    }); // Header of table
+
+    csv = "Date,Temperature\n";
+  }
+
+  console.log(json);
+  console.log(jsonUniqueByDate); // TODO: extract value form this json to put in CSV
+
+  console.log(xlabels);
+  console.log(ylabels);
 
   for (var i = 0; i < ylabels.length; i++) {
     csv += xlabels[i] + "," + ylabels[i].toString() + "\n";
@@ -564,10 +597,11 @@ function downloadCSV(args) {
 
   link.click();
   document.body.removeChild(link);
-}
+} // Used for reports from settings
+
 
 function downloadCSVMulti(args) {
-  // console.log(args)
+  // console.log(args.date)
   var data, filename, link;
   var csv = ""; // Header of table
 
@@ -576,15 +610,60 @@ function downloadCSVMulti(args) {
     csv += item;
     if (index != args.sensors.length - 1) csv += ",";
   });
-  csv += "\n"; // Build each row independetly
+  csv += "\n";
+  var maxRowLength = 0;
+  var timestamps = []; // Build each row independetly
 
-  var daysToReport = Object.values(args.xlabels)[0].rows.length;
+  if (args.date[0] == args.date[1]) {
+    // user wants hourly report  - hourly timestamps
+    // ==================
+    // Prepare timestamps for 24 hours
+    timestamps = []; // console.log(typeof args.data)
 
-  for (var rowIndex = 0; rowIndex < daysToReport; rowIndex++) {
+    for (var prop in args.data) {
+      if (Object.prototype.hasOwnProperty.call(args.data, prop)) {
+        if (args.data[prop].rows.length > maxRowLength) {
+          timestamps = getValuesFromObject('time', args.data[prop].rows);
+          maxRowLength = args.data[prop].rows.length;
+        }
+      }
+    } // Clean timestamps (HH:MM)
+
+
+    timestamps = timestamps.map(function (item) {
+      item = item.split("T")[1].split(":")[0] + ":" + item.split("T")[1].split(":")[1];
+      return item;
+    });
+  } else {
+    // user wants daily report - daily timestamps
+    // ==================
+    // Calculate for how many days user asked
+    timestamps = []; // console.log(typeof args.data)
+
+    for (var prop in args.data) {
+      if (Object.prototype.hasOwnProperty.call(args.data, prop)) {
+        if (args.data[prop].rows.length > maxRowLength) {
+          timestamps = getValuesFromObject('time', args.data[prop].rows);
+          maxRowLength = args.data[prop].rows.length;
+        }
+      }
+    } // Clean timestamps (YYYY-MM-DD)
+
+
+    timestamps = timestamps.map(function (item) {
+      item = item.split("T")[0];
+      return item;
+    });
+  } // End Build each row independetly
+  // console.log(maxRowLength, timestamps)
+
+
+  for (var rowIndex = 0; rowIndex < maxRowLength; rowIndex++) {
+    // console.log("Day", rowIndex, '/', daysToReport)
     // Get timestamp for each row
-    var timestamp = Object.values(args.xlabels)[0].rows[rowIndex].time;
-    timestamp = timestamp.split('T')[0];
-    var row = timestamp + ','; // Build each column of row
+    var timestamp = timestamps[rowIndex];
+    var row = timestamp + ','; // console.log("timestamp", timestamp)
+    // Build each column of row
 
     var columnIndex = 0;
     var _iteratorNormalCompletion2 = true;
@@ -594,7 +673,19 @@ function downloadCSVMulti(args) {
     try {
       for (var _iterator2 = args.sensors[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
         var sensor = _step2.value;
-        if (args.xlabels[sensor]) row += roundToTwo(parseFloat(args.xlabels[sensor].rows[rowIndex].value));else row += "NaN";
+
+        if (args.data[sensor]) {
+          if (args.types[columnIndex] == 'door') {
+            // add column for DOOR
+            // console.log("door:", args.data[sensor].rows[rowIndex].value)
+            if (args.data[sensor].rows[rowIndex].value != null) row += args.data[sensor].rows[rowIndex].value + ' min open';else row += " ";
+          } else if (args.types[columnIndex] == 'temperature') {
+            // add column for TEMPERATURE
+            var value = roundToTwo(parseFloat(args.data[sensor].rows[rowIndex].value));
+            if (value || value == 0) row += roundToTwo(parseFloat(args.data[sensor].rows[rowIndex].value)) + " °C";else row += " ";
+          }
+        } else row += " ";
+
         if (columnIndex != args.sensors.length - 1) row += ",";
         columnIndex++;
       } // Append row to final csv
@@ -631,7 +722,8 @@ function downloadCSVMulti(args) {
 
   link.click();
   document.body.removeChild(link);
-}
+} // Used to make the requests before going to downloadCSVMulti()
+
 
 function getMultiReport(listOfZones) {
   var date = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
@@ -640,39 +732,81 @@ function getMultiReport(listOfZones) {
     var sensorsRaw = userData_raw.filter(function (item, index) {
       if (listOfZones.indexOf(item.zoneId) != -1) return item;
     });
-    var listOfSensors = getDistinctValuesFromObject('sensorId', sensorsRaw);
-    $.ajax({
-      url: "/api/v3/multi-report",
-      type: 'POST',
-      data: {
-        listOfSensors: listOfSensors,
-        date: date
-      }
-    }).done(function (res) {
-      console.log(res);
+    var listOfSensorsId = getValuesFromObject('sensorId', sensorsRaw);
+    if (typeof listOfSensorsId == 'string') listOfSensorsId = new Array(listOfSensorsId);
+    var listOfSensorsType = getValuesFromObject('sensorType', sensorsRaw);
+    if (typeof listOfSensorsType == 'string') listOfSensorsType = new Array(listOfSensorsType); // console.log("SENT:", listOfSensorsId, listOfSensorsType)
 
-      if (res.result.length) {
-        if (typeof listOfSensors == 'string') {
-          listOfSensors = new Array(listOfSensors);
-        } // Rename keys
+    if (date[0] == date[1]) {
+      // if user wants hourly report
+      $.ajax({
+        url: "/api/v3/multi-report/hourly",
+        type: 'POST',
+        data: {
+          listOfSensorsId: listOfSensorsId,
+          listOfSensorsType: listOfSensorsType,
+          date: date
+        }
+      }).done(function (res) {
+        // console.log("RECEIVED:", res)
+        if (res.length) {
+          if (typeof listOfSensorsId == 'string') {
+            listOfSensorsId = new Array(listOfSensorsId);
+            listOfSensorsType = new Array(listOfSensorsType);
+          } // Rename keys
 
 
-        res.result.forEach(function (item, index) {
-          // console.log(item)
-          delete Object.assign(res.result, _defineProperty({}, item.tags.sensorId, res.result[index]))[index];
-        }); // console.log(res.result)
+          res.forEach(function (item, index) {
+            delete Object.assign(res, _defineProperty({}, item.tags.sensorId, res[index]))[index];
+          }); // console.log("RECEIVED:", res)
 
-        downloadCSVMulti({
-          sensors: listOfSensors,
-          xlabels: res.result,
-          ylabels: res.result
-        });
-      } else {
-        alert("No data for selected zones");
-      }
-    }); // if(date.length) {
+          downloadCSVMulti({
+            sensors: listOfSensorsId,
+            types: listOfSensorsType,
+            data: res,
+            date: date
+          });
+        } else {
+          alert("No data for selected zones");
+        }
+      });
+    } else {
+      // if user want a daily report
+      $.ajax({
+        url: "/api/v3/multi-report",
+        type: 'POST',
+        data: {
+          listOfSensorsId: listOfSensorsId,
+          listOfSensorsType: listOfSensorsType,
+          date: date
+        }
+      }).done(function (res) {
+        // console.log("RECEIVED:", res)
+        if (res.length) {
+          if (typeof listOfSensorsId == 'string') {
+            listOfSensorsId = new Array(listOfSensorsId);
+            listOfSensorsType = new Array(listOfSensorsType);
+          } // Rename keys
+
+
+          res.forEach(function (item, index) {
+            delete Object.assign(res, _defineProperty({}, item.tags.sensorId, res[index]))[index];
+          }); // console.log("RECEIVED:", res)
+
+          downloadCSVMulti({
+            sensors: listOfSensorsId,
+            types: listOfSensorsType,
+            data: res,
+            date: date
+          });
+        } else {
+          alert("No data for selected zones");
+        }
+      });
+    } // if(date.length) {
     // } else {
     // }
+
   } else {
     return 'There is no zone selected!';
   }
@@ -686,3 +820,9 @@ function getDaysInMonth(month, year) {
 }
 
 ;
+
+function getKeyByValue(value, object) {
+  return Object.keys(object).find(function (key) {
+    return object[key] === value;
+  });
+}

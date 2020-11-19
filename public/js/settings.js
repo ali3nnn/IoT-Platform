@@ -10,6 +10,7 @@ import {
     getMultiReport,
     getDaysInMonth,
     monthChanger,
+    _,
 } from './utils.js'
 
 // $(function () {
@@ -22,17 +23,32 @@ import {
 
 // Fetch
 let fetchAdmins = async () => {
-    let response = fetch('/api/get-team')
-    return (await response).json()
+    let response = fetch('/api/get-team').then(result => {
+        if (result.status == 401) { // user is not superadmin
+            $(".admin-settings").remove()
+        } else if (result.status == 200) {
+            return result.json()
+        }
+    })
+    return await response
 }
 
 // [ ] TODO: should get zones from sess.userData
-// console.log("userData_raw",userData_raw)
+// console.log("userData_raw", userData_raw)
 let fetchZones = async () => {
-    let response = fetch('/api/get-zones')
-    return (await response).json()
+    let response = fetch('/api/get-zones').then(result => {
+        let resultJson = result.json()
+        // console.log(await resultJson)
+        if (result.status == 401) { // user is not superadmin
+            $(".zone-settings").remove()
+        } else if (result.status == 200) {
+            return resultJson
+        }
+    })
+    return await response
 }
 
+// console.log(userData)
 
 // Color yellow setting item
 if (window.location.href.indexOf('settings') > -1) {
@@ -55,65 +71,66 @@ $(function () {
 let company = ''
 let listOfUsers
 let fetchAdminsPromise = fetchAdmins().then(listOfAdmins => {
+    // console.log(listOfAdmins)
     listOfUsers = listOfAdmins
-    listOfAdmins.forEach(admin => {
+    if (listOfAdmins != undefined) {
+        listOfAdmins.forEach(admin => {
 
-        // Add company in form
-        if (!company) {
-            company = admin.company
-            $("#form-create-admin input[name='company']").attr("value", company) // Append company name in form
-            $(".top-container span b").html(company) // Append company name in title for every box
-        }
+            // Add company in form
+            if (!company) {
+                company = admin.company
+                $("#form-create-admin input[name='company']").attr("value", company) // Append company name in form
+                $(".top-container span b").html(company) // Append company name in title for every box
+            }
 
-        if (admin.username == username)
-            $(".admin-list table tbody").prepend(`<tr username='` + admin.username + `'>
-                                                <td><p>` + admin.name + `</p></td>
-                                                <td><p>` + admin.username + `</p></td>
-                                                <td><p>` + admin.email + `</p></td>
-                                                <td><span class='remove-user' username='` + admin.username + `'><i class="fas fa-user-minus"></i></span></td>
-                                            </tr>`)
-        else
-            $(".admin-list table tbody").append(`<tr username='` + admin.username + `'>
-                                                <td><p>` + admin.name + `</p></td>
-                                                <td><p>` + admin.username + `</p></td>
-                                                <td><p>` + admin.email + `</p></td>
-                                                <td><span class='remove-user' username='` + admin.username + `'><i class="fas fa-user-minus"></i></span></td>
-                                            </tr>`)
+            if (admin.username == username)
+                $(".admin-list table tbody").prepend(`<tr username='` + admin.username + `'>
+                                                    <td><p>` + admin.name + `</p></td>
+                                                    <td><p>` + admin.username + `</p></td>
+                                                    <td><p>` + admin.email + `</p></td>
+                                                    <td><span class='remove-user' username='` + admin.username + `'><i class="fas fa-user-minus"></i></span></td>
+                                                </tr>`)
+            else
+                $(".admin-list table tbody").append(`<tr username='` + admin.username + `'>
+                                                    <td><p>` + admin.name + `</p></td>
+                                                    <td><p>` + admin.username + `</p></td>
+                                                    <td><p>` + admin.email + `</p></td>
+                                                    <td><span class='remove-user' username='` + admin.username + `'><i class="fas fa-user-minus"></i></span></td>
+                                                </tr>`)
 
-        $(".remove-user[username='" + admin.username + "']").on('click', (e) => {
-            e.preventDefault();
-            const username = admin.username
-            const url = '/api/remove-user'
-            // console.log(url, username)
-            var ask = confirm("Do you want to REMOVE the user ?")
-            if (ask)
-                $.ajax({
-                    url,
-                    type: 'POST',
-                    data: { username },
-                    success: function (result) {
-                        if (result) {
-                            $(`.admin-list tr[username='` + username + `']`).slideUp();
+            $(".remove-user[username='" + admin.username + "']").on('click', (e) => {
+                e.preventDefault();
+                const username = admin.username
+                const url = '/api/remove-user'
+                // console.log(url, username)
+                var ask = confirm("Do you want to REMOVE the user ?")
+                if (ask)
+                    $.ajax({
+                        url,
+                        type: 'POST',
+                        data: { username },
+                        success: function (result) {
+                            if (result) {
+                                $(`.admin-list tr[username='` + username + `']`).slideUp();
+                            }
+                        },
+                        error: function (err) {
+                            console.log("err:", err);
                         }
-                    },
-                    error: function (err) {
-                        console.log("err:", err);
-                    }
-                });
+                    });
+            })
         })
-    })
-    listOfUsers = getDistinctValuesFromObject('username', listOfUsers)
-    listOfUsers = listOfUsers.filter((user, index) => {
-        return username == user ? false : user
-    })
+        listOfUsers = getDistinctValuesFromObject('username', listOfUsers)
+        listOfUsers = listOfUsers.filter((user, index) => {
+            return username == user ? false : user
+        })
+    }
+
 })
 
 // END ADMIN TAB
 // ==============================
 
-
-// ZONES TAB
-// ==============================
 
 // [ ] TODO: Append users checkbox in zoneModal
 
@@ -342,204 +359,243 @@ let zoneModal = (id, zoneid, location1, location2, location3, custommap, olmap, 
 // Append zone list
 let zonesAndUserList
 let zonesRaw
-fetchAdminsPromise.then(() => {
-    fetchZones().then((result) => {
+let userDataBuffer
+// fetchAdminsPromise.then(() => {
+fetchZones().then((result) => {
 
+    // console.log(result[0][0], result[0][0].hasOwnProperty('role'))
+    let userRole = {
+        superadmin: false,
+        admin: false
+    }
+
+    if (result[0][0].hasOwnProperty('role')) {
+        // console.log("admin")
+        userRole.admin = true
+    } else {
+        // console.log("superadmin")
+        userRole.superadmin = true
+    }
+
+    // ZONES TAB
+    // ==============================
+
+    if (userRole.superadmin) {
         zonesAndUserList = result[0]
         zonesRaw = result[1]
+    } else if (userRole.admin) {
+        zonesAndUserList = []
+        // { alerts, battery, closedTimer, max, min, offset, opemTimer,role,sensorId,sensorName,sensorType,x,y, ...userDataBuffer } = result[0];
+        zonesRaw = result[0]
+    }
 
-        // console.log(result)
-        // console.log(userData_raw)
+    // Delete all duplicated by zoneId
+    zonesRaw = _.uniqBy(zonesRaw, function (e) {
+        return e.zoneId;
+    });
 
-        if (!zonesRaw.length) {
-            // Append rows to zone-tab
-            $(".zone-tab .mid-container table tbody").append(`<tr><td>No zone for this team</td><td></td><td></td></tr>`)
-        }
+    // console.log(userRole, result)
 
-        zonesRaw.forEach(zone => {
-            // console.log(zone)
+    // console.log(result)
+    // console.log(userData_raw)
 
-            // Generate unique Id
-            let date = new Date()
-            let modalId = date.getTime() + Math.floor((Math.random() * 100) + 1)
+    if (!zonesRaw.length) {
+        // Append rows to zone-tab
+        $(".zone-tab .mid-container table tbody").append(`<tr><td>No zone for this team</td><td></td><td></td></tr>`)
+    }
 
-            // Append rows to zone-tab
-            $(".zone-tab .mid-container table tbody").append(`<tr zoneid='` + zone.zoneId + `'>
+    zonesRaw.forEach(zone => {
+        // console.log(zone)
+
+        // Generate unique Id
+        let date = new Date()
+        let modalId = date.getTime() + Math.floor((Math.random() * 100) + 1)
+
+        // Append rows to zone-tab
+        // console.log(zone.zoneId, zone.map)
+        $(".zone-tab .mid-container table tbody").append(`<tr zoneid='` + zone.zoneId + `'>
                     <td>` + zone.location1 + ` / ` + zone.location2 + ` / ` + zone.location3 + `</td>
-                    <td>` + (() => { return zone.map == 'custom' ? 'You need to set and image' : (zone.map == 'ol' ? "Standard map" : (zone.map == 'NULL' ? "Set a map" : 'Custom map')) })() + `</td>
+                    <td>` + (() => { return zone.map == 'custom' ? 'You need to set and image' : (zone.map == 'ol' ? "Standard map" : (zone.map == 'NULL' || zone.map == null ? "Set a map" : 'Custom map')) })() + `</td>
                     <td><span class='edit-zone' zoneid='` + zone.zoneId + `' modalid='` + modalId + `'><i class="fas fa-edit"></i></span></td>
                 </tr>`)
-            // }
+        // }
 
-            // Check zone.map
-            let custommap, olmap, path
-            if (zone.map == 'ol') {
-                custommap = ''
-                olmap = 'checked'
-                path = ''
-            }
-            else if (zone.map == 'custom') {
-                custommap = 'checked'
-                olmap = ''
-                path = ''
-            } else if (zone.map != null) {
-                custommap = 'checked'
-                olmap = ''
-                path = zone.map.split('/')[zone.map.split('/').length - 1]
-            } else {
-                custommap = ''
-                olmap = ''
-                path = ''
-            }
+        // Check zone.map
+        let custommap, olmap, path
+        if (zone.map == 'ol') {
+            custommap = ''
+            olmap = 'checked'
+            path = ''
+        }
+        else if (zone.map == 'custom') {
+            custommap = 'checked'
+            olmap = ''
+            path = ''
+        } else if (zone.map != null) {
+            custommap = 'checked'
+            olmap = ''
+            path = zone.map.split('/')[zone.map.split('/').length - 1]
+        } else {
+            custommap = ''
+            olmap = ''
+            path = ''
+        }
 
-            // Disable input file if custommap is unchecked initially [??? idk what is this doing]
-            if (custommap == 'unchecked')
-                $(".zone-modal #image-file").attr("disabled", true)
+        // Disable input file if custommap is unchecked initially [??? idk what is this doing]
+        if (custommap == 'unchecked')
+            $(".zone-modal #image-file").attr("disabled", true)
 
-            // Append edit zone modal with unique id
+        // Append edit zone modal with unique id
+        if(userRole.admin)
+            $(".zone-settings .inner-settings").append(zoneModal(modalId, zone.zoneId, zone.location1, zone.location2, zone.location3, custommap, olmap, path, [[],[]]))
+        else if (userRole.superadmin)
             $(".zone-settings .inner-settings").append(zoneModal(modalId, zone.zoneId, zone.location1, zone.location2, zone.location3, custommap, olmap, path, result))
 
-            // Mark user checked
-            // let usersList
-            // result.forEach((zone, index) => {
-            //     usersList = new Set(zone.usersList.split(','));
-            // })
+        // Mark user checked
+        // let usersList
+        // result.forEach((zone, index) => {
+        //     usersList = new Set(zone.usersList.split(','));
+        // })
 
-            // console.log(usersList)
+        // console.log(usersList)
 
-            // let labels = $(".zone-settings .inner-settings .form-checkboxes label input")
-            // for (let item of labels) {
-            //     let username = $(item).attr("value")
-            //     if (usersList.has(username)) {
-            //         $(item).attr('checked', true)
-            //     }
-            // }
+        // let labels = $(".zone-settings .inner-settings .form-checkboxes label input")
+        // for (let item of labels) {
+        //     let username = $(item).attr("value")
+        //     if (usersList.has(username)) {
+        //         $(item).attr('checked', true)
+        //     }
+        // }
 
-            // Open Modal Trigger
-            $(`.edit-zone[modalid='` + modalId + `']`).on('click', function () {
-                $(`#edit-zone-modal-` + modalId).modal({
-                    backdrop: 'static'
-                });
+        // Open Modal Trigger
+        $(`.edit-zone[modalid='` + modalId + `']`).on('click', function () {
+            $(`#edit-zone-modal-` + modalId).modal({
+                backdrop: 'static'
             });
+        });
 
-            // Save data
-            $(`#edit-zone-modal-` + modalId + ` button[type='submit']`).on('click', function (e) {
-                // e.preventDefault();
-                // console.log("clicked!!!")
-                // $.ajax({
-                //     method: "POST",
-                //     url: "/api/edit-zone",
-                //     data: { id: zone.zoneId }
-                // }).done(function (msg) {
-                //     console.log("Data Saved: ", msg);
-                // });
-            });
-
-        })
-
-        // Toggle input file
-        $("input[name='map']").on('change', (e) => {
-            if (e.target.defaultValue == 'custom') {
-                $(".zone-modal input[value='custom']").prop("checked", true)
-                $(".zone-modal input[value='ol']").prop("checked", false)
-                $(".zone-modal #image-file").attr("disabled", false)
-            }
-            else {
-                $(".zone-modal input[value='custom']").prop("checked", false)
-                $(".zone-modal input[value='ol']").prop("checked", true)
-                $(".zone-modal #image-file").attr("disabled", true)
-            }
-        })
-
-    }).then(() => {
-        // END ZONES TAB
-        // ==============================
-
-        // Create Report Zone
-        let date,month,maxDays
-        zonesRaw.forEach((zone) => {
-            // Sensor counter
-            let counter = getValuesFromObject('zoneId', userData_raw).filter(zoneId => zoneId == zone.zoneId).length
-            
-            // Date
-            date = new Date()
-            month = monthChanger(date.getMonth()) //.slice(0,3) // display one month before current month 
-            maxDays
-            if(date.getMonth()==0) {
-                maxDays = 31 //if current month if 0 (January) return maxDays of december last year which is 31
-            } else {
-                maxDays = getDaysInMonth(date.getMonth(), date.getFullYear()) //return maxDays of last month
-            }
-
-            // Append zone
-            $(".report-settings .mid-container table tbody").append(`<tr><td><div class='form-checkboxes'><label><input type="checkbox" name="zone` + zone.zoneId + `" value="` + zone.zoneId + `">` + zone.location1 + ` / ` + zone.location2 + ` / ` + zone.location3 + `</label></div></td><td>` + counter + `</td></tr>`)
-        
-        })
-
-        // Edit button for quick report
-        // $(".report-buttons .create-quick-report span").append(` on `+month.slice(0,3))
-
-        // Quick report button
-        $(".report-buttons .create-quick-report").on('click', () => {
-
-            let listOfZones = []
-
-            // Get checked checkboxes
-            $(".report-settings .mid-container table tbody input").each((index, item) => {
-                if ($(item).prop("checked")) {
-                    listOfZones.push(parseInt($(item).attr('value')))
-                }
-            })
-
-            if(listOfZones.length)
-                getMultiReport(listOfZones)
-            else
-                alert("Please select a zone before creating a report")
-
-        })
-
-        // Normal report button
-        $(".report-buttons .create-report").on('click', () => {
-
-            let listOfZones = []
-
-            // Get checked checkboxes
-            $(".report-settings .mid-container table tbody input").each((index, item) => {
-                if ($(item).prop("checked")) {
-                    listOfZones.push(parseInt($(item).attr('value')))
-                }
-            })
-
-            let startDate = $(".report-settings input[name='start-date']").val()
-            let endDate = $(".report-settings input[name='end-date']").val()
-
-            // console.log(startDate, endDate)
-
-            if(listOfZones.length) {
-                if(startDate && endDate) {
-                    let date = [startDate, endDate]
-                    getMultiReport(listOfZones, date)
-                } else {
-                    alert("Please select a date before creating a report")
-                }
-            }
-            else
-                alert("Please select a zone before creating a report")
-
-        })
-
-        // ==============================
-        // REPORT CONTAINER
+        // Save data
+        $(`#edit-zone-modal-` + modalId + ` button[type='submit']`).on('click', function (e) {
+            // e.preventDefault();
+            // console.log("clicked!!!")
+            // $.ajax({
+            //     method: "POST",
+            //     url: "/api/edit-zone",
+            //     data: { id: zone.zoneId }
+            // }).done(function (msg) {
+            //     console.log("Data Saved: ", msg);
+            // });
+        });
 
     })
+
+    // Toggle input file
+    $("input[name='map']").on('change', (e) => {
+        if (e.target.defaultValue == 'custom') {
+            $(".zone-modal input[value='custom']").prop("checked", true)
+            $(".zone-modal input[value='ol']").prop("checked", false)
+            $(".zone-modal #image-file").attr("disabled", false)
+        }
+        else {
+            $(".zone-modal input[value='custom']").prop("checked", false)
+            $(".zone-modal input[value='ol']").prop("checked", true)
+            $(".zone-modal #image-file").attr("disabled", true)
+        }
+    })
+
+    // END ZONES TAB
+    // ==============================
+
+}).then(() => {
+
+
+    // REPORT CONTAINER
+    // ==============================
+
+    // Create Report Zone
+    let date, month, maxDays
+    zonesRaw.forEach((zone) => {
+        // Sensor counter
+        let counter = getValuesFromObject('zoneId', userData_raw).filter(zoneId => zoneId == zone.zoneId).length
+
+        // Date
+        date = new Date()
+        month = monthChanger(date.getMonth()) //.slice(0,3) // display one month before current month 
+        maxDays
+        if (date.getMonth() == 0) {
+            maxDays = 31 //if current month if 0 (January) return maxDays of december last year which is 31
+        } else {
+            maxDays = getDaysInMonth(date.getMonth(), date.getFullYear()) //return maxDays of last month
+        }
+
+        // Append zone
+        $(".report-settings .mid-container table tbody").append(`<tr><td><div class='form-checkboxes'><label><input type="checkbox" name="zone` + zone.zoneId + `" value="` + zone.zoneId + `">` + zone.location1 + ` / ` + zone.location2 + ` / ` + zone.location3 + `</label></div></td><td>` + counter + `</td></tr>`)
+
+    })
+
+    // Edit button for quick report
+    // $(".report-buttons .create-quick-report span").append(` on `+month.slice(0,3))
+
+    // Quick report button
+    $(".report-buttons .create-quick-report").on('click', () => {
+
+        let listOfZones = []
+
+        // Get checked checkboxes
+        $(".report-settings .mid-container table tbody input").each((index, item) => {
+            if ($(item).prop("checked")) {
+                listOfZones.push(parseInt($(item).attr('value')))
+            }
+        })
+
+        if (listOfZones.length)
+            getMultiReport(listOfZones)
+        else
+            alert("Please select a zone before creating a report")
+
+    })
+
+    // Normal report button
+    $(".report-buttons .create-report").on('click', () => {
+
+        let listOfZones = []
+
+        // Get checked checkboxes
+        $(".report-settings .mid-container table tbody input").each((index, item) => {
+            if ($(item).prop("checked")) {
+                listOfZones.push(parseInt($(item).attr('value')))
+            }
+        })
+
+        let startDate = $(".report-settings input[name='start-date']").val()
+        let endDate = $(".report-settings input[name='end-date']").val()
+
+        // console.log(startDate, endDate)
+
+        if (listOfZones.length) {
+            if (startDate && endDate) {
+                let date = [startDate, endDate]
+                getMultiReport(listOfZones, date)
+            } else {
+                alert("Please select a date before creating a report")
+            }
+        }
+        else
+            alert("Please select a zone before creating a report")
+
+    })
+
+
+    // END REPORT CONTAINER
+    // ==============================
 })
+// })
 
 
 
 
 
-// END REPORT CONTAINER
-// ==============================
+
 
 // Check inputs of form before submit
 const isPassword = () => {

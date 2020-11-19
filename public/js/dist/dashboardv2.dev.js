@@ -4,14 +4,14 @@ var _moment = require("moment");
 
 var _utils = require("./utils.js");
 
-var getSensorData = function getSensorData(id) {
+var getSensorData = function getSensorData(id, type) {
   var response;
   return regeneratorRuntime.async(function getSensorData$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
           _context.next = 2;
-          return regeneratorRuntime.awrap(fetch("/api/v3/get-sensor-data?id=" + id));
+          return regeneratorRuntime.awrap(fetch("/api/v3/get-sensor-data?id=" + id + "&type=" + type));
 
         case 2:
           response = _context.sent;
@@ -39,31 +39,43 @@ function defaultSensorView(sensor) {
   } else if (sensor.sensorMeta.alerts == 2) {
     // alertClass = 'alarm-active'
     alertClass2 = 'alarm-active';
-  } else if ([3, 4].includes(sensor.sensorMeta.alerts)) alertClass2 = 'no-power'; // alertClass = 'alert-active'
-  // current value gauge component
+  } else if ([3, 4].includes(sensor.sensorMeta.alerts)) alertClass2 = 'no-power'; // current value gauge component
 
 
   var currentValueView = "\n    <article class=\"card height-control " + alertClass2 + " live-card-" + sensor.sensorMeta.sensorId + "\" sensorId=\"" + sensor.sensorMeta.sensorId + "\" sensortype=\"" + sensor.sensorMeta.sensorType + "\">\n\n        <div class=\"card-header " + alertClass + "\">\n            <h3 class=\"card-title\">\n                <i class='update-icon'></i>\n                Current Value\n            </h3>\n            <span class='card-settings-button'>\n                <i class=\"far fa-sliders-h\"></i>\n            </span>\n        </div>\n\n        <div class=\"card-body\">\n           <div class=\"" + sensor.sensorMeta.sensorId + "-currentValue\">\n                <div id=\"" + sensor.sensorMeta.sensorId + "-gauge\" class=\"gauge-container two\">\n                    <span class=\"currentValue\">0</span>\n                    " + function () {
-    return sensor.sensorMeta.min ? '<span class=\'minAlertGauge\' value=\' ' + sensor.sensorMeta.min + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>min: ' + sensor.sensorMeta.min + '</span> ' : '<span class=\'minAlertGauge noAlertGauge\' value=\' ' + sensor.sensorMeta.min + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>No min alert</span> ';
+    return ![null, 'NaN', undefined, ''].includes(sensor.sensorMeta.min) ? '<span class=\'minAlertGauge\' value=\' ' + sensor.sensorMeta.min + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>min: ' + sensor.sensorMeta.min + '</span> ' : '<span class=\'minAlertGauge noAlertGauge\' value=\' ' + sensor.sensorMeta.min + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>No min alert</span> ';
   }() + "\n                    " + function () {
-    return sensor.sensorMeta.max ? '<span class=\'maxAlertGauge\' value=\' ' + sensor.sensorMeta.max + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>max: ' + sensor.sensorMeta.max + '</span> ' : '<span class=\'maxAlertGauge noAlertGauge\' value=\' ' + sensor.sensorMeta.max + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>No max alert</span> ';
+    return ![null, 'NaN', undefined, ''].includes(sensor.sensorMeta.max) ? '<span class=\'maxAlertGauge\' value=\' ' + sensor.sensorMeta.max + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>max: ' + sensor.sensorMeta.max + '</span> ' : '<span class=\'maxAlertGauge noAlertGauge\' value=\' ' + sensor.sensorMeta.max + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>No max alert</span> ';
   }() + "\n                </div>\n                <p class='update-time-gauge'>Waiting to be updated...</p>\n            </div>\n        </div>\n\n        <div class='card-alerts-settings alert-" + sensor.sensorMeta.sensorId + "'>\n            <span class='card-settings-button-alert tooltip_test'>\n                <i class=\"fas fa-bell\"></i>\n                <span class=\"tooltiptext\">New feature is coming!</span>\n            </span>\n            <span class='card-settings-button-update tooltip_test'>\n                <i class=\"fas fa-save\"></i>\n                <span class=\"tooltiptext\">By clicking you will update alerts and location!</span>\n            </span>\n            <span class='card-settings-button-inner'>\n                <i class=\"far fa-sliders-h\"></i>\n            </span>\n            <div class='settings-wrapper'>\n                <div class=\"slidecontainer\">\n\n                    <p class='label-input'>Min: </p>\n                    <input type=\"number\" name=\"minAlert\" " + function () {
     return sensor.sensorMeta.min ? 'value="' + sensor.sensorMeta.min + '"' : 'placeholder="Set min alert"';
   }() + " class=\"input input-min\">\n                    <p class='label-input'>Max: </p>\n                    <input type=\"number\" name=\"maxAlert\" " + function () {
     return sensor.sensorMeta.max ? 'value="' + sensor.sensorMeta.max + '"' : 'placeholder="Set max alert"';
-  }() + " class=\"input input-max\">\n\n                    <p class='label-input'>Lat: </p>\n                    <input type=\"number\" name=\"xLat\" " + function () {
+  }() + " class=\"input input-max\">\n                    <p class='label-input'>Lat: </p>\n                    <input type=\"number\" name=\"xLat\" " + function () {
     return sensor.sensorMeta.x ? 'value="' + sensor.sensorMeta.x + '"' : 'placeholder="Set x position"';
   }() + " class=\"input input-lat\">\n                    <p class='label-input'>Long: </p>\n                    <input type=\"number\" name=\"yLong\" " + function () {
     return sensor.sensorMeta.y ? 'value="' + sensor.sensorMeta.y + '"' : 'placeholder="Set y position"';
   }() + " class=\"input input-long\">\n\n                </div>\n            </div>\n        </div>\n    </article>\n    "; // counter noriel ui
 
 
-  var newItemLive = "\n    <article class=\"card height-control live-card-" + sensor.sensorMeta.sensorId + "\">\n\n    <div class=\"card-header\">\n        <h3 class=\"card-title\">\n            <i class='update-icon'></i>\n            Live Update\n        </h3>\n    </div>\n\n    <div class=\"card-body\">\n        <div class=\"" + sensor.sensorMeta.sensorId + "-newItem\">\n\n            <a href=\"#\" class='spinner " + sensor.sensorMeta.sensorId + "-newItem-spinner'>\n                <span>Loading...</span>\n            </a>\n\n            <div id=\"" + sensor.sensorMeta.sensorId + "-floatinBall\" class=\"hidden-element\"></div>\n\n        </div>\n    </div>"; // graph view component
+  var newItemLive = "\n    <article class=\"card height-control live-card-" + sensor.sensorMeta.sensorId + "\">\n\n    <div class=\"card-header\">\n        <h3 class=\"card-title\">\n            <i class='update-icon'></i>\n            Live Update\n        </h3>\n    </div>\n\n    <div class=\"card-body\">\n        <div class=\"" + sensor.sensorMeta.sensorId + "-newItem\">\n\n            <a href=\"#\" class='spinner " + sensor.sensorMeta.sensorId + "-newItem-spinner'>\n                <span>Loading...</span>\n            </a>\n\n            <div id=\"" + sensor.sensorMeta.sensorId + "-floatinBall\" class=\"hidden-element\"></div>\n\n        </div>\n    </div>";
+
+  var doorLive = "\n    <article class=\"card height-control " + alertClass2 + " live-card-" + sensor.sensorMeta.sensorId + "\" sensorId=\"" + sensor.sensorMeta.sensorId + "\" sensortype=\"" + sensor.sensorMeta.sensorType + "\">\n\n        <div class=\"card-header " + alertClass + "\">\n            <h3 class=\"card-title\">\n                <i class='update-icon'></i>\n                Door live\n            </h3>\n            <span class='card-settings-button'>\n                <i class=\"far fa-sliders-h\"></i>\n            </span>\n        </div>\n\n        <div class=\"card-body\">\n           <div class=\"" + sensor.sensorMeta.sensorId + "-currentValue\">\n                <div id=\"" + sensor.sensorMeta.sensorId + "-gauge\" class=\"gauge-container two\">\n                    <span class=\"doorState\" state=\"unknown\">\n                        <i class=\"fas fa-door-closed\"></i>\n                        <i class=\"fas fa-door-open\"></i>\n                    </span>\n                    " + function () {
+    return ![null, 'NaN', undefined, 0, '0', ''].includes(sensor.sensorMeta.openTimer) ? '<span class=\'openTimer\' value=\' ' + sensor.sensorMeta.openTimer + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>open: ' + sensor.sensorMeta.openTimer + '</span> ' : '<span class=\'openTimer noAlertGauge\' value=\' ' + sensor.sensorMeta.openTimer + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>open: <i class="fas fa-infinity"></i></span> ';
+  }() + "\n                    " + function () {
+    return ![null, 'NaN', undefined, 0, '0', ''].includes(sensor.sensorMeta.closedTimer) ? '<span class=\'closedTimer\' value=\' ' + sensor.sensorMeta.closedTimer + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>closed: ' + sensor.sensorMeta.closedTimer + '</span> ' : '<span class=\'closedTimer noAlertGauge\' value=\' ' + sensor.sensorMeta.closedTimer + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>closed: <i class="fas fa-infinity"></i></span> ';
+  }() + "\n                </div>\n                <p class='update-time-gauge'>Waiting to be updated...</p>\n            </div>\n        </div>\n\n        <div class='card-alerts-settings alert-" + sensor.sensorMeta.sensorId + "'>\n            <span class='card-settings-button-alert tooltip_test'>\n                <i class=\"fas fa-bell\"></i>\n                <span class=\"tooltiptext\">New feature is coming!</span>\n            </span>\n            <span class='card-settings-button-update tooltip_test'>\n                <i class=\"fas fa-save\"></i>\n                <span class=\"tooltiptext\">By clicking you will update alerts and location!</span>\n            </span>\n            <span class='card-settings-button-inner'>\n                <i class=\"far fa-sliders-h\"></i>\n            </span>\n            <div class='settings-wrapper'>\n                <div class=\"slidecontainer\">\n\n                    <p class='label-input'>Open:</p>\n                    <input type=\"number\" name=\"openAlert\" " + function () {
+    return sensor.sensorMeta.openTimer ? 'value="' + sensor.sensorMeta.openTimer + '"' : '';
+  }() + "placeholder=\"Set open limit in seconds\" class=\"input input-open\">\n                    <p class='label-input'>Closed:</p>\n                    <input type=\"number\" name=\"closedAlert\" " + function () {
+    return sensor.sensorMeta.closedTimer ? 'value="' + sensor.sensorMeta.closedTimer + '"' : '';
+  }() + "placeholder=\"Set closed limit in seconds\" class=\"input input-closed\">\n\n                </div>\n            </div>\n        </div>\n    </article>\n    "; // graph view component
+
 
   var graphView = "\n\n    <article class=\"card height-control " + sensor.sensorMeta.sensorId + "-card graph-" + sensor.sensorMeta.sensorId + "\" sensorType=\"" + sensor.sensorMeta.sensorType + "\" sensorId=\"" + sensor.sensorMeta.sensorId + "\" sensorData='" + sensorData + "'>\n    \n        <div class=\"card-header\">\n\n            <h3 class=\"card-title\">\n                <i class='update-icon'></i>\n                <span>" + sensor.sensorMeta.sensorName + "</span> |\n                <b>" + sensor.sensorMeta.sensorId + "</b>\n            </h3>\n    \n            <div class=\"card-tools\">\n                <ul class=\"pagination pagination-sm\">\n\n                    <li class=\"page-item\">\n                        <div id=\"reportrange\" style=\"background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%\">\n                            <i class=\"fa fa-calendar\"></i>&nbsp;\n                            <span></span> <i class=\"fa fa-caret-down\"></i>\n                        </div>\n                    </li>\n\n                    <li class=\"page-item\">\n                        <div id=\"report\" class=\"tooltip_test\" style=\"background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%\">\n                            <i class=\"fas fa-file-csv\"></i>\n                            <span class=\"tooltiptext\">Download CSV</span>\n                        </div>\n                    </li>\n\n                </ul>\n            </div>\n    \n        </div>\n        \n    \n        <div class=\"card-body\">\n            <a href=\"#\" class='spinner " + sensor.sensorMeta.sensorId + "-graph-spinner'>\n                <span>Loading...</span>\n            </a> \n            <div class=\"" + sensor.sensorMeta.sensorId + "-graph-calendar graph-calendar\">\n                Time interval for " + sensor.sensorMeta.sensorId + " \n                <input name=\"dates\" value=\"Button Change\"> \n            </div> \n        </div>\n        \n    </article>"; // stack the components
 
   if (sensor.sensorMeta.sensorType == 'counter') {
     return newItemLive + graphView;
+  } else if (sensor.sensorMeta.sensorType == 'door') {
+    return doorLive + graphView;
   } else {
     return currentValueView + graphView;
   }
@@ -111,13 +123,14 @@ function triggerSensorView(sensorId) {
 
   $("article.graph-" + sensorId + " #report").on('click', function (e) {
     var sensorData = $("article.graph-" + sensorId).attr("sensorData");
-    sensorData = JSON.parse(sensorData); // console.log(sensorData)
-
+    var sensorType = $("article.graph-" + sensorId).attr("sensorType");
+    sensorData = JSON.parse(sensorData);
     var filename = "Report-" + String(sensorId) + ".csv";
     (0, _utils.downloadCSV)({
       filename: filename,
       xlabels: (0, _utils.getValuesFromObject)('time', sensorData),
-      ylabels: (0, _utils.getValuesFromObject)('value', sensorData)
+      ylabels: (0, _utils.getValuesFromObject)('value', sensorData),
+      sensorType: sensorType
     });
   });
 }
@@ -218,7 +231,8 @@ function plotData(sensorId) {
 
     var canvas = $("canvas#" + sensorId + "-graph")[0].getContext("2d");
     var labels = (0, _utils.getValuesFromObject)('time', sensorData);
-    var data = (0, _utils.getValuesFromObject)('value', sensorData);
+    var data = (0, _utils.getValuesFromObject)('value', sensorData); // General ptions of timeseries chart
+
     var options = {
       animation: false,
       responsive: true,
@@ -261,69 +275,169 @@ function plotData(sensorId) {
           }
         }]
       }
-    }; // console.log(labels)
+    };
+    var chartColors = {
+      red: 'rgba(255,0,0,1)',
+      red2: 'rgba(255,0,0,0.2)',
+      red5: 'rgba(255,0,0,0.5)',
+      blue: 'rgba(51, 153, 255,1)',
+      blue2: 'rgba(51, 153, 255,0.2)',
+      blue5: 'rgba(51, 153, 255,0.5)',
+      yellow: 'rgba(255, 193, 7,1)',
+      yellow2: 'rgba(255, 193, 7,0.2)'
+    }; // END General ptions of timeseries chart
+    // remap labels and data
 
     labels = labels.map(function (time) {
       return time.replace('Z', '');
     });
     data = data.map(function (value) {
       return value ? value.toFixed(1) : value;
-    }); // console.log(timestamps[0], timestamps[timestamps.length - 1])
-    // let min = labels[labels.length - 1]
-    // let max = labels[0]
-    // let labels2 = []
-    // let timeDiff = moment(max).diff(moment(min), 'm'); // difference (in days) between min and max date
-    // populate 'labels' array
-    // console.log("min:", min, "max:", max)
-    // for (let i = 0; i <= timeDiff; i++) {
-    //     var _label = moment(min).add(i, 'm').format('MM/DD HH:mm');
-    //     // console.log(_label)
-    //     labels2.push(_label);
-    // }
-    // console.log(labels)
-    // console.log(labels2)
+    }); // end remap labels and data
+    // Build arrays of colors
+
+    var backgroundColor = [];
+    var pointBackgroundColor = [];
+    var borderColor = [];
+    var pointRadius = [];
+    if (labels.length) labels.forEach(function (item, index) {
+      backgroundColor.push(chartColors.blue2);
+      pointBackgroundColor.push(chartColors.blue);
+      borderColor.push(chartColors.blue);
+      pointRadius.push(0);
+    });else {
+      backgroundColor = chartColors.blue2;
+      pointBackgroundColor = chartColors.blue;
+      borderColor = chartColors.blue;
+    } // end build arrays of colors
+    // DATASET options based on sensorType
+
+    var datasetConfig = {
+      backgroundColor: backgroundColor,
+      borderColor: borderColor,
+      pointBorderColor: '#343a40',
+      pointBackgroundColor: pointBackgroundColor,
+      pointHoverBackgroundColor: "#ffc107",
+      pointRadius: 3,
+      pointHoverRadius: 7,
+      pointBorderWidth: 1,
+      borderWidth: 1,
+      lineTension: 0.2
+    };
+
+    if (sensorType == 'door') {
+      datasetConfig.lineTension = 0;
+      datasetConfig.pointRadius = pointRadius;
+      datasetConfig.pointHoverRadius = 7;
+      datasetConfig.pointBorderWidth = 0;
+      datasetConfig.borderWidth = 1; // console.log(options.scales.yAxes[0])
+
+      options.scales.yAxes[0].ticks['max'] = 1;
+      options.scales.yAxes[0].ticks['min'] = 0;
+    } // end DATASET options based on sensorType
+    // TYPE of CHART based on sensorType
+
+
+    var type, datasets;
+
+    if (sensorType == 'door') {
+      type = 'line';
+      datasets = [{
+        label: sensorType,
+        data: data,
+        backgroundColor: datasetConfig.backgroundColor,
+        borderColor: datasetConfig.borderColor,
+        pointBorderColor: datasetConfig.pointBorderColor,
+        pointBackgroundColor: datasetConfig.pointBackgroundColor,
+        pointHoverBackgroundColor: datasetConfig.pointHoverBackgroundColor,
+        pointRadius: datasetConfig.pointRadius,
+        pointHoverRadius: datasetConfig.pointHoverRadius,
+        pointBorderWidth: datasetConfig.pointBorderWidth,
+        borderWidth: datasetConfig.borderWidth,
+        lineTension: datasetConfig.lineTension
+      }];
+    } else {
+      type = 'line';
+      datasets = [{
+        label: sensorType,
+        data: data,
+        backgroundColor: datasetConfig.backgroundColor,
+        borderColor: datasetConfig.borderColor,
+        pointBorderColor: datasetConfig.pointBorderColor,
+        pointBackgroundColor: datasetConfig.pointBackgroundColor,
+        pointHoverBackgroundColor: datasetConfig.pointHoverBackgroundColor,
+        pointRadius: datasetConfig.pointRadius,
+        pointHoverRadius: datasetConfig.pointHoverRadius,
+        pointBorderWidth: datasetConfig.pointBorderWidth,
+        borderWidth: datasetConfig.borderWidth,
+        lineTension: datasetConfig.lineTension
+      }];
+    } // end TYPE of CHART based on sensorType
     // console.log(labels)
 
+
     var chart = new Chart(canvas, {
-      type: 'line',
+      type: type,
       data: {
-        // labels: labels, //labels are displayed with 3 more hours than this list
         labels: labels,
-        datasets: [{
-          label: sensorType,
-          data: data,
-          backgroundColor: 'rgba(51, 153, 255, 0.2)',
-          borderColor: 'rgba(51, 153, 255, 1)',
-          pointBorderColor: '#343a40',
-          pointBackgroundColor: "rgba(51, 153, 255, 1)",
-          pointHoverBackgroundColor: "#ffc107",
-          pointRadius: 1.5,
-          pointHoverRadius: 7,
-          pointBorderWidth: 1,
-          borderWidth: 1,
-          lineTension: 0.2
-        }]
+        datasets: datasets
       },
       options: options,
-      plugins: [{// beforeInit: function (chart) {
-        //     // console.log(timestamps[0], timestamps[timestamps.length - 1])
-        //     var ticks = chart.options.scales.xAxes[0].ticks, // 'ticks' object reference
-        //         // difference (in days) between min and max date
-        //         timeDiff = moment(ticks.max).diff(moment(ticks.min), 'm');
-        //     // populate 'labels' array
-        //     // (create a date string for each date between min and max, inclusive)
-        //     // chart.data.labels = []
-        //     for (let i = 0; i <= timeDiff; i++) {
-        //         var _label = moment(ticks.min).add(i, 'm').format('MM/DD HH:mm');
-        //         chart.data.labels.push(_label);
-        //     }
-        //     // chart.update()
-        // }
+      plugins: [{
+        beforeInit: function beforeInit(chart) {
+          // Get min and max for temerature sensors
+          var threshold_min;
+          var threshold_max;
+          var dataset = chart.data.datasets[0];
+          var labels = chart.data.labels;
+          var sensorId = $(chart.canvas).attr("id").split("-")[0];
+          var itemResult;
+          userData_raw.forEach(function (item, index) {
+            if (item.sensorId == sensorId) itemResult = item;
+          });
+
+          var isTemperature = function isTemperature(sensorId) {
+            return itemResult.sensorType == 'temperature';
+          };
+
+          var hasMin = function hasMin(sensorId) {
+            return itemResult.min;
+          };
+
+          var hasMax = function hasMax(sensorId) {
+            return itemResult.max;
+          }; // Set color of bars depeding of min and max
+
+
+          if (isTemperature(sensorId)) {
+            threshold_min = hasMin(sensorId) ? hasMin(sensorId) : null;
+            threshold_max = hasMax(sensorId) ? hasMax(sensorId) : null;
+            if (threshold_min && threshold_min) for (var i = 0; i < dataset.data.length; i++) {
+              if (dataset.data[i] < threshold_min || dataset.data[i] > threshold_max) {
+                // dataset.backgroundColor[i] = chartColors.red5;
+                // dataset.borderColor[i] = chartColors.red5;
+                dataset.pointBackgroundColor[i] = chartColors.red2;
+              }
+            }
+          } else {
+            //if not temperature sensor
+            for (var i = 0; i < dataset.data.length; i++) {
+              if (isNaN(parseInt(dataset.data[i - 1])) || isNaN(parseInt(dataset.data[i + 1]))) {
+                dataset.pointRadius[i] = 3;
+              } else if (parseInt(dataset.data[i - 1]) == 0 || parseInt(dataset.data[i + 1]) == 0) {
+                dataset.pointRadius[i] = 3;
+              } else {
+                dataset.pointRadius[i] = 0;
+              }
+            }
+          }
+        }
       }]
     }); // console.log(chart.data)
 
     chartList.push(chart);
-  } else {}
+  } else {// [ ] TODO: make another plot when source is not from attribute.
+  }
 }
 
 function appendInfoBox(args) {
@@ -338,18 +452,97 @@ function appendInfoBox(args) {
 }
 
 function updateCurrentValue(sensorid, value) {
-  // Update value
-  var valueEl = $("article.live-card-" + sensorid + " span.currentValue");
-  valueEl.html(value); // Update time
+  var date = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+  // Check sensor type of this sensorid
+  var sensorType = $("article.live-card-" + sensorid + "").attr('sensortype'); // Update value
 
-  var timeEl = $("article.live-card-" + sensorid + " p.update-time-gauge");
-  var currentTime = new Date();
-  currentTime = currentTime.toLocaleString('en-US', {
-    timeZone: 'Europe/Bucharest',
-    timeStyle: "medium",
-    dateStyle: "medium"
+  var valueEl;
+
+  if (sensorType == 'door') {
+    valueEl = $("article.live-card-" + sensorid + " span.doorState"); // 1 => door closed, 0 => door open
+
+    if (parseInt(value)) {
+      valueEl.attr('state', 'closed');
+    } else {
+      valueEl.attr('state', 'open');
+    }
+  } else {
+    valueEl = $("article.live-card-" + sensorid + " span.currentValue");
+    valueEl.html(value);
+  } // Update time
+
+
+  if (date) {
+    var timeEl = $("article.live-card-" + sensorid + " p.update-time-gauge");
+    timeEl.html(date);
+  } else {
+    var _timeEl = $("article.live-card-" + sensorid + " p.update-time-gauge");
+
+    var currentTime = new Date();
+    currentTime = currentTime.toLocaleString('en-US', {
+      timeZone: 'Europe/Bucharest',
+      timeStyle: "medium",
+      dateStyle: "medium"
+    });
+
+    _timeEl.html(currentTime);
+  }
+} // Alerts
+
+
+function saveSensorSettings(sensorid) {
+  var min = $(".live-card-" + sensorid + " .settings-wrapper .input-min").val();
+  var max = $(".live-card-" + sensorid + " .settings-wrapper .input-max").val();
+  var xLat = $(".live-card-" + sensorid + " .settings-wrapper .input-lat").val();
+  var yLong = $(".live-card-" + sensorid + " .settings-wrapper .input-long").val();
+  var openTimer = $(".live-card-" + sensorid + " .settings-wrapper .input-open").val();
+  var closedTimer = $(".live-card-" + sensorid + " .settings-wrapper .input-closed").val();
+
+  var url = "/api/v3/save-settings?sensorId='" + sensorid + "' " + function () {
+    return min ? '&min=' + min : '';
+  }() + function () {
+    return max ? '&max=' + max : '';
+  }() + function () {
+    return openTimer ? '&openTimer=' + openTimer : '';
+  }() + function () {
+    return closedTimer ? '&closedTimer=' + closedTimer : '';
+  }() + function () {
+    return xLat ? '&xlat=' + xLat : '';
+  }() + function () {
+    return yLong ? '&ylong=' + yLong : '';
+  }();
+
+  url = url.replace(' ', ''); // console.log(url)
+
+  $.ajax({
+    url: url,
+    type: 'GET'
+  }).done(function (msg) {
+    alert("Sensor " + sensorid + " updated!"); // Min alert
+
+    if (min) {
+      $(".live-card-" + sensorid + " .minAlertGauge").prop("value", min);
+      $(".live-card-" + sensorid + " .minAlertGauge").html("min: " + min); // $(".live-card-" + sensorid + " input[name='minAlert']").prop("value", '')
+      // $(".live-card-" + sensorid + " input[name='minAlert']").prop("placeholder", "Updated at " + min)
+    } // Max alert
+
+
+    if (max) {
+      $(".live-card-" + sensorid + " .maxAlertGauge").prop("value", max);
+      $(".live-card-" + sensorid + " .maxAlertGauge").html("max: " + max); // $(".live-card-" + sensorid + " input[name='maxAlert']").prop("value", '')
+      // $(".live-card-" + sensorid + " input[name='maxAlert']").prop("placeholder", "Updated at " + max)
+    } // xLat
+
+
+    if (xLat) {} // $(".live-card-" + sensorid + " input[name='xLat']").prop("value", '')
+    // $(".live-card-" + sensorid + " input[name='xLat']").prop("placeholder", "Updated at " + xLat)
+    // yLong
+
+
+    if (yLong) {// $(".live-card-" + sensorid + " input[name='yLong']").prop("value", '')
+      // $(".live-card-" + sensorid + " input[name='yLong']").prop("placeholder", "Updated at " + yLong)
+    }
   });
-  timeEl.html(currentTime);
 } // Update current value - it runs each time a message is sent to the broker
 //MQTT Broker --mqtt--> NodeJS --socket.io--> Client
 
@@ -407,65 +600,12 @@ socket.on(socketChannel, function _callee(data) {
       }
     }
   });
-}); // Alerts
-
-function saveSensorSettings(sensorid) {
-  var min = $(".live-card-" + sensorid + " .settings-wrapper .input-min").val();
-  var max = $(".live-card-" + sensorid + " .settings-wrapper .input-max").val();
-  var xLat = $(".live-card-" + sensorid + " .settings-wrapper .input-lat").val();
-  var yLong = $(".live-card-" + sensorid + " .settings-wrapper .input-long").val();
-
-  var url = "/api/v3/save-settings?sensorId='" + sensorid + "' " + function () {
-    return min ? '&min=' + min : '';
-  }() + function () {
-    return max ? '&max=' + max : '';
-  }() + function () {
-    return xLat ? '&xlat=' + xLat : '';
-  }() + function () {
-    return yLong ? '&ylong=' + yLong : '';
-  }();
-
-  url = url.replace(' ', ''); // console.log(url)
-
-  $.ajax({
-    url: url,
-    type: 'GET'
-  }).done(function (msg) {
-    // Min alert
-    if (min) {
-      $(".live-card-" + sensorid + " .minAlertGauge").prop("value", min);
-      $(".live-card-" + sensorid + " .minAlertGauge").html("min: " + min);
-      $(".live-card-" + sensorid + " input[name='minAlert']").prop("value", '');
-      $(".live-card-" + sensorid + " input[name='minAlert']").prop("placeholder", "Updated at " + min);
-    } // Max alert
-
-
-    if (max) {
-      $(".live-card-" + sensorid + " .maxAlertGauge").prop("value", max);
-      $(".live-card-" + sensorid + " .maxAlertGauge").html("max: " + max);
-      $(".live-card-" + sensorid + " input[name='maxAlert']").prop("value", '');
-      $(".live-card-" + sensorid + " input[name='maxAlert']").prop("placeholder", "Updated at " + max);
-    } // xLat
-
-
-    if (xLat) {
-      $(".live-card-" + sensorid + " input[name='xLat']").prop("value", '');
-      $(".live-card-" + sensorid + " input[name='xLat']").prop("placeholder", "Updated at " + xLat);
-    } // yLong
-
-
-    if (yLong) {
-      $(".live-card-" + sensorid + " input[name='yLong']").prop("value", '');
-      $(".live-card-" + sensorid + " input[name='yLong']").prop("placeholder", "Updated at " + yLong);
-    }
-  });
-} // This is the main loader that loads all the data on the dashboard
+}); // This is the main loader that loads all the data on the dashboard
 // ======================================================
 // ======================================================
-
 
 var mainLoader = function mainLoader() {
-  var url, zoneId, sensorMetaRaw, sensorBuffer, sensorDataRaw, _i, _sensorMetaRaw, sensor, sensorData, _i2, _sensorDataRaw, _sensor, location3, location2, alert, alarm, power;
+  var url, zoneId, sensorMetaRaw, sensorBuffer, sensorDataRaw, _i, _sensorMetaRaw, sensor, sensorData, sensorsWithBattery, _i2, _sensorDataRaw, _sensor, location3, location2, alert, alarm, power;
 
   return regeneratorRuntime.async(function mainLoader$(_context5) {
     while (1) {
@@ -500,10 +640,16 @@ var mainLoader = function mainLoader() {
 
           sensor = _sensorMetaRaw[_i];
           _context5.next = 11;
-          return regeneratorRuntime.awrap(getSensorData(sensor.sensorId));
+          return regeneratorRuntime.awrap(getSensorData(sensor.sensorId, sensor.sensorType));
 
         case 11:
           sensorData = _context5.sent;
+          // console.log(sensor.sensorId, sensorData)
+          // if(sensor.sensorType == 'door') {
+          //     sensorData.forEach((item,index)=>{
+          //         console.log(index, item)
+          //     })
+          // }
           sensorDataRaw.push({
             sensorMeta: sensor,
             sensorData: sensorData
@@ -516,6 +662,8 @@ var mainLoader = function mainLoader() {
 
         case 16:
           // console.log(sensorDataRaw)
+          sensorsWithBattery = [];
+
           for (_i2 = 0, _sensorDataRaw = sensorDataRaw; _i2 < _sensorDataRaw.length; _i2++) {
             _sensor = _sensorDataRaw[_i2];
             // Testing
@@ -533,7 +681,9 @@ var mainLoader = function mainLoader() {
 
             triggerSensorView(_sensor.sensorMeta.sensorId); // Plot data on graph based on sensorData attr
 
-            plotData(_sensor.sensorMeta.sensorId);
+            plotData(_sensor.sensorMeta.sensorId); // Sensors w/ battery functionality
+
+            if (_sensor.sensorMeta.battery == 1) sensorsWithBattery.push(_sensor.sensorMeta.sensorId);
           } // Add info box
 
 
@@ -544,7 +694,13 @@ var mainLoader = function mainLoader() {
             message: location3,
             icon: '<i class="fas fa-compass"></i>',
             class: ''
-          });
+          }); // Counter sensor with battery functionality
+          // let sensorsWithBattery = userData_raw.filter((item,index)=>{
+          //     if(item.battery == 1)
+          //         return item
+          // })
+          // console.log(sensorsWithBattery)
+
           alert = 0, alarm = 0, power = 0;
           sensorDataRaw.forEach(function (item) {
             if (item.sensorMeta.alerts == 1) alert++;
@@ -562,15 +718,19 @@ var mainLoader = function mainLoader() {
             message: alarm + ' / ' + sensorDataRaw.length,
             icon: '<i class="fas fa-exclamation-triangle"></i>',
             class: ''
-          });
-          appendInfoBox({
+          }); // Display battery info box only if there are sensors with this functionality
+          // console.log("sensorsWithBattery:",sensorsWithBattery)
+
+          if (sensorsWithBattery.length) appendInfoBox({
             title: 'On battery',
             message: power + ' / ' + sensorDataRaw.length,
             icon: '<i class="fas fa-battery-quarter"></i>',
             class: 'battery-info'
           }); // return sensorDataRaw
 
-        case 25:
+          return _context5.abrupt("return", sensorMetaRaw);
+
+        case 27:
         case "end":
           return _context5.stop();
       }
@@ -578,4 +738,68 @@ var mainLoader = function mainLoader() {
   });
 };
 
-mainLoader();
+var influxQuery = function influxQuery(query) {
+  var response;
+  return regeneratorRuntime.async(function influxQuery$(_context6) {
+    while (1) {
+      switch (_context6.prev = _context6.next) {
+        case 0:
+          _context6.next = 2;
+          return regeneratorRuntime.awrap(fetch("/api/v3/query-influx?query=" + query));
+
+        case 2:
+          response = _context6.sent;
+          return _context6.abrupt("return", response.json());
+
+        case 4:
+        case "end":
+          return _context6.stop();
+      }
+    }
+  });
+};
+
+var initLiveData = function initLiveData() {
+  var sensorsMetaRaw, sensorsList, query, influxResult;
+  return regeneratorRuntime.async(function initLiveData$(_context7) {
+    while (1) {
+      switch (_context7.prev = _context7.next) {
+        case 0:
+          _context7.next = 2;
+          return regeneratorRuntime.awrap(mainLoader());
+
+        case 2:
+          sensorsMetaRaw = _context7.sent;
+          sensorsList = (0, _utils.getValuesFromObject)('sensorId', sensorsMetaRaw);
+          query = "SELECT value FROM sensors WHERE sensorId =~ /" + sensorsList.join('|') + "/ group by sensorId order by time desc limit 1";
+          _context7.next = 7;
+          return regeneratorRuntime.awrap(influxQuery(query));
+
+        case 7:
+          influxResult = _context7.sent;
+          // console.log(influxResult)
+          influxResult.forEach(function (item, index) {
+            var sensorId = item.sensorId;
+            var value = item.value;
+            var time = item.time;
+            var currentTime = new Date(time); // current time is +2h from Europe/Bucharest
+
+            currentTime.setHours(currentTime.getHours() - 2);
+            currentTime = currentTime.toLocaleString('en-US', {
+              timeZone: 'Europe/Bucharest',
+              timeStyle: "medium",
+              dateStyle: "medium"
+            }); // console.log(currentTime)
+
+            updateCurrentValue(sensorId, parseFloat(value).toFixed(1), currentTime);
+          });
+
+        case 9:
+        case "end":
+          return _context7.stop();
+      }
+    }
+  });
+};
+
+initLiveData();

@@ -2,6 +2,12 @@
 
 var _this3 = void 0;
 
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -209,11 +215,10 @@ var getUserData = function getUserData(req, res, next) {
                       } else {
                         userData["error"] = "No data found";
                       } // set list of sensors that are assigned to this user
+                      // sess.userData = userData
 
 
-                      sess.userData = userData;
-
-                    case 2:
+                    case 1:
                     case "end":
                       return _context.stop();
                   }
@@ -221,8 +226,17 @@ var getUserData = function getUserData(req, res, next) {
               });
             }).then(function () {
               // Set sess.company variable
-              mysqlReader("SELECT company FROM users where username='" + sess.username + "'").then(function (result) {
-                sess.company = result[0].company;
+              mysqlReader("SELECT company, role FROM users where username='" + sess.username + "'").then(function (result) {
+                // console.log(result, userData)
+                // sess.company = result[0].company
+                // sess.role = result[0].role
+                var userDataFull = userData.map(function (item, index) {
+                  return _objectSpread({}, item, {
+                    company: result[0].company,
+                    role: result[0].role
+                  });
+                });
+                sess.userData = userDataFull;
               }).then(function () {
                 next();
               });

@@ -188,7 +188,7 @@ let splash = `<div class='splash-inner'>
 
 <div class='ol-option'>
   <h4>World map</h4>
-  <button type="button" class='map-picker map-picker-ol'>I want this map</button>
+  <button type="button" class='map-picker map-picker-ol' disabled>I want this map</button>
   <div class='ol-map'>
     <img src='../images/ol.jpeg' />
     <background></background>
@@ -357,7 +357,7 @@ if ($("#map .custom-map")) {
   let undefinedSensorsTemplate = (sensorList) => {
     let sensorToDisplay = ''
     for (let sensor of sensorList) {
-      sensorToDisplay += `<span class='sensor-item' type="` + sensor.sensorType + `" sensor='` + sensor.sensorId + `'><i class="fad fa-signal-stream"></i><span class='sensorName'>` + sensor.sensorName + `</span><span class='sensorValue'>@val</span></span>`
+      sensorToDisplay += `<span class='sensor-item' type="` + sensor.sensorType + `" sensor='` + sensor.sensorId + `'><i class="fad fa-signal-stream"></i><span class='sensorName'>` + sensor.sensorName + `</span><span class='sensorValue'></span></span>`
     }
     return `<div class='undefinedSensorsWrapper'><div class='undefinedSensorsInner hidden'>` + sensorToDisplay + `</div><div class='undefinedButton'><i class="fas fa-map-marker-question"></i></div></div>`
   }
@@ -409,7 +409,7 @@ if ($("#map .custom-map")) {
                   <div sensor="` + sensorId + `" class="sensor-item draggable ui-widget-content" data-toggle="tooltip" data-placement="top"  title="` + sensorId + `">
                     <i class="fad fa-signal-stream"></i>
                     <span class='sensorName'>`+ sensorName + `</span>
-                    <span class='sensorValue'>@val</span>
+                    <span class='sensorValue'></span>
                   </div>`)
 
           $(`.draggable[sensor='` + sensorId + `']`).draggable({
@@ -453,7 +453,7 @@ if ($("#map .custom-map")) {
             <div sensor="` + sensor.sensorId + `" type="` + sensor.sensorType + `" class="sensor-item draggable ui-widget-content" data-toggle="tooltip" data-placement="top" title="` + sensor.sensorId + `">
               <i class="fad fa-signal-stream"></i>
               <span class='sensorName'>`+ sensor.sensorName + `</span>
-              <span class='sensorValue'>@val</span>
+              <span class='sensorValue'></span>
             </div>`)
 
       // Make sensor on map draggable

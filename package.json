@@ -45,6 +45,7 @@
     "jquery-ui-dist": "^1.12.1",
     "jscharting": "^2.9.0-9",
     "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.20",
     "moment": "^2.29.0",
     "mqtt": "^4.2.0",
     "mqtt-connection": "^4.0.0",

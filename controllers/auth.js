@@ -214,7 +214,7 @@ const authRegister = (req, res, next) => {
         if (err) {
             console.log(err)
             return res.render('register', {
-                alert: 'Try again!'
+                alert: 'Try again! (dev: auth.js:217)'
             })
         } else if (result[0].length) {
             // is duplicate
@@ -239,7 +239,7 @@ const authRegister = (req, res, next) => {
             db.query("INSERT INTO users SET ?", credentials, (err, result) => {
                 if (err)
                     return res.render('register', {
-                        alert: 'Try again!'
+                        alert: 'Try again! (dev: auth.js:242)'
                     })
                 else {
                     console.log("New user registration")

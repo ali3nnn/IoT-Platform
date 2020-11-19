@@ -437,7 +437,6 @@ input[type="reset"] {
   transition: all 0.2s ease-out;
 }
 
-
 /* input[type=button]:hover, , input[type=submit]:hover, input[type=reset]:hover  {
 background-color: #39ace7;
 } */
@@ -1778,7 +1777,7 @@ img.img-circle {
   padding: 10px 0px;
   /* box-shadow: 0px 0px 10px #00000082; */
   margin-bottom: 0px;
-  bottom:0;
+  bottom: 0;
   position: absolute;
   width: 100%;
 }
@@ -3857,7 +3856,7 @@ article[class*="live"] {
   -webkit-box-shadow: var(--neuro);
   box-shadow: var(--neuro);
   border-radius: 13px;
-  overflow: hidden;
+  // overflow: hidden;
   min-height: 300px;
   /* Add the blur effect */
   filter: blur(0px);
@@ -3878,7 +3877,7 @@ article[class*="live"] {
       color: black;
       // content: "No power";
       top: 10px;
-      left: 0%;
+      left: -5px;
       display: block;
       /* width: 100%; */
       transform: translateY(-50%);
@@ -3893,18 +3892,36 @@ article[class*="live"] {
       border-top-right-radius: 13px;
       border-bottom-right-radius: 13px;
     }
+    div.card-body:before {
+      content: "";
+      position: absolute;
+      display: block;
+      /* width: 10px; */
+      /* height: 10px; */
+      /* background: black; */
+      top: -15px;
+      left: -5px;
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 0px solid transparent;
+      border-bottom: 7px solid black;
+    }
   }
 
   // No power
   &.no-power {
     // color: #80808070;
     .currentValue {
-      color: var(--gray)
+      color: var(--gray);
     }
     div.card-body:after {
       content: "No power";
       background: var(--gray);
       color: #ffffff;
+    }
+    div.card-body:before {
+      border-bottom-color: black;
     }
   }
 
@@ -3918,6 +3935,9 @@ article[class*="live"] {
       content: "Near the limits";
       background: var(--yellow);
     }
+    div.card-body:before {
+      border-bottom-color: #bf9a39;
+    }
   }
 
   // Alarm
@@ -3930,6 +3950,9 @@ article[class*="live"] {
       content: "Alarm";
       background: var(--danger);
       color: #ffffff;
+    }
+    div.card-body:before {
+      border-bottom-color: #962732;
     }
   }
 
@@ -4222,23 +4245,7 @@ span.card-settings-button:hover,
   visibility: visible;
 }
 
-span[class*="AlertGauge"] {
-  position: absolute;
-  bottom: 20px;
-}
-
-@media (max-width: 600px) {
-  span[class*="AlertGauge"] {
-    bottom: 10px;
-  }
-}
-
 // Current Value Box - When No value
-
-div[no-value="true"] span.minAlertGauge,
-div[no-value="true"] span.maxAlertGauge {
-  display: none;
-}
 
 span.currentValue[no-value*="true"] {
   font-size: 22px;
@@ -4280,18 +4287,38 @@ span.currentValue:after {
   }
 }
 
-span.minAlertGauge {
-  left: 0px;
-  /* -webkit-transform: translateX(-50%); */
-  -ms-transform: translateX(-50%);
-  /* transform: translateX(-50%); */
-}
+article[sensortype] {
+  // Sensor alerts on live box
 
-span.maxAlertGauge {
-  right: 0px;
-  /* -webkit-transform: translateX(-50%); */
-  -ms-transform: translateX(-50%);
-  /* transform: translateX(-50%); */
+  .gauge-container {
+    div[no-value="true"] span:not(first-child) {
+      display: none;
+    }
+    span:not(:first-child) {
+      position: absolute;
+      bottom: 20px;
+    }
+    @media (max-width: 600px) {
+      span:not(:first-child) {
+        bottom: 10px;
+      }
+    }
+
+    span:nth-child(2) {
+      left: 0px;
+    }
+
+    span:nth-child(3) {
+      right: 0px;
+    }
+
+    // When no alerts are setted
+    span.noAlertGauge {
+      color: #8080804f;
+    }
+  }
+
+  // End sensor alerts on live box
 }
 
 // Unit Measure
@@ -4315,9 +4342,43 @@ article[sensortype="voltage"] {
     content: " V";
     /* font-size: 12px; */
   }
+}
 
-  span.noAlertGauge {
-    color: #8080804f;
+article[sensortype="door"] {
+  span.doorState {
+    i {
+      font-size: 62px;
+      left: 50%;
+      top: calc(50% - 10px);
+      position: relative;
+      color: black;
+      transform: translate(-50%, -50%);
+      display: none;
+      text-align: center;
+    }
+    &[state*="unknown"] {
+      i[class*="closed"] {
+        display: block;
+        color: #80808061;
+      }
+    }
+    &[state*="open"] {
+      i[class*="open"] {
+        display: block;
+        // color:gray
+      }
+    }
+    &[state*="closed"] {
+      i[class*="closed"] {
+        display: block;
+        // color:gray
+      }
+    }
+  }
+
+  .openTimer:not(.noAlertGauge):after,
+  .closedTimer:not(.noAlertGauge):after {
+    content: "s";
   }
 }
 
@@ -4339,13 +4400,15 @@ article[sensortype="voltage"] {
   -webkit-filter: blur(0px) !important;
   -webkit-transition: all 0.1s ease;
   -o-transition: all 0.1s ease;
-  // transition: all .1s ease;
 }
 
 .blur8 {
   /* Add the blur effect */
   filter: blur(8px) !important;
   -webkit-filter: blur(8px) !important;
+  p,i,span {
+    color:gray !important;
+  }
 }
 
 .blur4 {
@@ -4841,10 +4904,9 @@ margin-top: -30px; */
 }
 
 .landscape {
-    min-width: 100%;
-    height: 100%;
+  min-width: 100%;
+  height: 100%;
 }
-
 
 div#map {
   & > div {
@@ -6645,7 +6707,8 @@ border-bottom: 1px dotted black; */
 
     // mid container
     .mid-container {
-      td,th {
+      td,
+      th {
         padding: 0.45rem 0.75rem;
       }
 
@@ -6664,7 +6727,7 @@ border-bottom: 1px dotted black; */
         position: relative;
         p {
           word-break: break-word;
-          margin:0;
+          margin: 0;
         }
       }
     }
@@ -6681,7 +6744,7 @@ border-bottom: 1px dotted black; */
   // zone settings
   .zone-settings {
     span {
-      padding: 0px 10px;
+      // padding: 0px 10px;
 
       &:hover {
         cursor: pointer;
@@ -6703,7 +6766,7 @@ border-bottom: 1px dotted black; */
   // admin settings
   .admin-settings {
     span {
-      padding: 0px 10px;
+      // padding: 0px 10px;
 
       &:hover {
         cursor: pointer;
@@ -6724,7 +6787,8 @@ border-bottom: 1px dotted black; */
 
   // report settings
   .report-settings {
-    td, th {
+    td,
+    th {
       padding: 0.1rem 0.75rem !important;
     }
   }
@@ -6741,17 +6805,16 @@ border-bottom: 1px dotted black; */
   }
 }
 
-
-@media screen and (max-width:900px) {
-    .settings-container {
-      display: -ms-grid;
-      display: grid;
-      padding: 1rem 1rem 1rem 1rem;
-      -ms-grid-columns: 1fr;
-      grid-template-columns: 1fr;
-      grid-column-gap: 1rem;
-      grid-row-gap: 1rem;
-    }
+@media screen and (max-width: 900px) {
+  .settings-container {
+    display: -ms-grid;
+    display: grid;
+    padding: 1rem 1rem 1rem 1rem;
+    -ms-grid-columns: 1fr;
+    grid-template-columns: 1fr;
+    grid-column-gap: 1rem;
+    grid-row-gap: 1rem;
+  }
 }
 
 // Username list edit-zone area

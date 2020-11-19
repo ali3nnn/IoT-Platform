@@ -191,11 +191,21 @@ const getUserData = async (req, res, next) => {
                 userData["error"] = "No data found"
             }
             // set list of sensors that are assigned to this user
-            sess.userData = userData
+            // sess.userData = userData
         }).then(() => {
             // Set sess.company variable
-            mysqlReader("SELECT company FROM users where username='" + sess.username + "'").then((result) => {
-                sess.company = result[0].company
+            mysqlReader("SELECT company, role FROM users where username='" + sess.username + "'").then((result) => {
+                // console.log(result, userData)
+                // sess.company = result[0].company
+                // sess.role = result[0].role
+                let userDataFull = userData.map((item,index)=>{
+                    return {
+                        ...item,
+                        company: result[0].company,
+                        role: result[0].role
+                    }
+                })
+                sess.userData = userDataFull
             }).then(() => {
                 next()
             })
@@ -559,11 +569,11 @@ const replaceDiacritics = (str, ignore) => {
 }
 
 const getDaysInMonth = (m, y) => {
-     // Here January is 1 based
+    // Here January is 1 based
     //Day 0 is the last day in the previous month
-   return new Date(year, month, 0).getDate();
-   // Here January is 0 based
-   // return new Date(year, month+1, 0).getDate();
+    return new Date(year, month, 0).getDate();
+    // Here January is 0 based
+    // return new Date(year, month+1, 0).getDate();
 }
 // Keep track url
 // const trackurl = (req,res,next) => {

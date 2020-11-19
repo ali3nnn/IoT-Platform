@@ -47,13 +47,13 @@ let getUserData = async () => {
                 bufferAppendedLocations.push([user.location1, user.location2, user.location3])
 
                 let name
-                if (location1 > 1) // when there are > 1 counties / regions and not matter how many cities
-                    name = `<span class='multi-location'>` + user.location3 + `<span class='location-detail'>` + user.location1 + `, ` + user.location2 + `</span>` + `</span>`
-                else if (location1 == 1 && location2 > 1) // when there is one county and more cities
-                    name = `<span class='multi-location'>` + user.location3 + `<span class='location-detail'>` + user.location2 + `</span>` + `</span>`
-                else
-                    name = `<span class=''>` + user.location3 + `</span>`
-                // name = `<span class='multi-location'>`+user.location3+`<span class='location-detail'>`+user.location2+`</span>`+`</span>`
+                // if (location1 > 1) // when there are > 1 counties / regions and not matter how many cities
+                //     name = `<span class='multi-location'>` + user.location3 + `<span class='location-detail'>` + user.location1 + `, ` + user.location2 + `</span>` + `</span>`
+                // else if (location1 == 1 && location2 > 1) // when there is one county and more cities
+                //     name = `<span class='multi-location'>` + user.location3 + `<span class='location-detail'>` + user.location2 + `</span>` + `</span>`
+                // else
+                //     name = `<span class=''>` + user.location3 + `</span>`
+                name = `<span class='multi-location'>`+user.location3+`<span class='location-detail'>`+user.location2+`</span>`+`</span>`
 
                 zoneEl.append(`<div class="zone-item">
                                 <a href="/map/zone?zoneid=` + user.zoneId + `" class='county-item'><i class="fas fa-layer-group"></i>` + name + `</a>

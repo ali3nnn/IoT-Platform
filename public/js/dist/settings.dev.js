@@ -9,12 +9,19 @@ var fetchAdmins = function fetchAdmins() {
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
-          response = fetch('/api/get-team');
+          response = fetch('/api/get-team').then(function (result) {
+            if (result.status == 401) {
+              // user is not superadmin
+              $(".admin-settings").remove();
+            } else if (result.status == 200) {
+              return result.json();
+            }
+          });
           _context.next = 3;
           return regeneratorRuntime.awrap(response);
 
         case 3:
-          return _context.abrupt("return", _context.sent.json());
+          return _context.abrupt("return", _context.sent);
 
         case 4:
         case "end":
@@ -23,7 +30,7 @@ var fetchAdmins = function fetchAdmins() {
     }
   });
 }; // [ ] TODO: should get zones from sess.userData
-// console.log("userData_raw",userData_raw)
+// console.log("userData_raw", userData_raw)
 
 
 var fetchZones = function fetchZones() {
@@ -32,12 +39,21 @@ var fetchZones = function fetchZones() {
     while (1) {
       switch (_context2.prev = _context2.next) {
         case 0:
-          response = fetch('/api/get-zones');
+          response = fetch('/api/get-zones').then(function (result) {
+            var resultJson = result.json(); // console.log(await resultJson)
+
+            if (result.status == 401) {
+              // user is not superadmin
+              $(".zone-settings").remove();
+            } else if (result.status == 200) {
+              return resultJson;
+            }
+          });
           _context2.next = 3;
           return regeneratorRuntime.awrap(response);
 
         case 3:
-          return _context2.abrupt("return", _context2.sent.json());
+          return _context2.abrupt("return", _context2.sent);
 
         case 4:
         case "end":
@@ -45,7 +61,8 @@ var fetchZones = function fetchZones() {
       }
     }
   });
-}; // Color yellow setting item
+}; // console.log(userData)
+// Color yellow setting item
 
 
 if (window.location.href.indexOf('settings') > -1) {
@@ -66,47 +83,49 @@ $(function () {
 var company = '';
 var listOfUsers;
 var fetchAdminsPromise = fetchAdmins().then(function (listOfAdmins) {
+  // console.log(listOfAdmins)
   listOfUsers = listOfAdmins;
-  listOfAdmins.forEach(function (admin) {
-    // Add company in form
-    if (!company) {
-      company = admin.company;
-      $("#form-create-admin input[name='company']").attr("value", company); // Append company name in form
 
-      $(".top-container span b").html(company); // Append company name in title for every box
-    }
+  if (listOfAdmins != undefined) {
+    listOfAdmins.forEach(function (admin) {
+      // Add company in form
+      if (!company) {
+        company = admin.company;
+        $("#form-create-admin input[name='company']").attr("value", company); // Append company name in form
 
-    if (admin.username == username) $(".admin-list table tbody").prepend("<tr username='" + admin.username + "'>\n                                                <td><p>" + admin.name + "</p></td>\n                                                <td><p>" + admin.username + "</p></td>\n                                                <td><p>" + admin.email + "</p></td>\n                                                <td><span class='remove-user' username='" + admin.username + "'><i class=\"fas fa-user-minus\"></i></span></td>\n                                            </tr>");else $(".admin-list table tbody").append("<tr username='" + admin.username + "'>\n                                                <td><p>" + admin.name + "</p></td>\n                                                <td><p>" + admin.username + "</p></td>\n                                                <td><p>" + admin.email + "</p></td>\n                                                <td><span class='remove-user' username='" + admin.username + "'><i class=\"fas fa-user-minus\"></i></span></td>\n                                            </tr>");
-    $(".remove-user[username='" + admin.username + "']").on('click', function (e) {
-      e.preventDefault();
-      var username = admin.username;
-      var url = '/api/remove-user'; // console.log(url, username)
+        $(".top-container span b").html(company); // Append company name in title for every box
+      }
 
-      var ask = confirm("Do you want to REMOVE the user ?");
-      if (ask) $.ajax({
-        url: url,
-        type: 'POST',
-        data: {
-          username: username
-        },
-        success: function success(result) {
-          if (result) {
-            $(".admin-list tr[username='" + username + "']").slideUp();
+      if (admin.username == username) $(".admin-list table tbody").prepend("<tr username='" + admin.username + "'>\n                                                    <td><p>" + admin.name + "</p></td>\n                                                    <td><p>" + admin.username + "</p></td>\n                                                    <td><p>" + admin.email + "</p></td>\n                                                    <td><span class='remove-user' username='" + admin.username + "'><i class=\"fas fa-user-minus\"></i></span></td>\n                                                </tr>");else $(".admin-list table tbody").append("<tr username='" + admin.username + "'>\n                                                    <td><p>" + admin.name + "</p></td>\n                                                    <td><p>" + admin.username + "</p></td>\n                                                    <td><p>" + admin.email + "</p></td>\n                                                    <td><span class='remove-user' username='" + admin.username + "'><i class=\"fas fa-user-minus\"></i></span></td>\n                                                </tr>");
+      $(".remove-user[username='" + admin.username + "']").on('click', function (e) {
+        e.preventDefault();
+        var username = admin.username;
+        var url = '/api/remove-user'; // console.log(url, username)
+
+        var ask = confirm("Do you want to REMOVE the user ?");
+        if (ask) $.ajax({
+          url: url,
+          type: 'POST',
+          data: {
+            username: username
+          },
+          success: function success(result) {
+            if (result) {
+              $(".admin-list tr[username='" + username + "']").slideUp();
+            }
+          },
+          error: function error(err) {
+            console.log("err:", err);
           }
-        },
-        error: function error(err) {
-          console.log("err:", err);
-        }
+        });
       });
     });
-  });
-  listOfUsers = (0, _utils.getDistinctValuesFromObject)('username', listOfUsers);
-  listOfUsers = listOfUsers.filter(function (user, index) {
-    return username == user ? false : user;
-  });
+    listOfUsers = (0, _utils.getDistinctValuesFromObject)('username', listOfUsers);
+    listOfUsers = listOfUsers.filter(function (user, index) {
+      return username == user ? false : user;
+    });
+  }
 }); // END ADMIN TAB
-// ==============================
-// ZONES TAB
 // ==============================
 // [ ] TODO: Append users checkbox in zoneModal
 
@@ -257,158 +276,187 @@ var zoneModal = function zoneModal(id, zoneid, location1, location2, location3, 
 
 var zonesAndUserList;
 var zonesRaw;
-fetchAdminsPromise.then(function () {
-  fetchZones().then(function (result) {
+var userDataBuffer; // fetchAdminsPromise.then(() => {
+
+fetchZones().then(function (result) {
+  // console.log(result[0][0], result[0][0].hasOwnProperty('role'))
+  var userRole = {
+    superadmin: false,
+    admin: false
+  };
+
+  if (result[0][0].hasOwnProperty('role')) {
+    // console.log("admin")
+    userRole.admin = true;
+  } else {
+    // console.log("superadmin")
+    userRole.superadmin = true;
+  } // ZONES TAB
+  // ==============================
+
+
+  if (userRole.superadmin) {
     zonesAndUserList = result[0];
-    zonesRaw = result[1]; // console.log(result)
-    // console.log(userData_raw)
+    zonesRaw = result[1];
+  } else if (userRole.admin) {
+    zonesAndUserList = []; // { alerts, battery, closedTimer, max, min, offset, opemTimer,role,sensorId,sensorName,sensorType,x,y, ...userDataBuffer } = result[0];
 
-    if (!zonesRaw.length) {
-      // Append rows to zone-tab
-      $(".zone-tab .mid-container table tbody").append("<tr><td>No zone for this team</td><td></td><td></td></tr>");
-    }
-
-    zonesRaw.forEach(function (zone) {
-      // console.log(zone)
-      // Generate unique Id
-      var date = new Date();
-      var modalId = date.getTime() + Math.floor(Math.random() * 100 + 1); // Append rows to zone-tab
-
-      $(".zone-tab .mid-container table tbody").append("<tr zoneid='" + zone.zoneId + "'>\n                    <td>" + zone.location1 + " / " + zone.location2 + " / " + zone.location3 + "</td>\n                    <td>" + function () {
-        return zone.map == 'custom' ? 'You need to set and image' : zone.map == 'ol' ? "Standard map" : zone.map == 'NULL' ? "Set a map" : 'Custom map';
-      }() + "</td>\n                    <td><span class='edit-zone' zoneid='" + zone.zoneId + "' modalid='" + modalId + "'><i class=\"fas fa-edit\"></i></span></td>\n                </tr>"); // }
-      // Check zone.map
-
-      var custommap, olmap, path;
-
-      if (zone.map == 'ol') {
-        custommap = '';
-        olmap = 'checked';
-        path = '';
-      } else if (zone.map == 'custom') {
-        custommap = 'checked';
-        olmap = '';
-        path = '';
-      } else if (zone.map != null) {
-        custommap = 'checked';
-        olmap = '';
-        path = zone.map.split('/')[zone.map.split('/').length - 1];
-      } else {
-        custommap = '';
-        olmap = '';
-        path = '';
-      } // Disable input file if custommap is unchecked initially [??? idk what is this doing]
+    zonesRaw = result[0];
+  } // Delete all duplicated by zoneId
 
 
-      if (custommap == 'unchecked') $(".zone-modal #image-file").attr("disabled", true); // Append edit zone modal with unique id
+  zonesRaw = _utils._.uniqBy(zonesRaw, function (e) {
+    return e.zoneId;
+  }); // console.log(userRole, result)
+  // console.log(result)
+  // console.log(userData_raw)
 
-      $(".zone-settings .inner-settings").append(zoneModal(modalId, zone.zoneId, zone.location1, zone.location2, zone.location3, custommap, olmap, path, result)); // Mark user checked
-      // let usersList
-      // result.forEach((zone, index) => {
-      //     usersList = new Set(zone.usersList.split(','));
-      // })
-      // console.log(usersList)
-      // let labels = $(".zone-settings .inner-settings .form-checkboxes label input")
-      // for (let item of labels) {
-      //     let username = $(item).attr("value")
-      //     if (usersList.has(username)) {
-      //         $(item).attr('checked', true)
-      //     }
-      // }
-      // Open Modal Trigger
+  if (!zonesRaw.length) {
+    // Append rows to zone-tab
+    $(".zone-tab .mid-container table tbody").append("<tr><td>No zone for this team</td><td></td><td></td></tr>");
+  }
 
-      $(".edit-zone[modalid='" + modalId + "']").on('click', function () {
-        $("#edit-zone-modal-" + modalId).modal({
-          backdrop: 'static'
-        });
-      }); // Save data
+  zonesRaw.forEach(function (zone) {
+    // console.log(zone)
+    // Generate unique Id
+    var date = new Date();
+    var modalId = date.getTime() + Math.floor(Math.random() * 100 + 1); // Append rows to zone-tab
+    // console.log(zone.zoneId, zone.map)
 
-      $("#edit-zone-modal-" + modalId + " button[type='submit']").on('click', function (e) {// e.preventDefault();
-        // console.log("clicked!!!")
-        // $.ajax({
-        //     method: "POST",
-        //     url: "/api/edit-zone",
-        //     data: { id: zone.zoneId }
-        // }).done(function (msg) {
-        //     console.log("Data Saved: ", msg);
-        // });
+    $(".zone-tab .mid-container table tbody").append("<tr zoneid='" + zone.zoneId + "'>\n                    <td>" + zone.location1 + " / " + zone.location2 + " / " + zone.location3 + "</td>\n                    <td>" + function () {
+      return zone.map == 'custom' ? 'You need to set and image' : zone.map == 'ol' ? "Standard map" : zone.map == 'NULL' || zone.map == null ? "Set a map" : 'Custom map';
+    }() + "</td>\n                    <td><span class='edit-zone' zoneid='" + zone.zoneId + "' modalid='" + modalId + "'><i class=\"fas fa-edit\"></i></span></td>\n                </tr>"); // }
+    // Check zone.map
+
+    var custommap, olmap, path;
+
+    if (zone.map == 'ol') {
+      custommap = '';
+      olmap = 'checked';
+      path = '';
+    } else if (zone.map == 'custom') {
+      custommap = 'checked';
+      olmap = '';
+      path = '';
+    } else if (zone.map != null) {
+      custommap = 'checked';
+      olmap = '';
+      path = zone.map.split('/')[zone.map.split('/').length - 1];
+    } else {
+      custommap = '';
+      olmap = '';
+      path = '';
+    } // Disable input file if custommap is unchecked initially [??? idk what is this doing]
+
+
+    if (custommap == 'unchecked') $(".zone-modal #image-file").attr("disabled", true); // Append edit zone modal with unique id
+
+    if (userRole.admin) $(".zone-settings .inner-settings").append(zoneModal(modalId, zone.zoneId, zone.location1, zone.location2, zone.location3, custommap, olmap, path, [[], []]));else if (userRole.superadmin) $(".zone-settings .inner-settings").append(zoneModal(modalId, zone.zoneId, zone.location1, zone.location2, zone.location3, custommap, olmap, path, result)); // Mark user checked
+    // let usersList
+    // result.forEach((zone, index) => {
+    //     usersList = new Set(zone.usersList.split(','));
+    // })
+    // console.log(usersList)
+    // let labels = $(".zone-settings .inner-settings .form-checkboxes label input")
+    // for (let item of labels) {
+    //     let username = $(item).attr("value")
+    //     if (usersList.has(username)) {
+    //         $(item).attr('checked', true)
+    //     }
+    // }
+    // Open Modal Trigger
+
+    $(".edit-zone[modalid='" + modalId + "']").on('click', function () {
+      $("#edit-zone-modal-" + modalId).modal({
+        backdrop: 'static'
       });
-    }); // Toggle input file
+    }); // Save data
 
-    $("input[name='map']").on('change', function (e) {
-      if (e.target.defaultValue == 'custom') {
-        $(".zone-modal input[value='custom']").prop("checked", true);
-        $(".zone-modal input[value='ol']").prop("checked", false);
-        $(".zone-modal #image-file").attr("disabled", false);
-      } else {
-        $(".zone-modal input[value='custom']").prop("checked", false);
-        $(".zone-modal input[value='ol']").prop("checked", true);
-        $(".zone-modal #image-file").attr("disabled", true);
+    $("#edit-zone-modal-" + modalId + " button[type='submit']").on('click', function (e) {// e.preventDefault();
+      // console.log("clicked!!!")
+      // $.ajax({
+      //     method: "POST",
+      //     url: "/api/edit-zone",
+      //     data: { id: zone.zoneId }
+      // }).done(function (msg) {
+      //     console.log("Data Saved: ", msg);
+      // });
+    });
+  }); // Toggle input file
+
+  $("input[name='map']").on('change', function (e) {
+    if (e.target.defaultValue == 'custom') {
+      $(".zone-modal input[value='custom']").prop("checked", true);
+      $(".zone-modal input[value='ol']").prop("checked", false);
+      $(".zone-modal #image-file").attr("disabled", false);
+    } else {
+      $(".zone-modal input[value='custom']").prop("checked", false);
+      $(".zone-modal input[value='ol']").prop("checked", true);
+      $(".zone-modal #image-file").attr("disabled", true);
+    }
+  }); // END ZONES TAB
+  // ==============================
+}).then(function () {
+  // REPORT CONTAINER
+  // ==============================
+  // Create Report Zone
+  var date, month, maxDays;
+  zonesRaw.forEach(function (zone) {
+    // Sensor counter
+    var counter = (0, _utils.getValuesFromObject)('zoneId', userData_raw).filter(function (zoneId) {
+      return zoneId == zone.zoneId;
+    }).length; // Date
+
+    date = new Date();
+    month = (0, _utils.monthChanger)(date.getMonth()); //.slice(0,3) // display one month before current month 
+
+    maxDays;
+
+    if (date.getMonth() == 0) {
+      maxDays = 31; //if current month if 0 (January) return maxDays of december last year which is 31
+    } else {
+      maxDays = (0, _utils.getDaysInMonth)(date.getMonth(), date.getFullYear()); //return maxDays of last month
+    } // Append zone
+
+
+    $(".report-settings .mid-container table tbody").append("<tr><td><div class='form-checkboxes'><label><input type=\"checkbox\" name=\"zone" + zone.zoneId + "\" value=\"" + zone.zoneId + "\">" + zone.location1 + " / " + zone.location2 + " / " + zone.location3 + "</label></div></td><td>" + counter + "</td></tr>");
+  }); // Edit button for quick report
+  // $(".report-buttons .create-quick-report span").append(` on `+month.slice(0,3))
+  // Quick report button
+
+  $(".report-buttons .create-quick-report").on('click', function () {
+    var listOfZones = []; // Get checked checkboxes
+
+    $(".report-settings .mid-container table tbody input").each(function (index, item) {
+      if ($(item).prop("checked")) {
+        listOfZones.push(parseInt($(item).attr('value')));
       }
     });
-  }).then(function () {
-    // END ZONES TAB
-    // ==============================
-    // Create Report Zone
-    var date, month, maxDays;
-    zonesRaw.forEach(function (zone) {
-      // Sensor counter
-      var counter = (0, _utils.getValuesFromObject)('zoneId', userData_raw).filter(function (zoneId) {
-        return zoneId == zone.zoneId;
-      }).length; // Date
+    if (listOfZones.length) (0, _utils.getMultiReport)(listOfZones);else alert("Please select a zone before creating a report");
+  }); // Normal report button
 
-      date = new Date();
-      month = (0, _utils.monthChanger)(date.getMonth()); //.slice(0,3) // display one month before current month 
+  $(".report-buttons .create-report").on('click', function () {
+    var listOfZones = []; // Get checked checkboxes
 
-      maxDays;
+    $(".report-settings .mid-container table tbody input").each(function (index, item) {
+      if ($(item).prop("checked")) {
+        listOfZones.push(parseInt($(item).attr('value')));
+      }
+    });
+    var startDate = $(".report-settings input[name='start-date']").val();
+    var endDate = $(".report-settings input[name='end-date']").val(); // console.log(startDate, endDate)
 
-      if (date.getMonth() == 0) {
-        maxDays = 31; //if current month if 0 (January) return maxDays of december last year which is 31
+    if (listOfZones.length) {
+      if (startDate && endDate) {
+        var _date = [startDate, endDate];
+        (0, _utils.getMultiReport)(listOfZones, _date);
       } else {
-        maxDays = (0, _utils.getDaysInMonth)(date.getMonth(), date.getFullYear()); //return maxDays of last month
-      } // Append zone
-
-
-      $(".report-settings .mid-container table tbody").append("<tr><td><div class='form-checkboxes'><label><input type=\"checkbox\" name=\"zone" + zone.zoneId + "\" value=\"" + zone.zoneId + "\">" + zone.location1 + " / " + zone.location2 + " / " + zone.location3 + "</label></div></td><td>" + counter + "</td></tr>");
-    }); // Edit button for quick report
-    // $(".report-buttons .create-quick-report span").append(` on `+month.slice(0,3))
-    // Quick report button
-
-    $(".report-buttons .create-quick-report").on('click', function () {
-      var listOfZones = []; // Get checked checkboxes
-
-      $(".report-settings .mid-container table tbody input").each(function (index, item) {
-        if ($(item).prop("checked")) {
-          listOfZones.push(parseInt($(item).attr('value')));
-        }
-      });
-      if (listOfZones.length) (0, _utils.getMultiReport)(listOfZones);else alert("Please select a zone before creating a report");
-    }); // Normal report button
-
-    $(".report-buttons .create-report").on('click', function () {
-      var listOfZones = []; // Get checked checkboxes
-
-      $(".report-settings .mid-container table tbody input").each(function (index, item) {
-        if ($(item).prop("checked")) {
-          listOfZones.push(parseInt($(item).attr('value')));
-        }
-      });
-      var startDate = $(".report-settings input[name='start-date']").val();
-      var endDate = $(".report-settings input[name='end-date']").val(); // console.log(startDate, endDate)
-
-      if (listOfZones.length) {
-        if (startDate && endDate) {
-          var _date = [startDate, endDate];
-          (0, _utils.getMultiReport)(listOfZones, _date);
-        } else {
-          alert("Please select a date before creating a report");
-        }
-      } else alert("Please select a zone before creating a report");
-    }); // ==============================
-    // REPORT CONTAINER
-  });
-}); // END REPORT CONTAINER
-// ==============================
+        alert("Please select a date before creating a report");
+      }
+    } else alert("Please select a zone before creating a report");
+  }); // END REPORT CONTAINER
+  // ==============================
+}); // })
 // Check inputs of form before submit
 
 var isPassword = function isPassword() {

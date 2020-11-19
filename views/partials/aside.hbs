@@ -25,12 +25,12 @@
 
         {{!-- Maps List --}}
         <div id="maps-list">
-            {{!-- Maps are appended from script.js --}}
+            {{!-- Maps are appended from aside.js --}}
         </div>
 
         {{!-- Zones List --}}
         <div id="zones-list" class="">
-            {{!-- Zones are appended from script.js --}}
+            {{!-- Zones are appended from aside.js --}}
         </div>
 
         {{#if isScaleAvailable.tableExist}}
@@ -102,11 +102,16 @@
             </a> --}}
 
             {{#ifEquals role 'superadmin' }}
+            {{!-- <a href="/settings" class='settings-route'>
+                <i class="fas fa-cogs" aria-hidden="true"></i>
+                <span>Settings</span>
+            </a> --}}
+            {{/ifEquals}}
+
             <a href="/settings" class='settings-route'>
                 <i class="fas fa-cogs" aria-hidden="true"></i>
                 <span>Settings</span>
             </a>
-            {{/ifEquals}}
 
             {{!-- <a href="/team" class='team-route'>
                 <i class="fas fa-sitemap"></i>

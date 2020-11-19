@@ -89,7 +89,6 @@ function eventPath(evt) {
     return [target].concat(getParents(target), window);
 }
 
-
 $(document).ready(function () {
     // pop up functionality
     // Listen for all clicks on the document

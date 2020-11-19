@@ -55,11 +55,14 @@ var getUserData = function getUserData() {
                 unsetSensors++;
               } else if (hasBeenAppended == -1) {
                 bufferAppendedLocations.push([user.location1, user.location2, user.location3]);
-                var name;
-                if (_location2 > 1) // when there are > 1 counties / regions and not matter how many cities
-                  name = "<span class='multi-location'>" + user.location3 + "<span class='location-detail'>" + user.location1 + ", " + user.location2 + "</span>" + "</span>";else if (_location2 == 1 && _location > 1) // when there is one county and more cities
-                  name = "<span class='multi-location'>" + user.location3 + "<span class='location-detail'>" + user.location2 + "</span>" + "</span>";else name = "<span class=''>" + user.location3 + "</span>"; // name = `<span class='multi-location'>`+user.location3+`<span class='location-detail'>`+user.location2+`</span>`+`</span>`
+                var name; // if (location1 > 1) // when there are > 1 counties / regions and not matter how many cities
+                //     name = `<span class='multi-location'>` + user.location3 + `<span class='location-detail'>` + user.location1 + `, ` + user.location2 + `</span>` + `</span>`
+                // else if (location1 == 1 && location2 > 1) // when there is one county and more cities
+                //     name = `<span class='multi-location'>` + user.location3 + `<span class='location-detail'>` + user.location2 + `</span>` + `</span>`
+                // else
+                //     name = `<span class=''>` + user.location3 + `</span>`
 
+                name = "<span class='multi-location'>" + user.location3 + "<span class='location-detail'>" + user.location2 + "</span>" + "</span>";
                 zoneEl.append("<div class=\"zone-item\">\n                                <a href=\"/map/zone?zoneid=" + user.zoneId + "\" class='county-item'><i class=\"fas fa-layer-group\"></i>" + name + "</a>\n                            </div>");
               }
             }); // console.log(bufferAppendedLocations)

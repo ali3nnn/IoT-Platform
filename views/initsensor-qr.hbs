@@ -32,7 +32,8 @@
         <!-- Location Form -->
         <form class="location-container" action="/api/v3/init-sensor-qr" method="POST" autocomplete="off">
             <input type="charInput" name="sensorid" placeholder="Sensor ID" value="{{sensorid}}" readonly='readonly' /><br>
-            <input type="charInput" name="type" placeholder="Sensor Type" value="{{type}}" class='hidden' />
+            <input type="charInput" name="type" placeholder="Sensor Type" value="{{type}}" readonly='readonly' class='hidden' />
+            <input type="charInput" name="battery" placeholder="Sensor Battery" value="{{battery}}" readonly='readonly' class='hidden' />
             <label for="zone">Pick a zone:</label>
             <select name="zone" id="zone">
                 <option value="Nothing selected">Nothing selected</option>

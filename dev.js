@@ -23,8 +23,9 @@ const moment = require('moment')
 const formidable = require('formidable');
 const removeDiacritics = require('diacritics').remove;
 // global.fetch = require("node-fetch");
-var mime = require('mime');
+const mime = require('mime');
 const { exec } = require("child_process");
+const _ = require('lodash');
 
 const Handlebars = require('handlebars');
 const HandlebarsIntl = require('handlebars-intl');
@@ -115,7 +116,7 @@ const {
     isScannerAvailable,
     mqttOverSocketIoBridge,
     test,
-    getValuesFromObject,
+    getDistinctValuesFromObject,
     replaceAll,
     replaceDiacritics,
     getDaysInMonth
@@ -695,7 +696,7 @@ app.get('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, asy
 
     // console.log(sess)
 
-    if (sess.username && sess.role == 'admin') {
+    if (sess.username) {
         const userData = sess.userData
         // console.log(userData)
         const sensorExist = await mysqlReader("select * from sensors where sensorId='" + getQuery.sensorid + "';")
@@ -710,6 +711,7 @@ app.get('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, asy
                         username: sess.username,
                         sensorid: getQuery.sensorid,
                         type: getQuery.type,
+                        battery: getQuery.battery || 0,
                         locations,
                         userData,
                     })
@@ -744,44 +746,48 @@ app.post('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, (r
             postQuery.location3 = postQuery.location3.normalize('NFKD').replace(/[\u0300-\u036f]/g, "");
             postQuery.sensorName = postQuery.sensorName.normalize('NFKD').replace(/[\u0300-\u036f]/g, "");
 
-            if (postQuery.zoneId) { //idk when goes here
-                // Insert into sensors
-                mysqlReader("INSERT INTO sensors (sensorId, sensorType, sensorName, zoneId) values ('" + postQuery.sensorid + "','" + postQuery.type + "','" + postQuery.sensorName + "'," + int(postQuery.zoneId) + ")")
-                    .then(() => {
-                        // Insert into userAccess
-                        mysqlReader("INSERT INTO userAccess (sensorId, username) values ('" + postQuery.sensorid + "','" + sess.username + "')")
+            // if (postQuery.zoneId) { //idk when goes here
+            // let insertQuery
+            // if(postQuery.battery)
+            //     insertQuery = "INSERT INTO sensors (sensorId, sensorType, sensorName, zoneId, battery) values ('" + postQuery.sensorid + "','" + postQuery.type + "','" + postQuery.sensorName + "'," + int(postQuery.zoneId) + ")"
+            // // Insert into sensors
+            // mysqlReader(insertQuery)
+            //     .then(() => {
+            //         // Insert into userAccess
+            //         mysqlReader("INSERT INTO userAccess (sensorId, username) values ('" + postQuery.sensorid + "','" + sess.username + "')")
+            //             .then(() => {
+            //                 // Insert into VerneMQ Table
+            //                 addUserVerne(`INSERT INTO vmq_auth_acl (mountpoint, client_id, username, password, publish_acl, subscribe_acl) VALUES ('', '` + postQuery.sensorid + `', '` + postQuery.sensorid + `', md5('dasstecb2b'), '[{"pattern":"#"}]', '[{"pattern":"#"}]');`)
+            //                     .then(() => {
+            //                         res.redirect("/map")
+            //                     })
+            //             })
+            //     })
+            // } else {
+            // Insert into locations
+            // console.log("INSERT INTO locations (location1, location2, location3, createdBy) values ('" + postQuery.location1 + "','" + postQuery.location2 + "','" + postQuery.location3 + "', '"+sess.company+"')")
+            mysqlReader("INSERT INTO locations (location1, location2, location3, createdBy) values ('" + postQuery.location1 + "','" + postQuery.location2 + "','" + postQuery.location3 + "', '" + sess.company + "')")
+                .then(() => {
+                    // Get zoneId
+                    mysqlReader("select zoneId from locations order by zoneId desc limit 1;").then(result => {
+                        // Insert into sensors
+                        let insertQuery = "INSERT INTO sensors (sensorId, sensorType, sensorName, zoneId, battery) values ('" + postQuery.sensorid + "','" + postQuery.type + "','" + postQuery.sensorName + "','" + result[0].zoneId + "', '" + postQuery.battery + "')"
+                        mysqlReader(insertQuery)
                             .then(() => {
-                                // Insert into VerneMQ Table
-                                addUserVerne(`INSERT INTO vmq_auth_acl (mountpoint, client_id, username, password, publish_acl, subscribe_acl) VALUES ('', '` + postQuery.sensorid + `', '` + postQuery.sensorid + `', md5('dasstecb2b'), '[{"pattern":"#"}]', '[{"pattern":"#"}]');`)
+                                // Insert into userAccess
+                                mysqlReader("INSERT INTO userAccess (sensorId, username) values ('" + postQuery.sensorid + "','" + sess.username + "')")
                                     .then(() => {
-                                        res.redirect("/map")
+                                        // Insert into VerneMQ Table
+                                        addUserVerne(`INSERT INTO vmq_auth_acl (mountpoint, client_id, username, password, publish_acl, subscribe_acl) VALUES ('', '` + postQuery.sensorid + `', '` + postQuery.sensorid + `', md5('dasstecb2b'), '[{"pattern":"#"}]', '[{"pattern":"#"}]');`)
+                                            .then(() => {
+                                                res.redirect("/map")
+                                            })
                                     })
                             })
                     })
-            } else {
-                // Insert into locations
-                // console.log("INSERT INTO locations (location1, location2, location3, createdBy) values ('" + postQuery.location1 + "','" + postQuery.location2 + "','" + postQuery.location3 + "', '"+sess.company+"')")
-                mysqlReader("INSERT INTO locations (location1, location2, location3, createdBy) values ('" + postQuery.location1 + "','" + postQuery.location2 + "','" + postQuery.location3 + "', '" + sess.company + "')")
-                    .then(() => {
-                        // Get zoneId
-                        mysqlReader("select zoneId from locations order by zoneId desc limit 1;").then(result => {
-                            // Insert into sensors
-                            mysqlReader("INSERT INTO sensors (sensorId, sensorType, sensorName, zoneId) values ('" + postQuery.sensorid + "','" + postQuery.type + "','" + postQuery.sensorName + "','" + result[0].zoneId + "')")
-                                .then(() => {
-                                    // Insert into userAccess
-                                    mysqlReader("INSERT INTO userAccess (sensorId, username) values ('" + postQuery.sensorid + "','" + sess.username + "')")
-                                        .then(() => {
-                                            // Insert into VerneMQ Table
-                                            addUserVerne(`INSERT INTO vmq_auth_acl (mountpoint, client_id, username, password, publish_acl, subscribe_acl) VALUES ('', '` + postQuery.sensorid + `', '` + postQuery.sensorid + `', md5('dasstecb2b'), '[{"pattern":"#"}]', '[{"pattern":"#"}]');`)
-                                                .then(() => {
-                                                    res.redirect("/map")
-                                                })
-                                        })
-                                })
-                        })
 
-                    })
-            }
+                })
+            // }
 
 
         } else {
@@ -791,7 +797,8 @@ app.post('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, (r
             mysqlReader("select zoneId from locations where location1='" + postQuery.location1 + "' and location2='" + postQuery.location2 + "' and location3='" + postQuery.location3 + "';")
                 .then(result => {
                     // Insert into sensors
-                    mysqlReader("INSERT INTO sensors (sensorId, sensorType, sensorName, zoneId) values ('" + postQuery.sensorid + "','" + postQuery.type + "','" + postQuery.sensorName + "','" + result[0].zoneId + "')")
+                    let insertQuery = "INSERT INTO sensors (sensorId, sensorType, sensorName, zoneId, battery) values ('" + postQuery.sensorid + "','" + postQuery.type + "','" + postQuery.sensorName + "','" + result[0].zoneId + "', '" + postQuery.battery + "')"
+                    mysqlReader(insertQuery)
                         .then((result) => {
                             // Insert into userAccess
                             mysqlReader("INSERT INTO userAccess (sensorId, username) values ('" + postQuery.sensorid + "','" + sess.username + "')")
@@ -824,37 +831,393 @@ app.get('/api/v3/get-sensor-data', (req, res) => {
 
     // Process time
     let todayRaw = new Date();
-    let todayQuery = todayRaw.getFullYear() + '-' + (todayRaw.getMonth() + 1) + '-' + (todayRaw.getDate() < 10 ? '0' + todayRaw.getDate() : todayRaw.getDate()) + ' ' + '00:00:00'
+    let todayQueryDoor = todayRaw.getFullYear() + '-' + (todayRaw.getMonth() + 1) + '-' + (todayRaw.getDate() - 1 < 10 ? '0' + todayRaw.getDate() - 1 : todayRaw.getDate() - 1) + ' ' + '00:00:00'
+    let todayQueryGeneral = todayRaw.getFullYear() + '-' + (todayRaw.getMonth() + 1) + '-' + (todayRaw.getDate() < 10 ? '0' + todayRaw.getDate() : todayRaw.getDate()) + ' ' + '00:00:00'
 
-    let influxQuery = "SELECT mean(value) as value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQuery + "' and time<now() group by time(5m) order by time desc;"
+    let influxQuery
+    if (['door'].includes(req.query.type)) {
+        // console.log(req.query.type)
+        influxQuery = "SELECT value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQueryDoor + "' and time<now() order by time desc;"
+        // influxQuery = "SELECT value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQuery + "' and time<now() order by time desc;"
+    } else {
+        influxQuery = "SELECT mean(value) as value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQueryGeneral + "' and time<now() group by time(5m) order by time desc;"
+    }
 
     // console.log(influxQuery)
 
-    influxReader(influxQuery).then(result => {
-        res.send(result)
-    }).catch(err => {
-        res.send(err)
-    })
+    if (req.query.type == 'door') {
+
+        console.log(req.query.type, influxQuery)
+
+        influxReader(influxQuery).then(result => {
+
+            let paddingStyle = 1 // 1,2,3
+
+            let finalResult = []
+            let finalResultFiltered = []
+            let finalResultFilteredYesterday = []
+
+            if (paddingStyle == 1) {
+
+                // Push 0 or 1 from current time to last time in influx
+                let lastValue = result[0].value
+                if (lastValue == 1) { // Fills with 1s
+                    let lastTimestamp = new Date(result[0].time)
+                    let currentDate = new Date()
+                    finalResult.push({ "time": new Date(currentDate).toISOString(), "value": 1, "info": "init with current time" })
+                } else { // Fills with 0s
+                    let lastTimestamp = new Date(result[0].time)
+                    let currentDate = new Date()
+                    finalResult.push({ "time": new Date(currentDate).toISOString(), "value": 0, "info": "init with current time" })
+                }
+
+                // Padding results
+                let rightBeforeTime
+                result.forEach((item, index) => {
+                    if (item.value == 0) { // if item.value == 0
+                        // get current time
+                        let time = item.time
+                        let timeDate = new Date(time)
+                        // push initial value
+                        finalResult.push({ "time": item.time, "value": 0 }) //item.value == 0
+                        if (index != result.length - 1) { // if item.value == 0 and not last
+                            // push 1 right before 0
+                            rightBeforeTime = new Date(timeDate.getTime() - 1) // push 1 milisecond before 0
+                            finalResult.push({ "time": rightBeforeTime.toISOString(), "value": 1, "info": "rightBefore 0" })
+                        }
+                    } else { // if item.value == 1
+                        // get current time
+                        let time = item.time
+                        let timeDate = new Date(time)
+                        // push initial value
+                        finalResult.push({ "time": item.time, "value": 1 }) //item.value == 1
+                        if (index != result.length - 1) { // if item.value == 1 and not last
+                            // push 0 right before 1
+                            rightBeforeTime = new Date(timeDate.getTime() - 1) // push 1 milisecond before 1
+                            finalResult.push({ "time": rightBeforeTime.toISOString(), "value": 0, "info": "rightBefore 1" })
+                        }
+                    }
+                })
+
+                // Filter only today's data
+                let thisDay = todayRaw.getDate()
+
+                function checkIfToday(item) {
+                    try {
+                        let day
+                        if (typeof item.time == 'string')
+                            day = item.time.split('T')[0].split('-')[2]
+                        else {
+                            let time = item.time._nanoISO
+                            day = time.split('T')[0].split('-')[2]
+                        }
+                        // console.log(typeof item.time, day, thisDay, day==thisDay)
+                        return day == thisDay
+                    } catch (e) {
+                        console.log(e)
+                        return false
+                    }
+                }
+
+                function checkIfYesterday(item) {
+                    try {
+                        let day
+                        if (typeof item.time == 'string')
+                            day = item.time.split('T')[0].split('-')[2]
+                        else {
+                            let time = item.time._nanoISO
+                            day = time.split('T')[0].split('-')[2]
+                        }
+                        // console.log(typeof item.time, day, thisDay, day==thisDay)
+                        return day == thisDay - 1
+                    } catch (e) {
+                        console.log(e)
+                        return false
+                    }
+                }
+
+                finalResultFiltered = finalResult.filter(checkIfToday)
+                finalResultFilteredYesterday = finalResult.filter(checkIfYesterday)
+                // END Filter only today's data
+
+                // Add 1 or 0 at midnight for current day
+                let oldestValue
+                if (finalResultFilteredYesterday.length) {
+                    oldestValue = finalResultFilteredYesterday[0].value // last value recorded yesterday
+                    // console.log(oldestValue, oldestValue == 1, oldestValue == 0)
+                    if (oldestValue == 1) {
+                        let midnight = new Date()
+                        midnight = midnight.toISOString().split("T")[0] + 'T00:00:00.000Z'
+                        // console.log(midnight)
+                        finalResultFiltered.push({ "time": midnight, "value": 1, "info": "end with midnight" })
+                    } else {
+                        let midnight = new Date()
+                        midnight = midnight.toISOString().split("T")[0] + 'T00:00:00.000Z'
+                        // console.log(midnight)
+                        finalResultFiltered.push({ "time": midnight, "value": 0, "info": "end with midnight" })
+                    }
+                }
+                else {
+                    oldestValue = finalResult[finalResult.length - 1].value // earliest value recorded today
+                    let midnight = new Date()
+                    midnight = midnight.toISOString().split("T")[0] + 'T00:00:00.000Z'
+                    if(oldestValue==1) { // if sensor started with 1, put at midnight
+                        finalResultFiltered.push({ "time": midnight, "value": null })
+                    } else {
+                        finalResultFiltered.push({ "time": midnight, "value": null })
+                    }
+                }
+
+            } else if (paddingStyle == 2) {
+
+                // Push 0 or 1 from current time to last time in influx
+                let lastValue = result[0].value
+                if (lastValue == 1) { // Fills with 1s
+                    let lastTimestamp = new Date(result[0].time)
+                    let currentDate = new Date()
+                    while (currentDate.getTime() - lastTimestamp.getTime() > 10 * 60000) { //10 * 60000 = 10 min
+                        finalResult.push({ "time": new Date(currentDate).toISOString(), "value": 1 })
+                        currentDate.setSeconds(currentDate.getSeconds() - 10 * 60)
+                    }
+                    // finalResult.push({ "time": lastTimestamp.toISOString(), "value": 1 })
+                } else { // Fills with 0s
+                    let lastTimestamp = new Date(result[0].time)
+                    let currentDate = new Date()
+                    while (currentDate.getTime() - lastTimestamp.getTime() > 10 * 60000) { //10 * 60000 = 10 min
+                        finalResult.push({ "time": new Date(currentDate).toISOString(), "value": null })
+                        currentDate.setSeconds(currentDate.getSeconds() - 10 * 60)
+                    }
+                    // finalResult.push({ "time": lastTimestamp.toISOString(), "value": null })
+                }
+
+                // Padding results
+                result.forEach((item, index) => {
+                    if (item.value == 0) {
+                        // get current time
+                        let time = item.time
+                        let timeDate = new Date(time)
+                        // push initial value
+                        finalResult.push({ "time": item.time, "value": null })
+                        // push 1 right before 0
+                        let rightBeforeTime = new Date(timeDate.getTime() - 1)
+                        finalResult.push({ "time": rightBeforeTime.toISOString(), "value": 1 })
+                        // get next time
+                        let nextTime
+                        try {
+                            nextTime = result[index + 1].time
+                        } catch (e) {
+                            nextTime = result[index].time
+                        }
+                        let nextTimeDate = new Date(nextTime)
+                        // start padding
+                        let newDate = new Date(timeDate.getTime()) // current json time
+                        while (newDate.getTime() - 1000 * 60 > nextTimeDate.getTime()) {
+                            newDate.setSeconds(newDate.getSeconds() - 60);
+                            finalResult.push({ "time": new Date(newDate).toISOString(), "value": 1 })
+                        }
+                        // finalResult.pop() //remove last item because it goes a bit beyond nextTimeDate
+                    } else {
+                        // get current time
+                        let time = item.time
+                        let timeDate = new Date(time)
+                        finalResult.push({ "time": item.time, "value": 1 })
+                        // push 0 right before 1
+                        let rightBeforeTime = new Date(timeDate.getTime() - 1)
+                        finalResult.push({ "time": rightBeforeTime.toISOString(), "value": null })
+                        // get next time
+                        let nextTime
+                        try {
+                            nextTime = result[index + 1].time
+                        } catch (e) {
+                            nextTime = result[index].time
+                        }
+                        let nextTimeDate = new Date(nextTime)
+                        // start padding
+                        let newDate = new Date(timeDate.getTime()) // current json time
+                        while (newDate.getTime() - 5 * 1000 > nextTimeDate.getTime()) {
+                            newDate.setSeconds(newDate.getSeconds() - 5);
+                            finalResult.push({ "time": new Date(newDate).toISOString(), "value": null })
+                        }
+                    }
+                })
+
+                // Filter only today's data
+                let thisDay = todayRaw.getDate()
+
+                function checkIfToday(item) {
+                    try {
+                        let day
+                        if (typeof item.time == 'string')
+                            day = item.time.split('T')[0].split('-')[2]
+                        else {
+                            let time = item.time._nanoISO
+                            day = time.split('T')[0].split('-')[2]
+                        }
+                        // console.log(typeof item.time, day, thisDay, day==thisDay)
+                        return day == thisDay
+                    } catch (e) {
+                        console.log(e)
+                        return false
+                    }
+                }
+
+                finalResultFiltered = finalResult.filter(checkIfToday)
+                // END Filter only today's data
+
+
+            } else if (paddingStyle == 3) {
+
+                // First value - current time
+                let lastValue = result[0].value
+                if (lastValue == 1) { // Fills with 1s
+                    let lastTimestamp = new Date(result[0].time)
+                    let currentDate = new Date()
+                    finalResult.push({ "time": new Date(currentDate).toISOString(), "value": 1 })
+                } else { // Fills with 0s
+                    let lastTimestamp = new Date(result[0].time)
+                    let currentDate = new Date()
+                    finalResult.push({ "time": new Date(currentDate).toISOString(), "value": null })
+                }
+
+                // Add real values
+                let rightBeforeTime
+                result.forEach((item, index) => {
+                    if (item.value == 0) { // if item.value == 0
+                        // get current time
+                        let time = item.time
+                        let timeDate = new Date(time)
+                        // push initial value
+                        finalResult.push({ "time": item.time, "value": null }) //item.value == 0
+                        // push 1 right before 0
+                        rightBeforeTime = new Date(timeDate.getTime() - 1) // push 1 milisecond before 0
+                        finalResult.push({ "time": rightBeforeTime.toISOString(), "value": 1 })
+                    } else {
+                        // get current time
+                        let time = item.time
+                        let timeDate = new Date(time)
+                        // push initial value
+                        finalResult.push({ "time": item.time, "value": 1 }) //item.value == 1
+                        // push 0 right before 1
+                        rightBeforeTime = new Date(timeDate.getTime() - 1) // push 1 milisecond before 1
+                        finalResult.push({ "time": rightBeforeTime.toISOString(), "value": null })
+                    }
+                })
+
+                // Filter only today's data
+                let thisDay = todayRaw.getDate()
+
+                function checkIfToday(item) {
+                    try {
+                        let day
+                        if (typeof item.time == 'string')
+                            day = item.time.split('T')[0].split('-')[2]
+                        else {
+                            let time = item.time._nanoISO
+                            day = time.split('T')[0].split('-')[2]
+                        }
+                        // console.log(typeof item.time, day, thisDay, day==thisDay)
+                        return day == thisDay
+                    } catch (e) {
+                        console.log(e)
+                        return false
+                    }
+                }
+
+                function checkIfYesterday(item) {
+                    try {
+                        let day
+                        if (typeof item.time == 'string')
+                            day = item.time.split('T')[0].split('-')[2]
+                        else {
+                            let time = item.time._nanoISO
+                            day = time.split('T')[0].split('-')[2]
+                        }
+                        // console.log(typeof item.time, day, thisDay, day==thisDay)
+                        return day == thisDay - 1
+                    } catch (e) {
+                        console.log(e)
+                        return false
+                    }
+                }
+
+                finalResultFiltered = finalResult.filter(checkIfToday)
+                finalResultFilteredYesterday = finalResult.filter(checkIfYesterday)
+                // console.log(finalResult)
+                // END Filter only today's data
+
+                // last value - midnight
+                let oldestValue = finalResultFilteredYesterday[0].value // last value recorded yesterday
+                // console.log(oldestValue, oldestValue == 1, oldestValue == 0)
+                if (oldestValue == 1) {
+                    let midnight = new Date()
+                    midnight = midnight.toISOString().split("T")[0] + '00:00:00.000Z'
+                    // console.log(midnight)
+                    finalResultFiltered.push({ "time": midnight, "value": 1 })
+                } else {
+                    let midnight = new Date()
+                    midnight = midnight.toISOString().split("T")[0] + '00:00:00.000Z'
+                    // console.log(midnight)
+                    finalResultFiltered.push({ "time": midnight, "value": 0 })
+                }
+            }
+
+            // Return sensor
+            // res.status(200).send({ result, finalResultFiltered })
+            res.status(200).send(finalResultFiltered)
+
+        }).catch(err => {
+            res.send(err)
+        })
+
+    } else if (req.query.type == 'temperature') {
+        influxReader(influxQuery).then(result => {
+
+            // Fill with null where 0 for door sensors
+            // if (req.query.type)
+            //     result = result.map((item, index) => {
+            //         if (item.value == 0)
+            //             return { "time": item.time, "value": null }
+            //         else
+            //             return item
+            //     })
+
+            // Return sensor
+            res.send(result)
+
+        }).catch(err => {
+            res.send(err)
+        })
+    }
 
 })
 
 app.get('/api/v3/save-settings', (req, res) => {
     sess = req.session
 
-    if (sess.username) {
-        // let query = "UPDATE sensors SET " + (() => { return req.query.min ? 'min=' + req.query.min : '' })() + (() => { return req.query.max ? 'max=' + req.query.max : '' })() + (() => { return req.query.xlat ? 'x=\'' + req.query.xlat + '\' ' : '' })() + (() => { return req.query.ylong ? 'y=\'' + req.query.ylong + '\'' : '' })() + " WHERE sensorId=" + req.query.sensorId
-        let query = "UPDATE sensors SET " + (() => { return req.query.min ? 'min=' + req.query.min : 'min=NULL' })() + "," + (() => { return req.query.max ? ' max=' + req.query.max : ' max=NULL' })() + "," + (() => { return req.query.xlat ? ' x=\'' + req.query.xlat + '\' ' : ' x=NULL' })() + "," + (() => { return req.query.ylong ? ' y=\'' + req.query.ylong + '\'' : ' y=NULL' })() + " WHERE sensorId=" + req.query.sensorId
-        // console.log(query)
-        mysqlReader(query)
-            .then((res) => {
-                res.status(200).send("Values updated!");
-            })
-            .catch((err) => {
-                res.status(200).send(err);
-            })
-    } else {
-        res.status(403).send("You are not authorized!");
-    }
+    // if (sess.username) {
+    // let query = "UPDATE sensors SET " + (() => { return req.query.min ? 'min=' + req.query.min : '' })() + (() => { return req.query.max ? 'max=' + req.query.max : '' })() + (() => { return req.query.xlat ? 'x=\'' + req.query.xlat + '\' ' : '' })() + (() => { return req.query.ylong ? 'y=\'' + req.query.ylong + '\'' : '' })() + " WHERE sensorId=" + req.query.sensorId
+    let query = "UPDATE sensors SET " +
+        (() => { return req.query.min ? 'min=' + req.query.min : 'min=NULL' })() + "," +
+        (() => { return req.query.max ? ' max=' + req.query.max : ' max=NULL' })() + "," +
+        (() => { return req.query.openTimer ? 'openTimer=' + req.query.openTimer : 'openTimer=NULL' })() + "," +
+        (() => { return req.query.closedTimer ? ' closedTimer=' + req.query.closedTimer : ' closedTimer=NULL' })() + "," +
+        (() => { return req.query.xlat ? ' x=\'' + req.query.xlat + '\' ' : ' x=NULL' })() + "," +
+        (() => { return req.query.ylong ? ' y=\'' + req.query.ylong + '\'' : ' y=NULL' })() +
+        " WHERE sensorId=" + req.query.sensorId + ';'
+
+    // console.log(query)
+
+    mysqlReader(query)
+        .then((res) => {
+            res.status(200).send("Values updated!");
+        })
+        .catch((err) => {
+            res.status(200).send(err);
+        })
+
+    // } else {
+    //     res.status(403).send("You are not authorized!");
+    // }
 })
 
 // Route for OTA update 
@@ -3047,7 +3410,31 @@ app.get('/api/get-zones', function (req, res) {
             res.status(200).send(result)
         })
 
-    } else {
+    } 
+    else if (sess.role == "admin") {
+
+        // It returns a list of locations and users associated with that location
+        // let getZonesAndUserList = mysqlReader(`select locations.*
+        //     from sensors
+        //     join locations on locations.zoneId = sensors.zoneId
+        //     join users on users.company = '`+ sess.company + `' and users.username = `+sess.username+`
+        //     group by sensors.zoneId;`)
+        // let getZonesAndUserList = sess.userData
+
+        // It returns a list of locations created by a user
+        // let getZones = mysqlReader(`select * from locations where createdBy='` + sess.company + `'`)
+        let getZones = sess.userData
+
+
+        Promise.all([getZones]).then(result => {
+            // console.log(result[0].length, result[0])
+            res.status(200).send(result)
+        })
+
+        // res.status(200).send(undefined)
+
+    } 
+    else {
         res.status(401).send("You are not logged in!")
     }
 
@@ -3945,145 +4332,502 @@ app.get("/api/csv", (req, res) => {
 
 })
 
+app.post('/api/v3/multi-report/hourly', (req, res) => {
+    sess = req.session
+    // if (sess.username) {
+
+    // console.log(req.body)
+
+    function changeTimezone(date, ianatz) {
+
+        // suppose the date is 12:00 UTC
+        var invdate = new Date(date.toLocaleString('en-US', {
+            timeZone: ianatz
+        }));
+
+        // then invdate will be 07:00 in Toronto
+        // and the diff is 5 hours
+        var diff = date.getTime() - invdate.getTime();
+
+        // so 12:00 in Toronto is 17:00 UTC
+        return new Date(date.getTime() - diff); // needs to substract
+
+    }
+
+    // Init vars
+    let today, year, month, hOffset, start, end, customDate = req.body['date[]']
+
+    // Preprocess timestamp
+    // console.log(customDate)
+    start = customDate[0] + ' 00:00:00'
+    end = customDate[1] + ' 23:59:59'
+    // console.log(start,end)
+
+    // Prepare sensor list for Influx query
+    let sensors = ``
+    let listOfSensorsId = req.body['listOfSensorsId[]']
+    let listOfSensorsType = req.body['listOfSensorsType[]']
+    let queryDoor
+    let queryTemperature
+
+    // Build a query for each sensorId of a type
+    let sensorDataBundle = []
+
+    if (typeof listOfSensorsId == 'string') {
+        listOfSensorsId = new Array(listOfSensorsId)
+        listOfSensorsType = new Array(listOfSensorsType)
+    }
+
+    // Get distinct sensorTypes to build different querys
+    let sensorTypes = {
+        isTemperature: false,
+        isDoor: false
+    }
+    let distinctSensorsType = _.sortedUniq(listOfSensorsType)
+    distinctSensorsType.forEach(async (item, index) => {
+
+        // Get sensorIds of current sensorType
+        let sensorIds = listOfSensorsId.filter((id, idx) => {
+            if (listOfSensorsType[idx] == item)
+                return id
+        })
+
+        // Query for DOOR
+        if (item == 'door') {
+
+            console.log(item, sensorIds)
+            sensorTypes.isDoor = true
+
+            // Return how many times a door has been open or closed in an hour
+            let query = "select value from sensors where sensorId =~ /" + sensorIds.join('|') + "/ and time<='" + end + "' and time>='" + start + "' group by sensorId order by time desc"
+
+            // Make the request
+            queryDoor = influxReader(query)
+        } else if (item == 'temperature') { // Query for TEMPERATURE
+
+            console.log(item, sensorIds)
+            sensorTypes.isTemperature = true
+
+            // Return average of temperature for each hour
+            let query = "select mean(value) as value from sensors where sensorId =~ /" + sensorIds.join('|') + "/ and time<='" + end + "' and time>='" + start + "' group by sensorId,time(1h) order by time desc"
+
+            // Make the request
+            queryTemperature = influxReader(query)
+
+        }
+
+    })
+
+    let listOfPromises = []
+    if (sensorTypes.isDoor)
+        listOfPromises.push(queryDoor)
+    if (sensorTypes.isTemperature)
+        listOfPromises.push(queryTemperature)
+
+    Promise.all(listOfPromises).then((results) => {
+
+        // console.log("promise all")
+
+        // console.log(start, end)
+
+        // console.log("Doors:", results[0].groupRows.length)
+
+        // Door results
+        if (sensorTypes.isDoor)
+            results[0].groupRows.forEach((sensor, idx) => {
+
+                // console.log("sensor:", sensor.tags.sensorId)
+                // Process the result
+
+                let oldHour, oldDay, oldMonth, oldYear
+                let hourlyOpenDoor = []
+                let hourlyOpenDoorTimer = 0
+                let dailyOpenDoor = []
+                let dailyOpenDoorBlank = []
+                let dailyOpenDoorTimer = 0
+
+                // Fill hourlyOpenDoor with all hours between start & end
+                // let dayStart = start.split(" ")
+                dayStart = new Date(start); // new Date() creates a date with 2 hours less than inserted
+                dayStart.setTime(dayStart.getTime() - dayStart.getTimezoneOffset() * 60 * 1000); // adjust the date
+                // let dayEnd = end.split(" ")
+                dayEnd = new Date(end); // new Date() creates a date with 2 hours less than inserted
+                dayEnd.setTime(dayEnd.getTime() - dayEnd.getTimezoneOffset() * 60 * 1000); // adjust the date
+
+                console.log(dayStart, dayEnd)
+
+                for (let d = dayStart; d <= dayEnd; d.setHours(d.getHours() + 1)) {
+                    let time = d.toISOString()
+                    // let time = d.toLocaleString()
+                    hourlyOpenDoor.push({ time, value: null, sensorId: null });
+                }
+
+                // console.log(hourlyOpenDoor)
+
+                // Remap the time and values (minutes when door is opened by hour)
+                sensor.rows.forEach((data, index) => {
+
+                    let time = data.time._nanoISO.split("T")[0]
+                    let currentTime = new Date()
+                    let newYear = time.split("-")[0]
+                    let newMonth = time.split("-")[1]
+                    let newDay = time.split("-")[2]
+                    let newHour = data.time._nanoISO.split("T")[1].split(":")[0]
+                    let newState = data.value
+
+                    if (newHour != oldHour) {
+                        if (oldHour != undefined) {
+                            hourlyOpenDoor.push({ time: oldYear + '-' + oldMonth + '-' + oldDay + 'T' + oldHour + ':00:00.000Z', value: Math.round(hourlyOpenDoorTimer * 100) / 100, sensorId: data.sensorId })
+                        }
+                        hourlyOpenDoorTimer = 0
+                        oldHour = newHour
+                    }
+
+                    if (oldDay != newDay) {
+                        oldDay = newDay
+                    }
+
+                    if (newMonth != oldMonth) {
+                        oldMonth = newMonth
+                    }
+
+                    if (newYear != oldYear) {
+                        oldYear = newYear
+                    }
+
+                    if (newState == 0) {
+                        let currentTimeInflux = data.time.getNanoTime()
+                        let previousTime
+                        // try {
+                        previousTime = sensor.rows[index - 1].time.getNanoTime()
+                        // } catch(e) {
+                        //     previousTime = currentTime.getTime() * 1000000
+                        // }
+                        let duration = (previousTime - currentTimeInflux)
+                        let millis = duration / 1000000
+                        let seconds = millis / 1000
+                        let mins = seconds / 60
+                        hourlyOpenDoorTimer += mins
+
+                        // console.log(new Date(previousTime / 1000000), new Date(currentTimeInflux / 1000000), dailyOpenDoorTimer)
+                    }
+
+                    if (index == sensor.rows.length - 1) {
+                        hourlyOpenDoor.push({ time: oldYear + '-' + oldMonth + '-' + oldDay + 'T' + oldHour + ':00:00.000Z', value: Math.round(hourlyOpenDoorTimer * 100) / 100, sensorId: data.sensorId })
+                    }
+
+                });
+
+                hourlyOpenDoor = _.orderBy(hourlyOpenDoor, "value", "asc"); //ordering so not-null values are firsts
+                hourlyOpenDoor = _.uniqBy(hourlyOpenDoor, "time"); //removing duplicates
+                hourlyOpenDoor = _.orderBy(hourlyOpenDoor, "time", "desc"); //ordering by timestamp
+                console.log(hourlyOpenDoor)
+
+                // Replace results into original location
+                sensor.rows = hourlyOpenDoor
+
+            });
+
+        // Return the results
+        // console.log("promises:",listOfPromises)
+        if (listOfPromises.length == 2) // if there are 2 promises - then it is a door and a temperature
+            sensorDataBundle = results[0].groupRows.concat(results[1].groupRows)
+        else // if there is 1 promise - the it is either door or temperature
+            sensorDataBundle = results[0].groupRows
+
+        // sensorDataBundle.push(results[0].groupRows) // door - processed above
+        // sensorDataBundle.push(results[1].groupRows) // temeprature - processend in query
+
+        // If query has been made
+        res.status(200).send(sensorDataBundle);
+
+    })
+})
+
 app.post('/api/v3/multi-report', (req, res) => {
     sess = req.session
     // if (sess.username) {
 
-        console.log(req.body)
+    // console.log(req.body)
 
-        function changeTimezone(date, ianatz) {
+    function changeTimezone(date, ianatz) {
 
-            // suppose the date is 12:00 UTC
-            var invdate = new Date(date.toLocaleString('en-US', {
-                timeZone: ianatz
-            }));
+        // suppose the date is 12:00 UTC
+        var invdate = new Date(date.toLocaleString('en-US', {
+            timeZone: ianatz
+        }));
 
-            // then invdate will be 07:00 in Toronto
-            // and the diff is 5 hours
-            var diff = date.getTime() - invdate.getTime();
+        // then invdate will be 07:00 in Toronto
+        // and the diff is 5 hours
+        var diff = date.getTime() - invdate.getTime();
 
-            // so 12:00 in Toronto is 17:00 UTC
-            return new Date(date.getTime() - diff); // needs to substract
+        // so 12:00 in Toronto is 17:00 UTC
+        return new Date(date.getTime() - diff); // needs to substract
+
+    }
+
+    // Get date custom or predefined
+    let today, year, month, hOffset, start, end, customDate = req.body['date[]']
+
+    if (customDate) { // goes here for custom report
+        start = customDate[0] + ' 00:00:00'
+        end = customDate[1] + ' 23:59:59'
+    } else { // goes here for quick report
+        today = new Date();
+
+        year = today.getFullYear();
+        month = today.getMonth();
+
+        hOffset = 0
+
+        start = new Date(year, month - 1, 1, 0 + hOffset, 0, 0);
+        end = new Date(year, month, 0, 23 + hOffset, 59, 59);
+
+        start = changeTimezone(start, "Europe/Bucharest");
+        end = changeTimezone(end, "Europe/Bucharest");
+
+        start = start.getFullYear() + '-' + (start.getMonth() + 1) + '-' + (start.getDate() < 10 ? '0' + start.getDate() : start.getDate()) + ' ' + '00:00:00'
+        end = end.getFullYear() + '-' + (end.getMonth() + 1) + '-' + (end.getDate() < 10 ? '0' + end.getDate() : end.getDate()) + ' ' + '23:59:59'
+
+        // start = start.replaceAll('/','-').replaceAll(',','').replace('-1 ','-01 ')
+        // end = end.replaceAll('/','-').replaceAll(',','')
+    }
+
+    // Prepare sensor list for Influx query
+    let sensors = ``
+    let listOfSensorsId = req.body['listOfSensorsId[]']
+    let listOfSensorsType = req.body['listOfSensorsType[]']
+    let queryDoor
+    let queryTemperature
+
+    // Build a query for each sensorId of a type
+    let sensorDataBundle = []
+
+    if (typeof listOfSensorsId == 'string') {
+        listOfSensorsId = new Array(listOfSensorsId)
+        listOfSensorsType = new Array(listOfSensorsType)
+    }
+
+    // Get distinct sensorTypes to build different querys
+    let sensorTypes = {
+        isTemperature: false,
+        isDoor: false
+    }
+    let distinctSensorsType = _.sortedUniq(listOfSensorsType)
+    distinctSensorsType.forEach(async (item, index) => {
+
+        // Get sensorIds of current sensorType
+        let sensorIds = listOfSensorsId.filter((id, idx) => {
+            if (listOfSensorsType[idx] == item)
+                return id
+        })
+
+        // Query for DOOR
+        if (item == 'door') {
+
+            console.log(item, sensorIds)
+            sensorTypes.isDoor = true
+
+            // Return how many times a door has been open or closed in an hour
+            let query = "select value from sensors where sensorId =~ /" + sensorIds.join('|') + "/ and time<='" + end + "' and time>='" + start + "' group by sensorId order by time desc"
+
+            // Make the request
+            queryDoor = influxReader(query)
+
+        }
+        else if (item == 'temperature') {
+
+            console.log(item, sensorIds)
+            sensorTypes.isTemperature = true
+
+            // Return average of temperature for each hour
+            let query = "select mean(value) as value from sensors where sensorId =~ /" + sensorIds.join('|') + "/ and time<='" + end + "' and time>='" + start + "' group by sensorId,time(1d) order by time desc"
+
+            // Make the request
+            queryTemperature = influxReader(query)
 
         }
 
-        // Get date custom or predefined
-        let today, year, month, hOffset, start, end, customDate = req.body['date[]']
-        if(customDate) {    
-            start = customDate[0] + ' 00:00:00'
-            end = customDate[1] + ' 23:59:59'
-        } else {
-            today = new Date();
+    })
 
-            year = today.getFullYear();
-            month = today.getMonth();
-    
-            hOffset = 0
-    
-            start = new Date(year, month - 1, 1, 0 + hOffset, 0, 0);
-            end = new Date(year, month, 0, 23 + hOffset, 59, 59);
-    
-            start = changeTimezone(start, "Europe/Bucharest");
-            end = changeTimezone(end, "Europe/Bucharest");
-    
-            // start = start.toLocaleString('ro-RO', {
-            //     hour12: false
-            // })
-            // end = end.toLocaleString('ro-RO', {
-            //     hour12: false
-            // })
-    
-            // console.log(start.toISOString(), start.getMonth(), start.getDate())
-    
-            start = start.getFullYear() + '-' + (start.getMonth() + 1) + '-' + (start.getDate() < 10 ? '0' + start.getDate() : start.getDate()) + ' ' + '00:00:00'
-            end = end.getFullYear() + '-' + (end.getMonth() + 1) + '-' + (end.getDate() < 10 ? '0' + end.getDate() : end.getDate()) + ' ' + '23:59:59'
-    
-            // start = start.replaceAll('/','-').replaceAll(',','').replace('-1 ','-01 ')
-            // end = end.replaceAll('/','-').replaceAll(',','')
-        }
+    let listOfPromises = []
+    if (sensorTypes.isDoor)
+        listOfPromises.push(queryDoor)
+    if (sensorTypes.isTemperature)
+        listOfPromises.push(queryTemperature)
 
-        // Prepare sensor list for Influx query
-        let sensors = ``
-        let listOfSensors = req.body['listOfSensors[]']
+    Promise.all(listOfPromises).then((results) => {
 
-        if(typeof listOfSensors == 'string')
-            listOfSensors = new Array(listOfSensors)
+        // console.log("promise all", sensorTypes)
 
-        listOfSensors.forEach((item, index) => {
-            if (index == 0)
-                sensors += `/`
-            sensors += item
-            if (index != listOfSensors.length - 1)
-                sensors += '|'
-            else if (index == listOfSensors.length - 1)
-                sensors += `/`
-        })
+        // console.log(start, end)
 
-        // Do the query
-        let query = "select mean(value) as value from sensors where sensorId =~ " + sensors + " and time<='" + end + "' and time>='" + start + "' group by sensorId,time(1d) order by time desc"
+        // console.log("Doors:", results[0].groupRows.length)
 
-        influxReader(query).then((resultRaw)=>{
+        // Door results
+        if (sensorTypes.isDoor)
+            results[0].groupRows.forEach((sensor, idx) => {
 
-            let result
-            if(listOfSensors.length > 1)
-                result = resultRaw.groupRows
-            else
-                result = resultRaw               
+                // console.log("sensor:", sensor.tags.sensorId)
+                // Process the result
 
-            res.status(200).send({ start, end, query, result });
-        })
+                let oldHour, oldDay, oldMonth, oldYear
+                let hourlyOpenDoor = []
+                let hourlyOpenDoorTimer = 0
+                let dailyOpenDoor = []
+                let dailyOpenDoorBlank = []
+                let dailyOpenDoorTimer = 0
 
-    // } else {
-    //     res.status(400).send({ error: "You are not logged in" });
-    // }
+                // Fill dailyOpenDoor with all dates between start to end
+                let dayStart = start.split(" ")[0]
+                dayStart = new Date(dayStart);
+                let dayEnd = end.split(" ")[0]
+                dayEnd = new Date(dayEnd);
+
+                for (let d = dayStart; d <= dayEnd; d.setDate(d.getDate() + 1)) {
+                    let time = d.toISOString()
+                    dailyOpenDoor.push({ time, value: null, sensorId: null });
+                }
+
+                // Remap the time and values (minutes when door is opened by hour)
+                sensor.rows.forEach((data, index) => {
+
+                    let time = data.time._nanoISO.split("T")[0]
+                    let currentTime = new Date()
+                    let newYear = time.split("-")[0]
+                    let newMonth = time.split("-")[1]
+                    let newDay = time.split("-")[2]
+                    let newHour = data.time._nanoISO.split("T")[1].split(":")[0]
+                    let newState = data.value
+
+                    if (newHour != oldHour) {
+                        oldHour = newHour
+                    }
+
+                    if (oldDay != newDay) {
+                        if (oldDay != undefined) {
+                            dailyOpenDoor.push({ time: oldYear + '-' + oldMonth + '-' + oldDay + 'T00:00:00.000Z', value: Math.round(dailyOpenDoorTimer * 100) / 100, sensorId: data.sensorId })
+                        }
+                        dailyOpenDoorTimer = 0 // reset timer at each hour
+                        oldDay = newDay
+                    }
+
+                    if (newMonth != oldMonth) {
+                        oldMonth = newMonth
+                    }
+
+                    if (newYear != oldYear) {
+                        oldYear = newYear
+                    }
+
+                    if (newState == 0) {
+                        let currentTimeInflux = data.time.getNanoTime()
+                        let previousTime
+                        // try {
+                        previousTime = sensor.rows[index - 1].time.getNanoTime()
+                        // } catch(e) {
+                        //     previousTime = currentTime.getTime() * 1000000
+                        // }
+                        let duration = (previousTime - currentTimeInflux)
+                        let millis = duration / 1000000
+                        let seconds = millis / 1000
+                        let mins = seconds / 60
+                        dailyOpenDoorTimer += mins
+
+                        // console.log(new Date(previousTime / 1000000), new Date(currentTimeInflux / 1000000), dailyOpenDoorTimer)
+                    }
+
+                    if (index == sensor.rows.length - 1) {
+                        dailyOpenDoor.push({ time: oldYear + '-' + oldMonth + '-' + oldDay + 'T00:00:00.000Z', value: Math.round(dailyOpenDoorTimer * 100) / 100, sensorId: data.sensorId })
+                    }
+
+                });
+
+                dailyOpenDoor = _.orderBy(dailyOpenDoor, "value", "asc"); //ordering so not-null values are firsts
+                dailyOpenDoor = _.uniqBy(dailyOpenDoor, "time"); //removing duplicates
+                dailyOpenDoor = _.orderBy(dailyOpenDoor, "time", "desc"); //ordering by timestamp
+                // console.log(dailyOpenDoor)
+
+                // Replace results into original location
+                sensor.rows = dailyOpenDoor
+
+            });
+
+        // Return the results
+        // console.log("promises:",listOfPromises.length)
+        if (listOfPromises.length == 2) // if there are 2 promises - then it is a door and a temperature
+            sensorDataBundle = results[0].groupRows.concat(results[1].groupRows)
+        else // if there is 1 promise - the it is either door or temperature
+            sensorDataBundle = results[0].groupRows
+
+        // sensorDataBundle.push(results[0].groupRows) // door - processed above
+        // sensorDataBundle.push(results[1].groupRows) // temeprature - processend in query
+
+        // If query has been made
+        res.status(200).send(sensorDataBundle);
+    })
+
+
 })
 
+app.get('/api/v3/query-influx', (req, res) => {
+    sess = req.session
+    influxReader(req.query.query).then(result => {
+        res.status(200).send(result)
+    }).catch(error => {
+        res.status(200).send(error)
+    })
+})
 
 const PORT = process.env.PORT;
 
 var server = app.listen(PORT, console.log(`NodeJS started on port ${PORT}`)).on('error', function (err) {
     console.log(err)
-    // let restart = () => {
-    //     exec('netstat -ltnup | grep 5000', (error, stdout, stderr) => {
-    //         if (error) {
-    //             console.log(`error: ${error.message}`)
-    //             return
-    //         }
-    //         if (stderr) {
-    //             console.log(`stderr: ${stderr}`)
-    //             return
-    //         }
-    //         let pid = parseInt(String(stdout).split('LISTEN')[1].split('/node')[0])
-    //         console.log(`kill ${pid}`)
 
-    //         exec(`kill ${pid}`, (error2, stdout2, stderr2) => {
-    //             if (error2) {
-    //                 console.log(`error2: ${error2.message}`)
-    //                 return
-    //             }
-    //             if (stderr2) {
-    //                 console.log(`stderr2: ${stderr2}`)
-    //                 return
-    //             }
-    //             console.log(`stdout2: ${stdout2}`)
-    //             // exec(`npm run dev`, (error3, stdout3, stderr3) => {
-    //             //     if (error3) {
-    //             //         console.log(`error3: ${error3.message}`)
-    //             //         return
-    //             //     }
-    //             //     if (stderr3) {
-    //             //         console.log(`stderr3: ${stderr3}`)
-    //             //         return
-    //             //     }
-    //             //     console.log(`stdout3: ${stdout3}`)
-
-    //             // })
-    //         })
-
-    //     })
-    // }
-
-    // if (err) {
-    //     restart()
-    // }
+    if (err) {
+        // checkPort()
+        // process.exit();
+        // console.log(`port:`,port)
+        // let kill = killPort(port)
+    }
 });
+
+let checkPort = () => {
+    exec('netstat -ltnup | grep 5000', (error, stdout, stderr) => {
+        if (error) {
+            console.log(`error: ${error.message}`)
+            process.exit(1);
+            return
+        } else if (stderr) {
+            console.log(`stderr: ${stderr}`)
+            process.exit(1);
+            return
+        } else {
+            let pid = parseInt(String(stdout).split('LISTEN')[1].split('/node')[0])
+
+            killPort(pid)
+        }
+
+    })
+}
+
+let killPort = (pid) => {
+
+    exec(`kill ` + pid, (error2, stdout2, stderr2) => {
+        if (error2) {
+            console.log(`error2: ${error2.message}`)
+            process.exit(1);
+            return
+        } else if (stderr2) {
+            console.log(`stderr2: ${stderr2}`)
+            process.exit(1);
+            return
+        } else if (stdout2) {
+            console.log(`stdout2: ${stdout2}`)
+            process.exit(1);
+        } else {
+            console.log("kill " + pid)
+            process.exit(1);
+        }
+    })
+}

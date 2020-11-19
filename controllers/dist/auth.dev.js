@@ -222,7 +222,7 @@ var authRegister = function authRegister(req, res, next) {
 
             console.log(err);
             return _context.abrupt("return", res.render('register', {
-              alert: 'Try again!'
+              alert: 'Try again! (dev: auth.js:217)'
             }));
 
           case 5:
@@ -262,7 +262,7 @@ var authRegister = function authRegister(req, res, next) {
             };
             db.query("INSERT INTO users SET ?", credentials, function (err, result) {
               if (err) return res.render('register', {
-                alert: 'Try again!'
+                alert: 'Try again! (dev: auth.js:242)'
               });else {
                 console.log("New user registration");
                 next();

@@ -3766,7 +3766,6 @@ article[class*=live] {
   -webkit-box-shadow: var(--neuro);
   box-shadow: var(--neuro);
   border-radius: 13px;
-  overflow: hidden;
   min-height: 300px;
   /* Add the blur effect */
   filter: blur(0px);
@@ -3779,7 +3778,7 @@ article[class*=live] {
 article[class*=live].no-power div.card-body:after, article[class*=live].alert-active div.card-body:after, article[class*=live].alarm-active div.card-body:after {
   color: black;
   top: 10px;
-  left: 0%;
+  left: -5px;
   display: block;
   /* width: 100%; */
   transform: translateY(-50%);
@@ -3793,6 +3792,21 @@ article[class*=live].no-power div.card-body:after, article[class*=live].alert-ac
   border-top-right-radius: 13px;
   border-bottom-right-radius: 13px;
 }
+article[class*=live].no-power div.card-body:before, article[class*=live].alert-active div.card-body:before, article[class*=live].alarm-active div.card-body:before {
+  content: "";
+  position: absolute;
+  display: block;
+  /* width: 10px; */
+  /* height: 10px; */
+  /* background: black; */
+  top: -15px;
+  left: -5px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 0px solid transparent;
+  border-bottom: 7px solid black;
+}
 article[class*=live].no-power .currentValue {
   color: var(--gray);
 }
@@ -3801,12 +3815,18 @@ article[class*=live].no-power div.card-body:after {
   background: var(--gray);
   color: #ffffff;
 }
+article[class*=live].no-power div.card-body:before {
+  border-bottom-color: black;
+}
 article[class*=live].alert-active .currentValue {
   color: var(--yellow);
 }
 article[class*=live].alert-active div.card-body:after {
   content: "Near the limits";
   background: var(--yellow);
+}
+article[class*=live].alert-active div.card-body:before {
+  border-bottom-color: #bf9a39;
 }
 article[class*=live].alarm-active .currentValue {
   color: var(--danger);
@@ -3815,6 +3835,9 @@ article[class*=live].alarm-active div.card-body:after {
   content: "Alarm";
   background: var(--danger);
   color: #ffffff;
+}
+article[class*=live].alarm-active div.card-body:before {
+  border-bottom-color: #962732;
 }
 article[class*=live] .card-header.alarm-active {
   background: -webkit-linear-gradient(left, #dc3545 0%, rgba(0, 0, 0, 0) 51%);
@@ -4100,21 +4123,6 @@ span.card-settings-button:hover,
   visibility: visible;
 }
 
-span[class*=AlertGauge] {
-  position: absolute;
-  bottom: 20px;
-}
-
-@media (max-width: 600px) {
-  span[class*=AlertGauge] {
-    bottom: 10px;
-  }
-}
-div[no-value=true] span.minAlertGauge,
-div[no-value=true] span.maxAlertGauge {
-  display: none;
-}
-
 span.currentValue[no-value*=true] {
   font-size: 22px;
   text-align: center;
@@ -4151,18 +4159,26 @@ span.currentValue:after {
     font-size: 10vw;
   }
 }
-span.minAlertGauge {
-  left: 0px;
-  /* -webkit-transform: translateX(-50%); */
-  -ms-transform: translateX(-50%);
-  /* transform: translateX(-50%); */
+article[sensortype] .gauge-container div[no-value=true] span:not(first-child) {
+  display: none;
 }
-
-span.maxAlertGauge {
+article[sensortype] .gauge-container span:not(:first-child) {
+  position: absolute;
+  bottom: 20px;
+}
+@media (max-width: 600px) {
+  article[sensortype] .gauge-container span:not(:first-child) {
+    bottom: 10px;
+  }
+}
+article[sensortype] .gauge-container span:nth-child(2) {
+  left: 0px;
+}
+article[sensortype] .gauge-container span:nth-child(3) {
   right: 0px;
-  /* -webkit-transform: translateX(-50%); */
-  -ms-transform: translateX(-50%);
-  /* transform: translateX(-50%); */
+}
+article[sensortype] .gauge-container span.noAlertGauge {
+  color: #8080804f;
 }
 
 article[sensortype=temperature] .currentValue:after,
@@ -4181,8 +4197,30 @@ article[sensortype=voltage] .maxAlertGauge:not(.noAlertGauge):after {
   content: " V";
   /* font-size: 12px; */
 }
-article[sensortype=voltage] span.noAlertGauge {
-  color: #8080804f;
+
+article[sensortype=door] span.doorState i {
+  font-size: 62px;
+  left: 50%;
+  top: calc(50% - 10px);
+  position: relative;
+  color: black;
+  transform: translate(-50%, -50%);
+  display: none;
+  text-align: center;
+}
+article[sensortype=door] span.doorState[state*=unknown] i[class*=closed] {
+  display: block;
+  color: #80808061;
+}
+article[sensortype=door] span.doorState[state*=open] i[class*=open] {
+  display: block;
+}
+article[sensortype=door] span.doorState[state*=closed] i[class*=closed] {
+  display: block;
+}
+article[sensortype=door] .openTimer:not(.noAlertGauge):after,
+article[sensortype=door] .closedTimer:not(.noAlertGauge):after {
+  content: "s";
 }
 
 .blur0 {
@@ -4197,6 +4235,9 @@ article[sensortype=voltage] span.noAlertGauge {
   /* Add the blur effect */
   filter: blur(8px) !important;
   -webkit-filter: blur(8px) !important;
+}
+.blur8 p, .blur8 i, .blur8 span {
+  color: gray !important;
 }
 
 .blur4 {
@@ -6153,7 +6194,8 @@ label.switch-label:active:after {
 .settings-container .inner-settings .top-container {
   padding: 0.75rem 0.75rem 0 0.75rem;
 }
-.settings-container .inner-settings .mid-container td, .settings-container .inner-settings .mid-container th {
+.settings-container .inner-settings .mid-container td,
+.settings-container .inner-settings .mid-container th {
   padding: 0.45rem 0.75rem;
 }
 .settings-container .inner-settings .mid-container > *:not(.table) {
@@ -6178,9 +6220,6 @@ label.switch-label:active:after {
 .settings-container .inner-settings .lower-container .btn {
   margin: 0;
 }
-.settings-container .zone-settings span {
-  padding: 0px 10px;
-}
 .settings-container .zone-settings span:hover {
   cursor: pointer;
 }
@@ -6192,9 +6231,6 @@ label.switch-label:active:after {
 }
 .settings-container .zone-settings span.edit-zone i:hover {
   color: var(--yellow);
-}
-.settings-container .admin-settings span {
-  padding: 0px 10px;
 }
 .settings-container .admin-settings span:hover {
   cursor: pointer;
@@ -6208,7 +6244,8 @@ label.switch-label:active:after {
 .settings-container .admin-settings span.remove-user i:hover {
   color: var(--danger);
 }
-.settings-container .report-settings td, .settings-container .report-settings th {
+.settings-container .report-settings td,
+.settings-container .report-settings th {
   padding: 0.1rem 0.75rem !important;
 }
 .settings-container .input-invalid.form-control {

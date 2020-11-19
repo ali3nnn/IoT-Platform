@@ -16,7 +16,7 @@ function showNotification(message) {
 
 
 var searchObj = (0, _utils.searchToObj)(window.location.search);
-var splash = "<div class='splash-inner'>\n\n<div class='ol-option'>\n  <h4>World map</h4>\n  <button type=\"button\" class='map-picker map-picker-ol'>I want this map</button>\n  <div class='ol-map'>\n    <img src='../images/ol.jpeg' />\n    <background></background>\n  </div>\n</div>\n<div class='path-option'>\n    <h4>Custom Map</h4>\n    <button type=\"button\" class='map-picker map-picker-custom'>I want my custom map</button>\n    <div class='path-map'>\n      <img src='../images/custom.jpeg' />\n      <background></background>\n    </div>\n</div>\n\n</div>"; // let imageUploader = (id, href) => `<div class='uploadOutter'><div class="uploadWrapper">
+var splash = "<div class='splash-inner'>\n\n<div class='ol-option'>\n  <h4>World map</h4>\n  <button type=\"button\" class='map-picker map-picker-ol' disabled>I want this map</button>\n  <div class='ol-map'>\n    <img src='../images/ol.jpeg' />\n    <background></background>\n  </div>\n</div>\n<div class='path-option'>\n    <h4>Custom Map</h4>\n    <button type=\"button\" class='map-picker map-picker-custom'>I want my custom map</button>\n    <div class='path-map'>\n      <img src='../images/custom.jpeg' />\n      <background></background>\n    </div>\n</div>\n\n</div>"; // let imageUploader = (id, href) => `<div class='uploadOutter'><div class="uploadWrapper">
 // <form id="imageUploadForm" enctype="multipart/form-data" class="imageUploadForm" action="/api/v2/upload-image" method="post">
 //   <span class="helpText" id="helpText">Upload an image</span>
 //   <input id="file" name="map" type="file" class="uploadButton" />
@@ -150,7 +150,7 @@ if ($("#map .custom-map")) {
     try {
       for (var _iterator = sensorList[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
         var sensor = _step.value;
-        sensorToDisplay += "<span class='sensor-item' type=\"" + sensor.sensorType + "\" sensor='" + sensor.sensorId + "'><i class=\"fad fa-signal-stream\"></i><span class='sensorName'>" + sensor.sensorName + "</span><span class='sensorValue'>@val</span></span>";
+        sensorToDisplay += "<span class='sensor-item' type=\"" + sensor.sensorType + "\" sensor='" + sensor.sensorId + "'><i class=\"fad fa-signal-stream\"></i><span class='sensorName'>" + sensor.sensorName + "</span><span class='sensorValue'></span></span>";
       }
     } catch (err) {
       _didIteratorError = true;
@@ -204,7 +204,7 @@ if ($("#map .custom-map")) {
                   var sensorElement = e.target.parentElement;
                   var sensorId = sensorElement.getAttribute("sensor");
                   var sensorName = $(sensorElement).children(".sensorName")[0].innerText;
-                  $(".custom-map").append("\n                  <div sensor=\"" + sensorId + "\" class=\"sensor-item draggable ui-widget-content\" data-toggle=\"tooltip\" data-placement=\"top\"  title=\"" + sensorId + "\">\n                    <i class=\"fad fa-signal-stream\"></i>\n                    <span class='sensorName'>" + sensorName + "</span>\n                    <span class='sensorValue'>@val</span>\n                  </div>");
+                  $(".custom-map").append("\n                  <div sensor=\"" + sensorId + "\" class=\"sensor-item draggable ui-widget-content\" data-toggle=\"tooltip\" data-placement=\"top\"  title=\"" + sensorId + "\">\n                    <i class=\"fad fa-signal-stream\"></i>\n                    <span class='sensorName'>" + sensorName + "</span>\n                    <span class='sensorValue'></span>\n                  </div>");
                   $(".draggable[sensor='" + sensorId + "']").draggable({
                     grid: [1, 1],
                     create: function create(event, ui) {
@@ -237,7 +237,7 @@ if ($("#map .custom-map")) {
                 left: parseInt(sensor.x)
               }; // Sensor on map
 
-              $(".custom-map").append("\n            <div sensor=\"" + sensor.sensorId + "\" type=\"" + sensor.sensorType + "\" class=\"sensor-item draggable ui-widget-content\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"" + sensor.sensorId + "\">\n              <i class=\"fad fa-signal-stream\"></i>\n              <span class='sensorName'>" + sensor.sensorName + "</span>\n              <span class='sensorValue'>@val</span>\n            </div>"); // Make sensor on map draggable
+              $(".custom-map").append("\n            <div sensor=\"" + sensor.sensorId + "\" type=\"" + sensor.sensorType + "\" class=\"sensor-item draggable ui-widget-content\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"" + sensor.sensorId + "\">\n              <i class=\"fad fa-signal-stream\"></i>\n              <span class='sensorName'>" + sensor.sensorName + "</span>\n              <span class='sensorValue'></span>\n            </div>"); // Make sensor on map draggable
 
               $(".draggable[sensor='" + sensor.sensorId + "']").draggable({
                 grid: [1, 1],
