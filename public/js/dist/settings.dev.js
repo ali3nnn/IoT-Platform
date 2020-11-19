@@ -10,7 +10,7 @@ var fetchAdmins = function fetchAdmins() {
       switch (_context.prev = _context.next) {
         case 0:
           response = fetch('/api/get-team').then(function (result) {
-            if (result.status == 401) {
+            if (result.status != 200) {
               // user is not superadmin
               $(".admin-settings").remove();
             } else if (result.status == 200) {
@@ -157,40 +157,7 @@ var zoneModal = function zoneModal(id, zoneid, location1, location2, location3, 
 
   var usersUnchecked = [];
   var usersChecked = [];
-  var userBuffer = []; // Build Checkboxes w/ username
-  // listOfUsers
-  // listOfZoneAccess   
-  // console.log(listOfZoneAccess)
-  // console.log(listOfUsers)
-  // userData_raw - returns a list of unique sensors with data associated with it (location, users)
-  // listOfZoneAccess (/api/get-zones) - returns a list of locations and users associated with that location
-  // WARNING: users that have access to a sensor in a zone, are displayed as having access to all the sensor in zone   
-  // if (!userData_raw.error) {
-  // console.log(listOfZoneAccess, listOfUsers)
-  // console.log(listOfZoneAccess[0].usersList)
-  // if (listOfZoneAccess[0].usersList) {
-  //     let usersMergedRaw = getValuesFromObject('usersList', listOfZoneAccess)
-  //     let usersMerged = []
-  //     // console.log(listOfZoneAccess, usersMergedRaw)
-  //     usersMergedRaw.map((item, index) => {
-  //         let users = item.split(',')
-  //         users.forEach((user, idx) => {
-  //             if (usersMerged.indexOf(user) == -1) {
-  //                 usersMerged.push(user)
-  //             }
-  //         })
-  //     })
-  // }
-  // console.log(listOfZoneAccess)
-  // if (listOfZoneAccess[0].length == 0) {
-  //     // No user assigned to zone
-  //     // Append all users w/o checked attribute
-  //     listOfUsers.forEach((user, index) => {
-  //         if (index != 0) { // index != 0 because i dont want to show superadmin of this company
-  //             checkboxes += checkboxesTemplate('username' + index, user, '')
-  //         }
-  //     })
-  // } else {
+  var userBuffer = []; // } else {
   // There are some users for some zones
 
   listOfZoneAccess[1].forEach(function (location, index) {
@@ -226,35 +193,6 @@ var zoneModal = function zoneModal(id, zoneid, location1, location2, location3, 
       }
     }
   }); // }
-  // console.log("usersMerged",usersMerged)
-  // if (listOfZoneAccess) {
-  //     listOfZoneAccess.forEach((location, index) => {
-  //         if (location.zoneId == zoneid) {
-  //             let userAssignated
-  //             try {
-  //                 userAssignated = location.usersList.split(',')
-  //             } catch {
-  //                 userAssignated = []
-  //             }
-  //             userAssignated = new Set(userAssignated)
-  //             // console.log(userAssignated, listOfUsers)
-  //             listOfUsers.forEach((user, index) => {
-  //                 if (index != 0) { // index != 0 because i dont want to show superadmin of this company
-  //                     if (userAssignated.has(user)) {
-  //                         checkboxes += checkboxesTemplate('username' + index, user, 'checked')
-  //                     } else {
-  //                         checkboxes += checkboxesTemplate('username' + index, user, '')
-  //                     }
-  //                 }
-  //             })
-  //         }
-  //     })
-  // } else {
-  //     listOfUsers.forEach((user, index) => {
-  //         if (index != 0)
-  //             checkboxes += checkboxesTemplate('username' + index, user, '')
-  //     })
-  // }
   // Modal Template
 
   return "<div class='zone-modal' modalid='" + id + "'>\n            <div class=\"modal modal-zone\" id=\"edit-zone-modal-" + id + "\" aria-labelledby=\"edit-zone-label\"\n                aria-hidden=\"true\" tabindex=\"-1\" role=\"dialog\">\n                <div class=\"modal-dialog fadeInModal modal-dialog-centered\" role=\"document\">\n                    <div class=\"modal-content\">\n\n                        <div class=\"modal-header\">\n                            <h5 class=\"modal-title\" id='edit-zone-label'>Edit zone</h5>\n                            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\">\n                                <span aria-hidden=\"true\">&times;</span>\n                            </button>\n                        </div>\n\n                        <div class=\"modal-body\">\n                            <form enctype=\"multipart/form-data\" action='/api/edit-zone' method='POST' id=\"form-edit-zone-" + id + "\">  \n                            \n                                <div class=\"form-group\">\n                                    <input type=\"text\" class=\"form-control\" id=\"zoneid\" name=\"zoneid\" readonly value=\"" + zoneid + "\">\n                                </div>\n\n                                <div class=\"form-group\">\n                                    <input type=\"text\" class=\"form-control\" id=\"location1\" name=\"location1\" readonly value=\"" + location1 + "\">\n                                </div>\n\n                                <div class=\"form-group\">\n                                    <input type=\"email\" class=\"form-control\" id=\"location2\" name=\"location2\" readonly value=\"" + location2 + "\">\n                                </div>\n\n                                <div class=\"form-group\">\n                                    <input type=\"text\" class=\"form-control\" id=\"location3\" name=\"location3\" readonly value=\"" + location3 + "\">\n                                </div>\n\n                                <div class=\"form-group\">\n                                    <input type=\"radio\" " + custommap + " name=\"map\" value=\"" + function () {
@@ -265,12 +203,6 @@ var zoneModal = function zoneModal(id, zoneid, location1, location2, location3, 
     return olmap ? 'disabled' : '';
   }() + " name=\"mapimage\" type=\"file\">\n                                </div>\n\n                                <div class=\"form-group form-checkboxes\">\n                                    " + checkboxes + "\n                                </div>\n\n                            </form>\n                        </div>\n\n                        <div class=\"modal-footer\">\n                            <button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\"\n                                aria-label=\"Close\">Close</button>\n                            <button type=\"submit\" value=\"submit\" form=\"form-edit-zone-" + id + "\"\n                                class=\"btn btn-primary\">Save</button>\n                        </div>\n\n                    </div>\n                </div>\n            </div>\n            </div>";
 }; // END ZONE MODAL
-// console.log(userData_raw)
-// let zonesOfCompany = getDistinctValuesFromObject('zoneId', userData_raw)
-// console.log(zonesOfCompany)
-// [ ] TODO: get all locations created by a company
-// [ ] TODO: list all locations and display them
-// [ ] TODO: further checks...
 // Append zone list
 
 
@@ -279,7 +211,14 @@ var zonesRaw;
 var userDataBuffer; // fetchAdminsPromise.then(() => {
 
 fetchZones().then(function (result) {
-  // console.log(result[0][0], result[0][0].hasOwnProperty('role'))
+  // console.log(result)
+  // Get company of user when role=='admin' otherwise it will be set in fetchAdminsPromise
+  if (company.length == 0) {
+    company = result[0][0].company;
+    $(".top-container span b").html(company);
+  } // console.log(result[0][0], result[0][0].hasOwnProperty('role'))
+
+
   var userRole = {
     superadmin: false,
     admin: false

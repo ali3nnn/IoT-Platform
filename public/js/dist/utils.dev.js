@@ -25,7 +25,16 @@ exports.downloadCSVMulti = downloadCSVMulti;
 exports.getMultiReport = getMultiReport;
 exports.getDaysInMonth = getDaysInMonth;
 exports.getKeyByValue = getKeyByValue;
+exports.arrayToJson = arrayToJson;
 exports.getConveyorStatus = exports.insertStatus = exports.monthChanger = exports.timeoutAsync = exports._ = void 0;
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -825,4 +834,10 @@ function getKeyByValue(value, object) {
   return Object.keys(object).find(function (key) {
     return object[key] === value;
   });
+}
+
+function arrayToJson(keys, values) {
+  return Object.assign.apply(Object, [{}].concat(_toConsumableArray(keys.map(function (n, index) {
+    return _defineProperty({}, n, values[index]);
+  }))));
 }

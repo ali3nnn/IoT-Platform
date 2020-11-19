@@ -1239,6 +1239,17 @@ app.get("/cdn", (req, res) => {
 app.get('/api/v3/get-interval', async (req, res) => {
     sess = req.session
 
+    let sensorId = req.query.sensorId
+    let sensorType
+
+    // if(sess.userData != undefined)
+    //     sess.userData.map(item => {
+    //         if(item.sensorId == sensorId) 
+    //             sensorType = item.sensorType
+    //     })
+
+    // console.log(sensorId, sensorType)
+
     let start = new Date(req.query.start)
     let end = new Date(req.query.end)
     let diffRaw = end - start
@@ -1262,8 +1273,12 @@ app.get('/api/v3/get-interval', async (req, res) => {
     req.query.end = req.query.end.replace("T", " ")
     req.query.end = req.query.end.replace(".000000000Z", "")
 
-    let query = "select mean(value) as value from sensors where sensorId='" + req.query.sensorId + "' and time<='" + req.query.end + "' and time>='" + req.query.start + "' group by time(" + averageTimeInterval(diff) + ") order by time desc"
-
+    let query
+    // if(sensorType=='door') {
+    //     query = influxQuery = "SELECT value FROM sensors where sensorId='" + sensorId + "' and time>='" + req.query.start + "' and time<="+req.query.end+" order by time desc;"
+    // } else if (sensorType=='temperature') {
+        query = "select mean(value) as value from sensors where sensorId='" + sensorId + "' and time<='" + req.query.end + "' and time>='" + req.query.start + "' group by time(" + averageTimeInterval(diff) + ") order by time desc"
+    // }
     // console.log(query)
 
     if (sess.username) {
@@ -2927,7 +2942,6 @@ app.get('/api/v2/sensors-alert', async (req, res) => {
 
 // [ ] TODO: store sensors in database
 let sensorIncrement = 1
-
 app.get('/api/sensor-config', (req, res) => {
 
     function pad(n, width, z) {
@@ -3388,7 +3402,7 @@ app.post('/api/create-admin', (req, res) => {
 })
 
 // Get distinct locations for sensors that belong to company of superadmin
-app.get('/api/get-zones', function (req, res) {
+app.get('/api/get-zones', (req, res) => {
     sess = req.session;
     // console.log(sess.userData)
     if (sess.role == "superadmin") {
@@ -3440,8 +3454,8 @@ app.get('/api/get-zones', function (req, res) {
 
 })
 
-// Route active
-app.post('/api/edit-zone', async (req, res) => {
+// Route active for settings page - edit zone form
+app.post('/api/edit-zone', authDashboard, async (req, res) => {
 
     sess = req.session
 
@@ -3467,21 +3481,11 @@ app.post('/api/edit-zone', async (req, res) => {
         })
 
         // Drop all access for sensors in this zone
-        // console.log("DROP ACCESS FOR: ", finalSensorList)
-        let dropUserAccess = await mysqlReader("delete from userAccess where sensorId IN (" + finalSensorList + ")")
-
-        // Grant superamdin access
-        // let valuesToInsertForSuperAdmin = () => {
-        //     let returnRaw = ``
-        //     getSensorList[0].sensorId.split(',').forEach((item, index) => {
-        //         returnRaw += `('` + item + `','alex.barbu')`
-        //         if (index != getSensorList[0].sensorId.split(',').length - 1)
-        //             returnRaw += ','
-        //     })
-        //     return returnRaw
-        // }
-        // console.log("GRANT SUPER ADMIN: ", valuesToInsertForSuperAdmin())
-        // let grantSuperAdminAccess = await mysqlReader("insert into userAccess (sensorId, username) VALUES " + valuesToInsertForSuperAdmin())
+        let dropUserAccess
+        if(sess.role=='superadmin')
+            dropUserAccess = await mysqlReader("delete from userAccess where sensorId IN (" + finalSensorList + ")")
+        else if(sess.role=='admin')
+            dropUserAccess = true
 
         // Get user list
         let userListFinal = []
@@ -3507,7 +3511,11 @@ app.post('/api/edit-zone', async (req, res) => {
         let grantUserAccess
         if (valuesToInsert()) {
             // console.log("GRANT ADMIN FOR:", valuesToInsert())
-            grantUserAccess = await mysqlReader("insert into userAccess (sensorId, username) VALUES " + valuesToInsert())
+            let grantUserAccess
+            if(sess.role=='superadmin')
+                grantUserAccess = await mysqlReader("insert into userAccess (sensorId, username) VALUES " + valuesToInsert())
+            else if(sess.role=='admin')
+                grantUserAccess = true
         } else {
             grantUserAccess = true
         }

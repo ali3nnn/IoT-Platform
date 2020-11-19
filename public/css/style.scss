@@ -3866,9 +3866,37 @@ article[class*="live"] {
   transition: all 0.5s ease;
   border: 0;
 
-  // Alerts Style
+  // Sensor alerts on live box
+  .gauge-container {
+    div[no-value="true"] span:not(first-child) {
+      display: none;
+    }
+    span:not(:first-child) {
+      position: absolute;
+      bottom: 20px;
+    }
+    @media (max-width: 600px) {
+      span:not(:first-child) {
+        bottom: 10px;
+      }
+    }
 
-  // No power
+    span:nth-child(2) {
+      left: 0px;
+    }
+
+    span:nth-child(3) {
+      right: 0px;
+    }
+
+    // When no alerts are setted
+    span.noAlertGauge {
+      color: #8080804f;
+    }
+  }
+  // End sensor alerts on live box
+
+  // Alerts Style
   &.no-power,
   &.alert-active,
   &.alarm-active {
@@ -3973,6 +4001,7 @@ article[class*="live"] {
       background: linear-gradient(to right, var(--yellow) 0%, rgb(0, 0, 0, 0) 70%);
     }
   }
+  
 }
 
 .tab-content {
@@ -4287,40 +4316,6 @@ span.currentValue:after {
   }
 }
 
-article[sensortype] {
-  // Sensor alerts on live box
-
-  .gauge-container {
-    div[no-value="true"] span:not(first-child) {
-      display: none;
-    }
-    span:not(:first-child) {
-      position: absolute;
-      bottom: 20px;
-    }
-    @media (max-width: 600px) {
-      span:not(:first-child) {
-        bottom: 10px;
-      }
-    }
-
-    span:nth-child(2) {
-      left: 0px;
-    }
-
-    span:nth-child(3) {
-      right: 0px;
-    }
-
-    // When no alerts are setted
-    span.noAlertGauge {
-      color: #8080804f;
-    }
-  }
-
-  // End sensor alerts on live box
-}
-
 // Unit Measure
 article[sensortype="temperature"] {
   .currentValue:after,
@@ -4345,6 +4340,12 @@ article[sensortype="voltage"] {
 }
 
 article[sensortype="door"] {
+
+  // Remove calendar icon on graph
+  #reportrange {
+    display:none
+  }
+
   span.doorState {
     i {
       font-size: 62px;

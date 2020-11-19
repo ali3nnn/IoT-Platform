@@ -788,3 +788,7 @@ export function getDaysInMonth(month, year) {
 export function getKeyByValue(value, object) {
     return Object.keys(object).find(key => object[key] === value);
 }
+
+export function arrayToJson(keys, values) {
+    return Object.assign({}, ...keys.map((n, index) => ({ [n]: values[index] })))
+}

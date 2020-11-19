@@ -24,7 +24,7 @@ import {
 // Fetch
 let fetchAdmins = async () => {
     let response = fetch('/api/get-team').then(result => {
-        if (result.status == 401) { // user is not superadmin
+        if (result.status != 200) { // user is not superadmin
             $(".admin-settings").remove()
         } else if (result.status == 200) {
             return result.json()
@@ -165,49 +165,6 @@ let zoneModal = (id, zoneid, location1, location2, location3, custommap, olmap, 
     let usersChecked = []
     let userBuffer = []
 
-    // Build Checkboxes w/ username
-    // listOfUsers
-    // listOfZoneAccess   
-
-    // console.log(listOfZoneAccess)
-    // console.log(listOfUsers)
-
-    // userData_raw - returns a list of unique sensors with data associated with it (location, users)
-    // listOfZoneAccess (/api/get-zones) - returns a list of locations and users associated with that location
-
-    // WARNING: users that have access to a sensor in a zone, are displayed as having access to all the sensor in zone   
-
-    // if (!userData_raw.error) {
-    // console.log(listOfZoneAccess, listOfUsers)
-    // console.log(listOfZoneAccess[0].usersList)
-
-    // if (listOfZoneAccess[0].usersList) {
-    //     let usersMergedRaw = getValuesFromObject('usersList', listOfZoneAccess)
-    //     let usersMerged = []
-
-    //     // console.log(listOfZoneAccess, usersMergedRaw)
-
-    //     usersMergedRaw.map((item, index) => {
-    //         let users = item.split(',')
-    //         users.forEach((user, idx) => {
-    //             if (usersMerged.indexOf(user) == -1) {
-    //                 usersMerged.push(user)
-    //             }
-    //         })
-    //     })
-    // }
-
-    // console.log(listOfZoneAccess)
-
-    // if (listOfZoneAccess[0].length == 0) {
-    //     // No user assigned to zone
-    //     // Append all users w/o checked attribute
-
-    //     listOfUsers.forEach((user, index) => {
-    //         if (index != 0) { // index != 0 because i dont want to show superadmin of this company
-    //             checkboxes += checkboxesTemplate('username' + index, user, '')
-    //         }
-    //     })
 
     // } else {
     // There are some users for some zones
@@ -250,40 +207,6 @@ let zoneModal = (id, zoneid, location1, location2, location3, custommap, olmap, 
 
         }
     })
-    // }
-
-    // console.log("usersMerged",usersMerged)
-
-    // if (listOfZoneAccess) {
-    //     listOfZoneAccess.forEach((location, index) => {
-    //         if (location.zoneId == zoneid) {
-
-    //             let userAssignated
-    //             try {
-    //                 userAssignated = location.usersList.split(',')
-    //             } catch {
-    //                 userAssignated = []
-    //             }
-    //             userAssignated = new Set(userAssignated)
-    //             // console.log(userAssignated, listOfUsers)
-
-    //             listOfUsers.forEach((user, index) => {
-    //                 if (index != 0) { // index != 0 because i dont want to show superadmin of this company
-    //                     if (userAssignated.has(user)) {
-    //                         checkboxes += checkboxesTemplate('username' + index, user, 'checked')
-    //                     } else {
-    //                         checkboxes += checkboxesTemplate('username' + index, user, '')
-    //                     }
-    //                 }
-    //             })
-
-    //         }
-    //     })
-    // } else {
-    //     listOfUsers.forEach((user, index) => {
-    //         if (index != 0)
-    //             checkboxes += checkboxesTemplate('username' + index, user, '')
-    //     })
     // }
 
     // Modal Template
@@ -348,20 +271,20 @@ let zoneModal = (id, zoneid, location1, location2, location3, custommap, olmap, 
             </div>`
 } // END ZONE MODAL
 
-// console.log(userData_raw)
-// let zonesOfCompany = getDistinctValuesFromObject('zoneId', userData_raw)
-// console.log(zonesOfCompany)
-
-// [ ] TODO: get all locations created by a company
-// [ ] TODO: list all locations and display them
-// [ ] TODO: further checks...
-
 // Append zone list
 let zonesAndUserList
 let zonesRaw
 let userDataBuffer
 // fetchAdminsPromise.then(() => {
 fetchZones().then((result) => {
+
+    // console.log(result)
+
+    // Get company of user when role=='admin' otherwise it will be set in fetchAdminsPromise
+    if(company.length == 0) {
+        company = result[0][0].company
+        $(".top-container span b").html(company)
+    }
 
     // console.log(result[0][0], result[0][0].hasOwnProperty('role'))
     let userRole = {

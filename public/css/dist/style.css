@@ -3775,6 +3775,27 @@ article[class*=live] {
   transition: all 0.5s ease;
   border: 0;
 }
+article[class*=live] .gauge-container div[no-value=true] span:not(first-child) {
+  display: none;
+}
+article[class*=live] .gauge-container span:not(:first-child) {
+  position: absolute;
+  bottom: 20px;
+}
+@media (max-width: 600px) {
+  article[class*=live] .gauge-container span:not(:first-child) {
+    bottom: 10px;
+  }
+}
+article[class*=live] .gauge-container span:nth-child(2) {
+  left: 0px;
+}
+article[class*=live] .gauge-container span:nth-child(3) {
+  right: 0px;
+}
+article[class*=live] .gauge-container span.noAlertGauge {
+  color: #8080804f;
+}
 article[class*=live].no-power div.card-body:after, article[class*=live].alert-active div.card-body:after, article[class*=live].alarm-active div.card-body:after {
   color: black;
   top: 10px;
@@ -4159,28 +4180,6 @@ span.currentValue:after {
     font-size: 10vw;
   }
 }
-article[sensortype] .gauge-container div[no-value=true] span:not(first-child) {
-  display: none;
-}
-article[sensortype] .gauge-container span:not(:first-child) {
-  position: absolute;
-  bottom: 20px;
-}
-@media (max-width: 600px) {
-  article[sensortype] .gauge-container span:not(:first-child) {
-    bottom: 10px;
-  }
-}
-article[sensortype] .gauge-container span:nth-child(2) {
-  left: 0px;
-}
-article[sensortype] .gauge-container span:nth-child(3) {
-  right: 0px;
-}
-article[sensortype] .gauge-container span.noAlertGauge {
-  color: #8080804f;
-}
-
 article[sensortype=temperature] .currentValue:after,
 article[sensortype=temperature] .minAlertGauge:not(.noAlertGauge):after,
 article[sensortype=temperature] .maxAlertGauge:not(.noAlertGauge):after {
@@ -4198,6 +4197,9 @@ article[sensortype=voltage] .maxAlertGauge:not(.noAlertGauge):after {
   /* font-size: 12px; */
 }
 
+article[sensortype=door] #reportrange {
+  display: none;
+}
 article[sensortype=door] span.doorState i {
   font-size: 62px;
   left: 50%;

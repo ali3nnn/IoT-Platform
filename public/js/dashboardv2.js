@@ -550,17 +550,17 @@ function plotData(sensorId, source = 'attr') {
 
                     // Set color of bars depeding of min and max
                     if (isTemperature(sensorId)) {
-                        threshold_min = hasMin(sensorId) ? hasMin(sensorId) : null
-                        threshold_max = hasMax(sensorId) ? hasMax(sensorId) : null
+                        // threshold_min = hasMin(sensorId) ? hasMin(sensorId) : null
+                        // threshold_max = hasMax(sensorId) ? hasMax(sensorId) : null
 
-                        if (threshold_min && threshold_min)
-                            for (var i = 0; i < dataset.data.length; i++) {
-                                if (dataset.data[i] < threshold_min || dataset.data[i] > threshold_max) {
-                                    // dataset.backgroundColor[i] = chartColors.red5;
-                                    // dataset.borderColor[i] = chartColors.red5;
-                                    dataset.pointBackgroundColor[i] = chartColors.red2;
-                                }
-                            }
+                        // if (threshold_min && threshold_min)
+                        //     for (var i = 0; i < dataset.data.length; i++) {
+                        //         if (dataset.data[i] < threshold_min || dataset.data[i] > threshold_max) {
+                        //             // dataset.backgroundColor[i] = chartColors.red5;
+                        //             // dataset.borderColor[i] = chartColors.red5;
+                        //             dataset.pointBackgroundColor[i] = chartColors.red2;
+                        //         }
+                        //     }
 
                     } else { //if not temperature sensor
                         for (var i = 0; i < dataset.data.length; i++) {
