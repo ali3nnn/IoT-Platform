@@ -26,9 +26,15 @@ var getSensorData = function getSensorData(id, type) {
 }; // console.log(userData_raw)
 
 
+function updateDataForChart(sensor) {
+  var sensorData = JSON.stringify(sensor.sensorData);
+  $("article.graph-" + sensor.sensorMeta.sensorId).attr("sensorData", sensorData);
+}
+
 function defaultSensorView(sensor) {
   // sensorId = String(sensorId)
-  var sensorData = JSON.stringify(sensor.sensorData); // Sensor state 0/1/2/3
+  var sensorData = JSON.stringify(sensor.sensorData); // console.log(sensor.sensorMeta.sensorId,sensor.sensorMeta.alerts)
+  // Sensor state 0/1/2/3
 
   var alertClass = '';
   var alertClass2 = '';
@@ -46,7 +52,7 @@ function defaultSensorView(sensor) {
     return ![null, 'NaN', undefined, ''].includes(sensor.sensorMeta.min) ? '<span class=\'minAlertGauge\' value=\' ' + sensor.sensorMeta.min + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>min: ' + sensor.sensorMeta.min + '</span> ' : '<span class=\'minAlertGauge noAlertGauge\' value=\' ' + sensor.sensorMeta.min + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>No min alert</span> ';
   }() + "\n                    " + function () {
     return ![null, 'NaN', undefined, ''].includes(sensor.sensorMeta.max) ? '<span class=\'maxAlertGauge\' value=\' ' + sensor.sensorMeta.max + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>max: ' + sensor.sensorMeta.max + '</span> ' : '<span class=\'maxAlertGauge noAlertGauge\' value=\' ' + sensor.sensorMeta.max + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>No max alert</span> ';
-  }() + "\n                </div>\n                <p class='update-time-gauge'>Waiting to be updated...</p>\n            </div>\n        </div>\n\n        <div class='card-alerts-settings alert-" + sensor.sensorMeta.sensorId + "'>\n            <span class='card-settings-button-alert tooltip_test'>\n                <i class=\"fas fa-bell\"></i>\n                <span class=\"tooltiptext\">New feature is coming!</span>\n            </span>\n            <span class='card-settings-button-update tooltip_test'>\n                <i class=\"fas fa-save\"></i>\n                <span class=\"tooltiptext\">By clicking you will update alerts and location!</span>\n            </span>\n            <span class='card-settings-button-inner'>\n                <i class=\"far fa-sliders-h\"></i>\n            </span>\n            <div class='settings-wrapper'>\n                <div class=\"slidecontainer\">\n\n                    <p class='label-input'>Min: </p>\n                    <input type=\"number\" name=\"minAlert\" " + function () {
+  }() + "\n                </div>\n                <p class='update-time-gauge'><span class=\"not-live pulse\"></span><span class=\"time\">Waiting to be updated...</span></p>\n            </div>\n        </div>\n\n        <div class='card-alerts-settings alert-" + sensor.sensorMeta.sensorId + "'>\n            <span class='card-settings-button-alert tooltip_test'>\n                <i class=\"fas fa-bell\"></i>\n                <span class=\"tooltiptext\">New feature is coming!</span>\n            </span>\n            <span class='card-settings-button-update tooltip_test'>\n                <i class=\"fas fa-save\"></i>\n                <span class=\"tooltiptext\">By clicking you will update alerts and location!</span>\n            </span>\n            <span class='card-settings-button-inner'>\n                <i class=\"far fa-sliders-h\"></i>\n            </span>\n            <div class='settings-wrapper'>\n                <div class=\"slidecontainer\">\n\n                    <p class='label-input'>Min: </p>\n                    <input type=\"number\" name=\"minAlert\" " + function () {
     return sensor.sensorMeta.min ? 'value="' + sensor.sensorMeta.min + '"' : 'placeholder="Set min alert"';
   }() + " class=\"input input-min\">\n                    <p class='label-input'>Max: </p>\n                    <input type=\"number\" name=\"maxAlert\" " + function () {
     return sensor.sensorMeta.max ? 'value="' + sensor.sensorMeta.max + '"' : 'placeholder="Set max alert"';
@@ -63,7 +69,7 @@ function defaultSensorView(sensor) {
     return ![null, 'NaN', undefined, 0, '0', ''].includes(sensor.sensorMeta.openTimer) ? '<span class=\'openTimer\' value=\' ' + sensor.sensorMeta.openTimer + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>open: ' + sensor.sensorMeta.openTimer + '</span> ' : '<span class=\'openTimer noAlertGauge\' value=\' ' + sensor.sensorMeta.openTimer + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>open: <i class="fas fa-infinity"></i></span> ';
   }() + "\n                    " + function () {
     return ![null, 'NaN', undefined, 0, '0', ''].includes(sensor.sensorMeta.closedTimer) ? '<span class=\'closedTimer\' value=\' ' + sensor.sensorMeta.closedTimer + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>closed: ' + sensor.sensorMeta.closedTimer + '</span> ' : '<span class=\'closedTimer noAlertGauge\' value=\' ' + sensor.sensorMeta.closedTimer + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>closed: <i class="fas fa-infinity"></i></span> ';
-  }() + "\n                </div>\n                <p class='update-time-gauge'>Waiting to be updated...</p>\n            </div>\n        </div>\n\n        <div class='card-alerts-settings alert-" + sensor.sensorMeta.sensorId + "'>\n            <span class='card-settings-button-alert tooltip_test'>\n                <i class=\"fas fa-bell\"></i>\n                <span class=\"tooltiptext\">New feature is coming!</span>\n            </span>\n            <span class='card-settings-button-update tooltip_test'>\n                <i class=\"fas fa-save\"></i>\n                <span class=\"tooltiptext\">By clicking you will update alerts and location!</span>\n            </span>\n            <span class='card-settings-button-inner'>\n                <i class=\"far fa-sliders-h\"></i>\n            </span>\n            <div class='settings-wrapper'>\n                <div class=\"slidecontainer\">\n\n                    <p class='label-input'>Open:</p>\n                    <input type=\"number\" name=\"openAlert\" " + function () {
+  }() + "\n                </div>\n                <p class='update-time-gauge'><span class=\"not-live pulse\"></span><span class=\"time\">Waiting to be updated...</span></p>\n            </div>\n        </div>\n\n        <div class='card-alerts-settings alert-" + sensor.sensorMeta.sensorId + "'>\n            <span class='card-settings-button-alert tooltip_test'>\n                <i class=\"fas fa-bell\"></i>\n                <span class=\"tooltiptext\">New feature is coming!</span>\n            </span>\n            <span class='card-settings-button-update tooltip_test'>\n                <i class=\"fas fa-save\"></i>\n                <span class=\"tooltiptext\">By clicking you will update alerts and location!</span>\n            </span>\n            <span class='card-settings-button-inner'>\n                <i class=\"far fa-sliders-h\"></i>\n            </span>\n            <div class='settings-wrapper'>\n                <div class=\"slidecontainer\">\n\n                    <p class='label-input'>Open:</p>\n                    <input type=\"number\" name=\"openAlert\" " + function () {
     return sensor.sensorMeta.openTimer ? 'value="' + sensor.sensorMeta.openTimer + '"' : '';
   }() + "placeholder=\"Set open limit in seconds\" class=\"input input-open\">\n                    <p class='label-input'>Closed:</p>\n                    <input type=\"number\" name=\"closedAlert\" " + function () {
     return sensor.sensorMeta.closedTimer ? 'value="' + sensor.sensorMeta.closedTimer + '"' : '';
@@ -227,6 +233,11 @@ function plotData(sensorId) {
     // Add Canvas for chart
 
     $("article.graph-" + sensorId + " .card-body a.spinner").remove();
+
+    if ($("article.graph-" + sensorId + " .card-body canvas#" + sensorId + "-graph")) {
+      $("article.graph-" + sensorId + " .card-body canvas#" + sensorId + "-graph").remove();
+    }
+
     $("article.graph-" + sensorId + " .card-body").append("<canvas id=\"" + sensorId + "-graph\"></canvas>"); // Plot w/ Chart.js
 
     var canvas = $("canvas#" + sensorId + "-graph")[0].getContext("2d");
@@ -449,6 +460,15 @@ function appendInfoBox(args) {
 
   component += "</div>";
   $(".small-box-container").append(component);
+  var childs = $(".small-box-container").children().length;
+  $(".small-box-container").removeClass(function (index, className) {
+    var arrayOfClasses = className.split(" ");
+    var arrayOfClasses2 = arrayOfClasses.filter(function (item, index) {
+      return item.includes('length');
+    });
+    return arrayOfClasses2.join(' ');
+  });
+  $(".small-box-container").addClass("small-box-length-" + String(childs));
 }
 
 function updateCurrentValue(sensorid, value) {
@@ -472,20 +492,25 @@ function updateCurrentValue(sensorid, value) {
   } // Update time
 
 
+  var timeEl = $("article.live-card-" + sensorid + " p.update-time-gauge .time");
+
   if (date) {
-    var timeEl = $("article.live-card-" + sensorid + " p.update-time-gauge");
+    // Live animation
+    var currentDate = new Date();
+    var oldDate = new Date(date);
+    var diff = (currentDate.getTime() - oldDate.getTime()) / 1000;
+    if (diff > 3600) timeEl.siblings('.pulse').addClass("not-live");else timeEl.siblings('.pulse').removeClass("not-live"); // Update date
+
     timeEl.html(date);
   } else {
-    var _timeEl = $("article.live-card-" + sensorid + " p.update-time-gauge");
-
     var currentTime = new Date();
     currentTime = currentTime.toLocaleString('en-US', {
       timeZone: 'Europe/Bucharest',
       timeStyle: "medium",
       dateStyle: "medium"
     });
-
-    _timeEl.html(currentTime);
+    timeEl.siblings('.pulse').removeClass("not-live");
+    timeEl.html(currentTime);
   }
 } // Alerts
 
@@ -571,7 +596,8 @@ socket.on(socketChannel, function _callee(data) {
           if (data.topic == 'dataPub') {
             msg = JSON.parse(data.message);
             updateCurrentValue(msg.cId, parseFloat(msg.value).toFixed(1));
-          }
+          } // Listen for no power state
+
 
           if (data.topic == 'dataPub/power') {
             msg = JSON.parse(data.message);
@@ -604,8 +630,10 @@ socket.on(socketChannel, function _callee(data) {
 // ======================================================
 // ======================================================
 
+var sensorMetaRaw; // init variable globally
+
 var mainLoader = function mainLoader() {
-  var url, zoneId, sensorMetaRaw, sensorBuffer, sensorDataRaw, _i, _sensorMetaRaw, sensor, sensorData, sensorsWithBattery, _i2, _sensorDataRaw, _sensor, location3, location2, alert, alarm, power;
+  var url, zoneId, sensorBuffer, sensorDataRaw, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, sensor, sensorData, sensorsWithBattery, _i, _sensorDataRaw, _sensor, location3, location2, alert, alarm, power;
 
   return regeneratorRuntime.async(function mainLoader$(_context5) {
     while (1) {
@@ -630,42 +658,73 @@ var mainLoader = function mainLoader() {
           }); // Get data from influx for each sensor
 
           sensorDataRaw = [];
-          _i = 0, _sensorMetaRaw = sensorMetaRaw;
+          _iteratorNormalCompletion = true;
+          _didIteratorError = false;
+          _iteratorError = undefined;
+          _context5.prev = 9;
+          _iterator = sensorMetaRaw[Symbol.iterator]();
 
-        case 7:
-          if (!(_i < _sensorMetaRaw.length)) {
-            _context5.next = 16;
+        case 11:
+          if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+            _context5.next = 20;
             break;
           }
 
-          sensor = _sensorMetaRaw[_i];
-          _context5.next = 11;
+          sensor = _step.value;
+          _context5.next = 15;
           return regeneratorRuntime.awrap(getSensorData(sensor.sensorId, sensor.sensorType));
 
-        case 11:
+        case 15:
           sensorData = _context5.sent;
-          // console.log(sensor.sensorId, sensorData)
-          // if(sensor.sensorType == 'door') {
-          //     sensorData.forEach((item,index)=>{
-          //         console.log(index, item)
-          //     })
-          // }
           sensorDataRaw.push({
             sensorMeta: sensor,
             sensorData: sensorData
           });
 
-        case 13:
-          _i++;
-          _context5.next = 7;
+        case 17:
+          _iteratorNormalCompletion = true;
+          _context5.next = 11;
           break;
 
-        case 16:
-          // console.log(sensorDataRaw)
+        case 20:
+          _context5.next = 26;
+          break;
+
+        case 22:
+          _context5.prev = 22;
+          _context5.t0 = _context5["catch"](9);
+          _didIteratorError = true;
+          _iteratorError = _context5.t0;
+
+        case 26:
+          _context5.prev = 26;
+          _context5.prev = 27;
+
+          if (!_iteratorNormalCompletion && _iterator.return != null) {
+            _iterator.return();
+          }
+
+        case 29:
+          _context5.prev = 29;
+
+          if (!_didIteratorError) {
+            _context5.next = 32;
+            break;
+          }
+
+          throw _iteratorError;
+
+        case 32:
+          return _context5.finish(29);
+
+        case 33:
+          return _context5.finish(26);
+
+        case 34:
           sensorsWithBattery = [];
 
-          for (_i2 = 0, _sensorDataRaw = sensorDataRaw; _i2 < _sensorDataRaw.length; _i2++) {
-            _sensor = _sensorDataRaw[_i2];
+          for (_i = 0, _sensorDataRaw = sensorDataRaw; _i < _sensorDataRaw.length; _i++) {
+            _sensor = _sensorDataRaw[_i];
             // Testing
             // if(sensor.sensorMeta.sensorId=='DAS001TCORA') {[
             //     sensor.sensorMeta.alerts = 3
@@ -710,7 +769,7 @@ var mainLoader = function mainLoader() {
           appendInfoBox({
             title: 'Warning alert',
             message: alert + ' / ' + sensorDataRaw.length,
-            icon: '<i class="fas fa-exclamation"></i>',
+            icon: '<i class="fas fa-bell"></i>',
             class: ''
           });
           appendInfoBox({
@@ -730,12 +789,12 @@ var mainLoader = function mainLoader() {
 
           return _context5.abrupt("return", sensorMetaRaw);
 
-        case 27:
+        case 45:
         case "end":
           return _context5.stop();
       }
     }
-  });
+  }, null, null, [[9, 22, 26, 34], [27,, 29, 33]]);
 };
 
 var influxQuery = function influxQuery(query) {
@@ -777,7 +836,7 @@ var initLiveData = function initLiveData() {
 
         case 7:
           influxResult = _context7.sent;
-          // console.log(influxResult)
+          // console.log("sensorsMetaRaw", sensorsMetaRaw)
           influxResult.forEach(function (item, index) {
             var sensorId = item.sensorId;
             var value = item.value;
@@ -802,4 +861,150 @@ var initLiveData = function initLiveData() {
   });
 };
 
-initLiveData();
+initLiveData(); // Update charts continously
+
+var liveChart = function liveChart() {
+  var sensorDataRaw, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, sensor, sensorData, _i2, _sensorDataRaw2, _sensor2;
+
+  return regeneratorRuntime.async(function liveChart$(_context8) {
+    while (1) {
+      switch (_context8.prev = _context8.next) {
+        case 0:
+          sensorDataRaw = [];
+          _iteratorNormalCompletion2 = true;
+          _didIteratorError2 = false;
+          _iteratorError2 = undefined;
+          _context8.prev = 4;
+          _iterator2 = sensorMetaRaw[Symbol.iterator]();
+
+        case 6:
+          if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
+            _context8.next = 15;
+            break;
+          }
+
+          sensor = _step2.value;
+          _context8.next = 10;
+          return regeneratorRuntime.awrap(getSensorData(sensor.sensorId, sensor.sensorType));
+
+        case 10:
+          sensorData = _context8.sent;
+          sensorDataRaw.push({
+            sensorMeta: sensor,
+            sensorData: sensorData
+          });
+
+        case 12:
+          _iteratorNormalCompletion2 = true;
+          _context8.next = 6;
+          break;
+
+        case 15:
+          _context8.next = 21;
+          break;
+
+        case 17:
+          _context8.prev = 17;
+          _context8.t0 = _context8["catch"](4);
+          _didIteratorError2 = true;
+          _iteratorError2 = _context8.t0;
+
+        case 21:
+          _context8.prev = 21;
+          _context8.prev = 22;
+
+          if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+            _iterator2.return();
+          }
+
+        case 24:
+          _context8.prev = 24;
+
+          if (!_didIteratorError2) {
+            _context8.next = 27;
+            break;
+          }
+
+          throw _iteratorError2;
+
+        case 27:
+          return _context8.finish(24);
+
+        case 28:
+          return _context8.finish(21);
+
+        case 29:
+          for (_i2 = 0, _sensorDataRaw2 = sensorDataRaw; _i2 < _sensorDataRaw2.length; _i2++) {
+            _sensor2 = _sensorDataRaw2[_i2];
+            // Update json in element attribute before plotting
+            updateDataForChart(_sensor2); // Plot data on graph based on sensorData attr
+
+            plotData(_sensor2.sensorMeta.sensorId); // Log
+            // console.log(sensor.sensorMeta.sensorId)
+          }
+
+        case 30:
+        case "end":
+          return _context8.stop();
+      }
+    }
+  }, null, null, [[4, 17, 21, 29], [22,, 24, 28]]);
+};
+
+function delay(ms) {
+  return regeneratorRuntime.async(function delay$(_context9) {
+    while (1) {
+      switch (_context9.prev = _context9.next) {
+        case 0:
+          _context9.next = 2;
+          return regeneratorRuntime.awrap(new Promise(function (resolve) {
+            return setTimeout(resolve, ms);
+          }));
+
+        case 2:
+          return _context9.abrupt("return", _context9.sent);
+
+        case 3:
+        case "end":
+          return _context9.stop();
+      }
+    }
+  });
+}
+
+var run = function run() {
+  return regeneratorRuntime.async(function run$(_context10) {
+    while (1) {
+      switch (_context10.prev = _context10.next) {
+        case 0:
+          if (!1) {
+            _context10.next = 6;
+            break;
+          }
+
+          liveChart();
+          _context10.next = 4;
+          return regeneratorRuntime.awrap(delay(60 * 1000));
+
+        case 4:
+          _context10.next = 0;
+          break;
+
+        case 6:
+        case "end":
+          return _context10.stop();
+      }
+    }
+  });
+};
+
+run(); // switch-context button listener
+
+var goToMap = function goToMap() {
+  var url = window.location.origin + '/map' + window.location.search.replace("zone", "");
+  window.location.replace(url);
+};
+
+$(".switch-context").on('click', function () {
+  goToMap();
+});

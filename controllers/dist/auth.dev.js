@@ -431,9 +431,9 @@ var authLogin = function authLogin(req, res, next) {
 
 var authDashboard = function authDashboard(req, res, next) {
   // check if user is logged
-  sess = req.session;
-  var time = new Date();
-  var data = []; // console.log("authDashboard")
+  sess = req.session; // var time = new Date()
+  // var data = []
+  // console.log("authDashboard")
   // console.log(sess.counties)
   // var url = req.originalUrl
   // if(url="/admin") {

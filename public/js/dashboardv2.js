@@ -3,7 +3,8 @@ import {
     getDistinctValuesFromObject,
     getValuesFromObject,
     downloadCSV,
-    getKeyByValue
+    getKeyByValue,
+    timeoutAsync,
 } from './utils.js'
 
 let getSensorData = async (id, type) => {
@@ -13,10 +14,17 @@ let getSensorData = async (id, type) => {
 
 // console.log(userData_raw)
 
+function updateDataForChart(sensor) {
+    let sensorData = JSON.stringify(sensor.sensorData)
+    $("article.graph-" + sensor.sensorMeta.sensorId).attr("sensorData", sensorData)
+}
+
 function defaultSensorView(sensor) {
 
     // sensorId = String(sensorId)
     let sensorData = JSON.stringify(sensor.sensorData)
+
+    // console.log(sensor.sensorMeta.sensorId,sensor.sensorMeta.alerts)
 
     // Sensor state 0/1/2/3
     let alertClass = ''
@@ -53,7 +61,7 @@ function defaultSensorView(sensor) {
                     `+ (() => { return ![null, 'NaN', undefined, ''].includes(sensor.sensorMeta.min) ? '<span class=\'minAlertGauge\' value=\' ' + sensor.sensorMeta.min + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>min: ' + sensor.sensorMeta.min + '</span> ' : '<span class=\'minAlertGauge noAlertGauge\' value=\' ' + sensor.sensorMeta.min + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>No min alert</span> ' })() + `
                     `+ (() => { return ![null, 'NaN', undefined, ''].includes(sensor.sensorMeta.max) ? '<span class=\'maxAlertGauge\' value=\' ' + sensor.sensorMeta.max + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>max: ' + sensor.sensorMeta.max + '</span> ' : '<span class=\'maxAlertGauge noAlertGauge\' value=\' ' + sensor.sensorMeta.max + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>No max alert</span> ' })() + `
                 </div>
-                <p class='update-time-gauge'>Waiting to be updated...</p>
+                <p class='update-time-gauge'><span class="not-live pulse"></span><span class="time">Waiting to be updated...</span></p>
             </div>
         </div>
 
@@ -133,7 +141,7 @@ function defaultSensorView(sensor) {
                     `+ (() => { return ![null, 'NaN', undefined, 0, '0', ''].includes(sensor.sensorMeta.openTimer) ? '<span class=\'openTimer\' value=\' ' + sensor.sensorMeta.openTimer + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>open: ' + sensor.sensorMeta.openTimer + '</span> ' : '<span class=\'openTimer noAlertGauge\' value=\' ' + sensor.sensorMeta.openTimer + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>open: <i class="fas fa-infinity"></i></span> ' })() + `
                     `+ (() => { return ![null, 'NaN', undefined, 0, '0', ''].includes(sensor.sensorMeta.closedTimer) ? '<span class=\'closedTimer\' value=\' ' + sensor.sensorMeta.closedTimer + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>closed: ' + sensor.sensorMeta.closedTimer + '</span> ' : '<span class=\'closedTimer noAlertGauge\' value=\' ' + sensor.sensorMeta.closedTimer + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>closed: <i class="fas fa-infinity"></i></span> ' })() + `
                 </div>
-                <p class='update-time-gauge'>Waiting to be updated...</p>
+                <p class='update-time-gauge'><span class="not-live pulse"></span><span class="time">Waiting to be updated...</span></p>
             </div>
         </div>
 
@@ -366,6 +374,9 @@ function plotData(sensorId, source = 'attr') {
         // console.log(sensorData)
         // Add Canvas for chart
         $(`article.graph-` + sensorId + ` .card-body a.spinner`).remove()
+        if ($(`article.graph-` + sensorId + ` .card-body canvas#` + sensorId + `-graph`)) {
+            $(`article.graph-` + sensorId + ` .card-body canvas#` + sensorId + `-graph`).remove()
+        }
         $(`article.graph-` + sensorId + ` .card-body`).append(`<canvas id="` + sensorId + `-graph"></canvas>`)
         // Plot w/ Chart.js
         let canvas = $(`canvas#` + sensorId + `-graph`)[0].getContext("2d");
@@ -564,9 +575,9 @@ function plotData(sensorId, source = 'attr') {
 
                     } else { //if not temperature sensor
                         for (var i = 0; i < dataset.data.length; i++) {
-                            if( isNaN(parseInt(dataset.data[i-1])) || isNaN(parseInt(dataset.data[i+1])) ) {
+                            if (isNaN(parseInt(dataset.data[i - 1])) || isNaN(parseInt(dataset.data[i + 1]))) {
                                 dataset.pointRadius[i] = 3
-                            } else if (parseInt(dataset.data[i-1]) == 0 || parseInt(dataset.data[i+1]) == 0) {
+                            } else if (parseInt(dataset.data[i - 1]) == 0 || parseInt(dataset.data[i + 1]) == 0) {
                                 dataset.pointRadius[i] = 3
                             } else {
                                 dataset.pointRadius[i] = 0
@@ -599,6 +610,16 @@ function appendInfoBox(args) {
 
     $(".small-box-container").append(component)
 
+    let childs = $(".small-box-container").children().length;
+    $(".small-box-container").removeClass(function (index, className) {
+        let arrayOfClasses = className.split(" ")
+        let arrayOfClasses2 = arrayOfClasses.filter((item, index) => {
+            return item.includes('length')
+        })
+        return arrayOfClasses2.join(' ')
+    });
+    $(".small-box-container").addClass("small-box-length-" + String(childs))
+
 }
 
 function updateCurrentValue(sensorid, value, date = false) {
@@ -623,17 +644,26 @@ function updateCurrentValue(sensorid, value, date = false) {
     }
 
     // Update time
+    let timeEl = $("article.live-card-" + sensorid + " p.update-time-gauge .time")
     if (date) {
-        let timeEl = $("article.live-card-" + sensorid + " p.update-time-gauge")
+        // Live animation
+        let currentDate = new Date()
+        let oldDate = new Date(date)
+        let diff = (currentDate.getTime() - oldDate.getTime()) / 1000
+        if (diff > 3600)
+            timeEl.siblings('.pulse').addClass("not-live")
+        else
+            timeEl.siblings('.pulse').removeClass("not-live")
+        // Update date
         timeEl.html(date)
     } else {
-        let timeEl = $("article.live-card-" + sensorid + " p.update-time-gauge")
         let currentTime = new Date()
         currentTime = currentTime.toLocaleString('en-US', {
             timeZone: 'Europe/Bucharest',
             timeStyle: "medium",
             dateStyle: "medium"
         })
+        timeEl.siblings('.pulse').removeClass("not-live")
         timeEl.html(currentTime)
     }
 }
@@ -726,6 +756,7 @@ socket.on(socketChannel, async (data) => {
         updateCurrentValue(msg.cId, parseFloat(msg.value).toFixed(1))
     }
 
+    // Listen for no power state
     if (data.topic == 'dataPub/power') {
         msg = JSON.parse(data.message)
         if (parseInt(msg.value)) {
@@ -751,6 +782,7 @@ socket.on(socketChannel, async (data) => {
 // This is the main loader that loads all the data on the dashboard
 // ======================================================
 // ======================================================
+let sensorMetaRaw // init variable globally
 let mainLoader = async () => {
     // console.log(userData_raw)
     // let zoneData = JSON.parse('{{{zoneData}}}')
@@ -760,7 +792,7 @@ let mainLoader = async () => {
     const zoneId = url.searchParams.get('zoneid')
 
     // Preprocess data to extract sensors from current zone only
-    let sensorMetaRaw = []
+    sensorMetaRaw = []
     let sensorBuffer = [] // this buffer is use to prevent double inserting of sensors
 
     // console.log(userData_raw)
@@ -777,16 +809,8 @@ let mainLoader = async () => {
     for (const sensor of sensorMetaRaw) {
         // Get influx data for each sensor
         let sensorData = await getSensorData(sensor.sensorId, sensor.sensorType)
-        // console.log(sensor.sensorId, sensorData)
-        // if(sensor.sensorType == 'door') {
-        //     sensorData.forEach((item,index)=>{
-        //         console.log(index, item)
-        //     })
-        // }
         sensorDataRaw.push({ sensorMeta: sensor, sensorData })
     }
-
-    // console.log(sensorDataRaw)
 
     let sensorsWithBattery = []
 
@@ -849,7 +873,7 @@ let mainLoader = async () => {
     appendInfoBox({
         title: 'Warning alert',
         message: alert + ' / ' + sensorDataRaw.length,
-        icon: '<i class="fas fa-exclamation"></i>',
+        icon: '<i class="fas fa-bell"></i>',
         class: ''
     })
 
@@ -885,7 +909,7 @@ let initLiveData = async () => {
     let sensorsList = getValuesFromObject('sensorId', sensorsMetaRaw)
     let query = "SELECT value FROM sensors WHERE sensorId =~ /" + sensorsList.join('|') + "/ group by sensorId order by time desc limit 1"
     let influxResult = await influxQuery(query)
-    // console.log(influxResult)
+    // console.log("sensorsMetaRaw", sensorsMetaRaw)
     influxResult.forEach((item, index) => {
         let sensorId = item.sensorId
         let value = item.value
@@ -903,3 +927,48 @@ let initLiveData = async () => {
 }
 
 initLiveData()
+
+// Update charts continously
+let liveChart = async () => {
+
+    let sensorDataRaw = []
+
+    for (const sensor of sensorMetaRaw) {
+        // Get influx data for each sensor
+        let sensorData = await getSensorData(sensor.sensorId, sensor.sensorType)
+        sensorDataRaw.push({ sensorMeta: sensor, sensorData })
+    }
+
+    for (const sensor of sensorDataRaw) {
+        // Update json in element attribute before plotting
+        updateDataForChart(sensor)
+        // Plot data on graph based on sensorData attr
+        plotData(sensor.sensorMeta.sensorId)
+        // Log
+        // console.log(sensor.sensorMeta.sensorId)
+    }
+}
+
+async function delay(ms) {
+    // return await for better async stack trace support in case of errors.
+    return await new Promise(resolve => setTimeout(resolve, ms));
+}
+
+let run = async () => {
+    while (1) {
+        liveChart();
+        await delay(60 * 1000); // charts are updating one time per minute
+    }
+}
+
+run()
+
+// switch-context button listener
+const goToMap = function() {
+    let url = window.location.origin + '/map' + window.location.search.replace("zone","")
+    window.location.replace(url)
+}
+
+$(".switch-context").on('click',()=>{
+    goToMap()
+})

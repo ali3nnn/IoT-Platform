@@ -80,7 +80,7 @@ let getUserData = async () => {
     // console.log(zoneItem.length)
     for (let i = 0; i < zoneItem.length; i++) {
         // console.log(zoneItem[i].href, hrefZone)
-        if (zoneItem[i].href == hrefZone) {
+        if (zoneItem[i].href.split("=")[1] == href.split("=")[1]) {
             zoneItem[i].classList.add('link-selected')
         }
     }
@@ -114,12 +114,12 @@ zones.forEach((id, index) => {
         bufferAppendedMaps.push([location3[index], location2[index], location1[index]])
         let mapsEl = $("#mySidenav #maps-list")
         let name = `<span class='multi-location'>Map ` + location3[index] + `<span class='location-detail'>` + location2[index] + `</span>` + `</span>`
-        mapsEl.append(`<div class="map-item">
-                            <a href="/map?id=` + id + `" class='map-button'>
-                            <i class="fas fa-map-marked"></i>
-                                ` + name + `
-                            </a>
-                        </div>`)
+        // mapsEl.append(`<div class="map-item">
+        //                     <a href="/map?id=` + id + `" class='map-button'>
+        //                     <i class="fas fa-map-marked"></i>
+        //                         ` + name + `
+        //                     </a>
+        //                 </div>`)
     }
 })
 
@@ -140,18 +140,22 @@ for (let i = 0; i < mapItem.length; i++) {
 let getOffset = () => {
     let brandH = $(".sidenav-wrapper .brand").outerHeight();
     let settingsH = $(".sidenav-wrapper .settings-items").outerHeight()
-    return brandH + settingsH
+    // console.log("brandH",brandH)
+    // console.log("settingsH",settingsH)
+    return brandH + Math.max(123,settingsH)
 }
 let getRemainingHeight = () => {
     let sideH = $("#mySidenav").outerHeight()
     // let sideH = window.outerHeight
     let offset = getOffset()
+    // console.log("sideH",sideH)
     return sideH - offset
 }
 let setHeight = () => {
     let freeSpace = getRemainingHeight()
-    $("#maps-list").css({"max-height":freeSpace/2})
-    $("#zones-list").css({"max-height":freeSpace/2})
+    // console.log("freeSpace",freeSpace)
+    $("div#maps-list").css({"max-height":freeSpace/2})
+    $("div#zones-list").css({"max-height":freeSpace/2})
 }
 $(window).on('load resize',()=>{
     // setHeight()

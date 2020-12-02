@@ -382,8 +382,8 @@ const authLogin = async (req, res, next) => {
 const authDashboard = (req, res, next) => {
     // check if user is logged
     sess = req.session;
-    var time = new Date()
-    var data = []
+    // var time = new Date()
+    // var data = []
 
     // console.log("authDashboard")
     // console.log(sess.counties)
@@ -434,7 +434,6 @@ const cookieChecker = async (req, res, next) => {
                 sess.username = result[0].username
                 sess.role = result[0].role
                 next()
-
             } else {
                 next()
             }

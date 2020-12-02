@@ -198,14 +198,19 @@ const getUserData = async (req, res, next) => {
                 // console.log(result, userData)
                 // sess.company = result[0].company
                 // sess.role = result[0].role
-                let userDataFull = userData.map((item,index)=>{
-                    return {
-                        ...item,
-                        company: result[0].company,
-                        role: result[0].role
-                    }
-                })
-                sess.userData = userDataFull
+                if(!("error" in userData)) {
+                    let userDataFull = userData.map((item,index)=>{
+                        return {
+                            ...item,
+                            company: result[0].company,
+                            role: result[0].role
+                        }
+                    })
+                    sess.userData = userDataFull
+                } else {
+                    sess.userData = userData
+                }
+                
             }).then(() => {
                 next()
             })

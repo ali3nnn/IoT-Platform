@@ -24,7 +24,7 @@ const formidable = require('formidable');
 const removeDiacritics = require('diacritics').remove;
 // global.fetch = require("node-fetch");
 const mime = require('mime');
-const { exec } = require("child_process");
+// const { exec } = require("child_process");
 const _ = require('lodash');
 
 const Handlebars = require('handlebars');
@@ -746,6 +746,18 @@ app.post('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, (r
             postQuery.location3 = postQuery.location3.normalize('NFKD').replace(/[\u0300-\u036f]/g, "");
             postQuery.sensorName = postQuery.sensorName.normalize('NFKD').replace(/[\u0300-\u036f]/g, "");
 
+            // Lowercase
+            postQuery.location1 = postQuery.location1.toLowerCase();
+            postQuery.location2 = postQuery.location2.toLowerCase();
+            postQuery.location3 = postQuery.location3.toLowerCase();
+            postQuery.sensorName = postQuery.sensorName.toLowerCase();
+
+            // Trim
+            postQuery.location1 = postQuery.location1.trim();
+            postQuery.location2 = postQuery.location2.trim();
+            postQuery.location3 = postQuery.location3.trim();
+            postQuery.sensorName = postQuery.sensorName.trim();
+
             // if (postQuery.zoneId) { //idk when goes here
             // let insertQuery
             // if(postQuery.battery)
@@ -845,7 +857,7 @@ app.get('/api/v3/get-sensor-data', (req, res) => {
         influxQuery = "SELECT mean(value) as value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQueryGeneral + "' and time<now() group by time(5m) order by time desc;"
     }
 
-    console.log(influxQuery)
+    // console.log(influxQuery)
 
     if (req.query.type == 'door') {
 
@@ -1171,7 +1183,7 @@ app.get('/api/v3/get-sensor-data', (req, res) => {
             res.send(err)
         })
 
-    } else if (req.query.type == 'temperature') {
+    } else {
         influxReader(influxQuery).then(result => {
 
             // Fill with null where 0 for door sensors
@@ -4802,42 +4814,42 @@ var server = app.listen(PORT, console.log(`NodeJS started on port ${PORT}`)).on(
     }
 });
 
-let checkPort = () => {
-    exec('netstat -ltnup | grep 5000', (error, stdout, stderr) => {
-        if (error) {
-            console.log(`error: ${error.message}`)
-            process.exit(1);
-            return
-        } else if (stderr) {
-            console.log(`stderr: ${stderr}`)
-            process.exit(1);
-            return
-        } else {
-            let pid = parseInt(String(stdout).split('LISTEN')[1].split('/node')[0])
+// let checkPort = () => {
+//     exec('netstat -ltnup | grep 5000', (error, stdout, stderr) => {
+//         if (error) {
+//             console.log(`error: ${error.message}`)
+//             process.exit(1);
+//             return
+//         } else if (stderr) {
+//             console.log(`stderr: ${stderr}`)
+//             process.exit(1);
+//             return
+//         } else {
+//             let pid = parseInt(String(stdout).split('LISTEN')[1].split('/node')[0])
 
-            killPort(pid)
-        }
+//             killPort(pid)
+//         }
 
-    })
-}
+//     })
+// }
 
 let killPort = (pid) => {
 
-    exec(`kill ` + pid, (error2, stdout2, stderr2) => {
-        if (error2) {
-            console.log(`error2: ${error2.message}`)
-            process.exit(1);
-            return
-        } else if (stderr2) {
-            console.log(`stderr2: ${stderr2}`)
-            process.exit(1);
-            return
-        } else if (stdout2) {
-            console.log(`stdout2: ${stdout2}`)
-            process.exit(1);
-        } else {
-            console.log("kill " + pid)
-            process.exit(1);
-        }
-    })
+//     exec(`kill ` + pid, (error2, stdout2, stderr2) => {
+//         if (error2) {
+//             console.log(`error2: ${error2.message}`)
+//             process.exit(1);
+//             return
+//         } else if (stderr2) {
+//             console.log(`stderr2: ${stderr2}`)
+//             process.exit(1);
+//             return
+//         } else if (stdout2) {
+//             console.log(`stdout2: ${stdout2}`)
+//             process.exit(1);
+//         } else {
+//             console.log("kill " + pid)
+//             process.exit(1);
+//         }
+//     })
 }

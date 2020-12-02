@@ -89,7 +89,7 @@ function eventPath(evt) {
     return [target].concat(getParents(target), window);
 }
 
-$(document).ready(function () {
+$(document).on('ready',function () {
     // pop up functionality
     // Listen for all clicks on the document
     document.addEventListener('click', function (event) {
@@ -130,12 +130,12 @@ $(document).ready(function () {
     }, false);
 
 
-    try {
-        // var childs = $(".small-box-container").children().length;
-        // $(".small-box-container").addClass("children-" + String(childs))
-    } finally {
+    // try {
+    //     var childs = $(".small-box-container").children().length;
+    //     $(".small-box-container").addClass("children-" + String(childs))
+    // } finally {
 
-    }
+    // }
 
 });
 
@@ -145,7 +145,7 @@ $(document).ready(function () {
 try {
 
     var toggleButtons = document.querySelectorAll(".toggleSidenav")
-    var openButton = document.querySelector(".open-button");
+    var openButton = document.querySelector(".overlay-sidenav");
     var overlay = document.querySelector(".main-overlay")
     var asideLinks = document.querySelectorAll(".sidenav-wrapper a")
 
@@ -160,6 +160,10 @@ try {
 
     var widthOpen = "250px"
     var widthClosed = "50px"
+
+    var overlayToClickOn = document.querySelector(".overlay-sidenav")
+
+    let collapseTrigger = 1099
 
     // sidebar navigation
     function openedFinal() {
@@ -189,7 +193,7 @@ try {
         }
 
         if (sidenav) {
-            if (window.innerWidth > 991) {
+            if (window.innerWidth > collapseTrigger) {
                 if (!sidenav.classList.contains("sidenav-opened")) {
                     // openButton.click()
                     // var date_1;
@@ -214,9 +218,9 @@ try {
     })
 
     // Run when resize and onload
-    $(window).resize(function () {
+    $(window).on('resize',function () {
 
-        if (window.innerWidth > 991) {
+        if (window.innerWidth > collapseTrigger) {
             // console.log(">",window.innerWidth)
             // if sidenav is closes
             if (!sidenav.classList.contains("sidenav-opened")) {
@@ -267,9 +271,9 @@ try {
         openedFinal.bind()();
     })
 
-    if (window.innerWidth <= 991)
-        $("#mySidenav").hover(function () {
-
+    if (window.innerWidth <= collapseTrigger)
+        $("#mySidenav").on('click',function () {
+            e.preventDefault();
             // console.log("trying to hover in")
             if (!sidenav.classList.contains("click-open")) {
                 // $("#main").css({ "margin-left": "250px" })
@@ -284,25 +288,27 @@ try {
                     toggleButtons[i].classList.toggle("hidden-button")
             }
             openedFinal.bind()();
-        }, function () {
-            // console.log("trying to hover out")
-            if (!sidenav.classList.contains("click-open")) {
-                closedFinal();
-                // $("#main").css({ "margin-left": "50px" })
-                sidenav.classList.remove("sidenav-opened")
-                if (mainbody.getBoundingClientRect().width > 500) {
-                    mainbody.classList.remove("pl-250")
-                    mainbody.classList.add("pl-50")
-                }
-                overlay.classList.add("hidden-overlay")
-                sidenav.classList.add("sidenav-closed")
-                for (var i = 0; i < toggleButtons.length; i++)
-                    toggleButtons[i].classList.toggle("hidden-button")
-            }
         })
 
+        // , function () {
+        //     // console.log("trying to hover out")
+        //     if (!sidenav.classList.contains("click-open")) {
+        //         closedFinal();
+        //         // $("#main").css({ "margin-left": "50px" })
+        //         sidenav.classList.remove("sidenav-opened")
+        //         if (mainbody.getBoundingClientRect().width > 500) {
+        //             mainbody.classList.remove("pl-250")
+        //             mainbody.classList.add("pl-50")
+        //         }
+        //         overlay.classList.add("hidden-overlay")
+        //         sidenav.classList.add("sidenav-closed")
+        //         for (var i = 0; i < toggleButtons.length; i++)
+        //             toggleButtons[i].classList.toggle("hidden-button")
+        //     }
+        // }
+
     body.addEventListener("click", function () {
-        if (window.innerWidth <= 991)
+        if (window.innerWidth <= collapseTrigger)
             if (sidenav.classList.contains("click-open")) {
                 closedFinal();
                 sidenav.classList.remove("click-open")

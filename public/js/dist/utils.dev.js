@@ -26,6 +26,7 @@ exports.getMultiReport = getMultiReport;
 exports.getDaysInMonth = getDaysInMonth;
 exports.getKeyByValue = getKeyByValue;
 exports.arrayToJson = arrayToJson;
+exports.getRandomColor = getRandomColor;
 exports.getConveyorStatus = exports.insertStatus = exports.monthChanger = exports.timeoutAsync = exports._ = void 0;
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
@@ -840,4 +841,15 @@ function arrayToJson(keys, values) {
   return Object.assign.apply(Object, [{}].concat(_toConsumableArray(keys.map(function (n, index) {
     return _defineProperty({}, n, values[index]);
   }))));
+}
+
+function getRandomColor() {
+  var letters = '0123456789ABCDEF';
+  var color = '#';
+
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+
+  return color;
 }

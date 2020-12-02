@@ -5,6 +5,7 @@ var _moment = require("moment");
 var _utils = require("./utils.js");
 
 console.log("script.js added");
+// End Imports
 var href = window.location.pathname; // Window loader
 // ============================
 
@@ -74,7 +75,7 @@ function eventPath(evt) {
   return [target].concat(getParents(target), window);
 }
 
-$(document).ready(function () {
+$(document).on('ready', function () {
   // pop up functionality
   // Listen for all clicks on the document
   document.addEventListener('click', function (event) {
@@ -102,11 +103,11 @@ $(document).ready(function () {
     } else {// el.addClass("show")
         // console.log("click inside")
       }
-  }, false);
-
-  try {// var childs = $(".small-box-container").children().length;
-    // $(".small-box-container").addClass("children-" + String(childs))
-  } finally {}
+  }, false); // try {
+  //     var childs = $(".small-box-container").children().length;
+  //     $(".small-box-container").addClass("children-" + String(childs))
+  // } finally {
+  // }
 }); // Main navbar trick
 // TODO: find a better solution
 // ================================
@@ -129,7 +130,7 @@ try {
 
 
   var toggleButtons = document.querySelectorAll(".toggleSidenav");
-  var openButton = document.querySelector(".open-button");
+  var openButton = document.querySelector(".overlay-sidenav");
   var overlay = document.querySelector(".main-overlay");
   var asideLinks = document.querySelectorAll(".sidenav-wrapper a");
   var sidenav = document.getElementById("mySidenav");
@@ -140,6 +141,8 @@ try {
   var flagCloseMenu = false;
   var widthOpen = "250px";
   var widthClosed = "50px";
+  var overlayToClickOn = document.querySelector(".overlay-sidenav");
+  var collapseTrigger = 1099;
   $(window).on('load', function () {
     var addBodyClass = function addBodyClass() {
       // var date = new Date();
@@ -149,7 +152,7 @@ try {
     };
 
     if (sidenav) {
-      if (window.innerWidth > 991) {
+      if (window.innerWidth > collapseTrigger) {
         if (!sidenav.classList.contains("sidenav-opened")) {
           // openButton.click()
           // var date_1;
@@ -172,8 +175,8 @@ try {
     }
   }); // Run when resize and onload
 
-  $(window).resize(function () {
-    if (window.innerWidth > 991) {
+  $(window).on('resize', function () {
+    if (window.innerWidth > collapseTrigger) {
       // console.log(">",window.innerWidth)
       // if sidenav is closes
       if (!sidenav.classList.contains("sidenav-opened")) {
@@ -216,8 +219,9 @@ try {
 
     openedFinal.bind()();
   });
-  if (window.innerWidth <= 991) $("#mySidenav").hover(function () {
-    // console.log("trying to hover in")
+  if (window.innerWidth <= collapseTrigger) $("#mySidenav").on('click', function () {
+    e.preventDefault(); // console.log("trying to hover in")
+
     if (!sidenav.classList.contains("click-open")) {
       // $("#main").css({ "margin-left": "250px" })
       sidenav.classList.add("sidenav-opened");
@@ -236,28 +240,25 @@ try {
     }
 
     openedFinal.bind()();
-  }, function () {
-    // console.log("trying to hover out")
-    if (!sidenav.classList.contains("click-open")) {
-      closedFinal(); // $("#main").css({ "margin-left": "50px" })
+  }); // , function () {
+  //     // console.log("trying to hover out")
+  //     if (!sidenav.classList.contains("click-open")) {
+  //         closedFinal();
+  //         // $("#main").css({ "margin-left": "50px" })
+  //         sidenav.classList.remove("sidenav-opened")
+  //         if (mainbody.getBoundingClientRect().width > 500) {
+  //             mainbody.classList.remove("pl-250")
+  //             mainbody.classList.add("pl-50")
+  //         }
+  //         overlay.classList.add("hidden-overlay")
+  //         sidenav.classList.add("sidenav-closed")
+  //         for (var i = 0; i < toggleButtons.length; i++)
+  //             toggleButtons[i].classList.toggle("hidden-button")
+  //     }
+  // }
 
-      sidenav.classList.remove("sidenav-opened");
-
-      if (mainbody.getBoundingClientRect().width > 500) {
-        mainbody.classList.remove("pl-250");
-        mainbody.classList.add("pl-50");
-      }
-
-      overlay.classList.add("hidden-overlay");
-      sidenav.classList.add("sidenav-closed");
-
-      for (var i = 0; i < toggleButtons.length; i++) {
-        toggleButtons[i].classList.toggle("hidden-button");
-      }
-    }
-  });
   body.addEventListener("click", function () {
-    if (window.innerWidth <= 991) if (sidenav.classList.contains("click-open")) {
+    if (window.innerWidth <= collapseTrigger) if (sidenav.classList.contains("click-open")) {
       closedFinal();
       sidenav.classList.remove("click-open");
       sidenav.classList.remove("sidenav-opened");
@@ -290,9 +291,9 @@ try {
 // Chart.JS
 
 
-{}
-/* <script> */
-// chartIt('temperature_1')
+{
+  /* <script> */
+} // chartIt('temperature_1')
 
 function chartIt(selector) {
   var ctx = document.getElementById(selector).getContext('2d');

@@ -3,6 +3,9 @@
 var _utils = require("./utils.js");
 
 // Start imports
+// Aside LOCATIONS
+// ============================
+// Depracated
 var getUserData = function getUserData() {
   var response, json;
   return regeneratorRuntime.async(function getUserData$(_context) {
@@ -86,7 +89,7 @@ var getUserData = function getUserData() {
 
   for (var i = 0; i < zoneItem.length; i++) {
     // console.log(zoneItem[i].href, hrefZone)
-    if (zoneItem[i].href == hrefZone) {
+    if (zoneItem[i].href.split("=")[1] == href.split("=")[1]) {
       zoneItem[i].classList.add('link-selected');
     }
   }
@@ -113,8 +116,12 @@ zones.forEach(function (id, index) {
   if (hasBeenAppended == -1) {
     bufferAppendedMaps.push([location3[index], location2[index], location1[index]]);
     var mapsEl = $("#mySidenav #maps-list");
-    var name = "<span class='multi-location'>Map " + location3[index] + "<span class='location-detail'>" + location2[index] + "</span>" + "</span>";
-    mapsEl.append("<div class=\"map-item\">\n                            <a href=\"/map?id=" + id + "\" class='map-button'>\n                            <i class=\"fas fa-map-marked\"></i>\n                                " + name + "\n                            </a>\n                        </div>");
+    var name = "<span class='multi-location'>Map " + location3[index] + "<span class='location-detail'>" + location2[index] + "</span>" + "</span>"; // mapsEl.append(`<div class="map-item">
+    //                     <a href="/map?id=` + id + `" class='map-button'>
+    //                     <i class="fas fa-map-marked"></i>
+    //                         ` + name + `
+    //                     </a>
+    //                 </div>`)
   }
 }); // Color yellow menu item
 
@@ -133,23 +140,27 @@ for (var i = 0; i < mapItem.length; i++) {
 
 var getOffset = function getOffset() {
   var brandH = $(".sidenav-wrapper .brand").outerHeight();
-  var settingsH = $(".sidenav-wrapper .settings-items").outerHeight();
-  return brandH + settingsH;
+  var settingsH = $(".sidenav-wrapper .settings-items").outerHeight(); // console.log("brandH",brandH)
+  // console.log("settingsH",settingsH)
+
+  return brandH + Math.max(123, settingsH);
 };
 
 var getRemainingHeight = function getRemainingHeight() {
   var sideH = $("#mySidenav").outerHeight(); // let sideH = window.outerHeight
 
-  var offset = getOffset();
+  var offset = getOffset(); // console.log("sideH",sideH)
+
   return sideH - offset;
 };
 
 var setHeight = function setHeight() {
-  var freeSpace = getRemainingHeight();
-  $("#maps-list").css({
+  var freeSpace = getRemainingHeight(); // console.log("freeSpace",freeSpace)
+
+  $("div#maps-list").css({
     "max-height": freeSpace / 2
   });
-  $("#zones-list").css({
+  $("div#zones-list").css({
     "max-height": freeSpace / 2
   });
 };
