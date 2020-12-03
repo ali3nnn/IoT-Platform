@@ -1,12 +1,12 @@
 {
-  "name": "anysensor2",
+  "name": "Anysensor",
   "version": "1.0.0",
-  "description": "### Anysensor",
-  "main": "dev.js",
+  "description": "Anysensor.ro",
+  "main": "app.js",
   "scripts": {
-    "dev": "nodemon dev.js",
-    "prod": "webpack --config webpack.config-dev.js --mode=development && forever start --spinSleepTime 1000 dev.js",
-    "stop": "forever stop dev.js",
+    "dev": "nodemon app.js",
+    "prod": "webpack --config webpack.config-dev.js --mode=development && forever start --spinSleepTime 1000 app.js",
+    "stop": "forever stop app.js",
     "build": "webpack --config webpack.config.js --mode=development"
   },
   "author": "Alex Barbu",

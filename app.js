@@ -3471,8 +3471,6 @@ app.get('/api/get-zones', (req, res) => {
 // Route active for settings page - edit zone form
 app.post('/api/edit-zone', authDashboard, async (req, res) => {
 
-    console.log("api fired")
-
     sess = req.session
 
     const form = new formidable.IncomingForm();
@@ -3540,11 +3538,7 @@ app.post('/api/edit-zone', authDashboard, async (req, res) => {
         Promise.all([dropUserAccess, grantUserAccess]).then(result => {
             // console.log("PROMISE ALL", fields)
 
-            // console.log(fields.map)
-
             if (fields.map == 'custom') {
-
-                // console.log(files.mapimage.size)
 
                 if (files.mapimage.size) {
                     // Get tmp path
@@ -4807,7 +4801,7 @@ app.get('/api/v3/query-influx', (req, res) => {
     })
 })
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORTANYSENSOR;
 
 var server = app.listen(PORT, console.log(`NodeJS started on port ${PORT}`)).on('error', function (err) {
     console.log(err)
