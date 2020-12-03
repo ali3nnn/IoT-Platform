@@ -4801,7 +4801,7 @@ app.get('/api/v3/query-influx', (req, res) => {
     })
 })
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORTDEV;
 
 var server = app.listen(PORT, console.log(`NodeJS started on port ${PORT}`)).on('error', function (err) {
     console.log(err)
