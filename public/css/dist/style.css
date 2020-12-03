@@ -4758,7 +4758,7 @@ div#map > div.custom-map > .sensor-item {
   display: inline-block;
   position: absolute;
   padding: 10px 10px 5px 10px;
-  background: var(--success2);
+  background: var(--success);
   border-radius: 13px;
   margin: 5px;
   top: 0;
@@ -4814,25 +4814,60 @@ div#map > div.custom-map > .sensor-item.no-power:before {
   border-bottom-color: black;
 }
 div#map > div.custom-map > .sensor-item.alert-active {
-  background: var(--warning2);
+  background: var(--warning);
 }
 div#map > div.custom-map > .sensor-item.alert-active:after {
   content: "Near the limits";
-  background: var(--warning2);
+  background: var(--warning);
 }
 div#map > div.custom-map > .sensor-item.alert-active:before {
   border-bottom-color: #bf9a39;
 }
 div#map > div.custom-map > .sensor-item.alarm-active {
-  background: var(--danger2);
+  background: var(--danger);
 }
 div#map > div.custom-map > .sensor-item.alarm-active:after {
   content: "Alarm";
-  background: var(--danger2);
+  background: var(--danger);
   color: #ffffff;
 }
 div#map > div.custom-map > .sensor-item.alarm-active:before {
   border-bottom-color: #962732;
+}
+
+div#map > div.custom-map > .sensor-item > * {
+  opacity: 0;
+  visibility: hidden;
+}
+
+div#map > div.custom-map > .sensor-item:after {
+  display: none !important;
+}
+
+div#map > div.custom-map > .sensor-item:hover {
+  min-width: auto;
+  width: initial;
+  height: initial;
+  border-radius: 13px;
+  padding: 10px 10px 5px 10px;
+  z-index: 999;
+}
+
+div#map > div.custom-map > .sensor-item {
+  width: 0;
+  height: 0;
+  min-width: initial;
+  padding: 7px;
+  border-radius: 100%;
+}
+
+div#map > div.custom-map > .sensor-item:hover > * {
+  opacity: 1;
+  visibility: visible;
+}
+
+div#map > div.custom-map > .sensor-item:hover:after {
+  display: block !important;
 }
 
 /* End Map Container */
