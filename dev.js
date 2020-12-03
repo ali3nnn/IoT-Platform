@@ -3471,6 +3471,8 @@ app.get('/api/get-zones', (req, res) => {
 // Route active for settings page - edit zone form
 app.post('/api/edit-zone', authDashboard, async (req, res) => {
 
+    console.log("api fired")
+
     sess = req.session
 
     const form = new formidable.IncomingForm();
@@ -3538,7 +3540,11 @@ app.post('/api/edit-zone', authDashboard, async (req, res) => {
         Promise.all([dropUserAccess, grantUserAccess]).then(result => {
             // console.log("PROMISE ALL", fields)
 
+            // console.log(fields.map)
+
             if (fields.map == 'custom') {
+
+                // console.log(files.mapimage.size)
 
                 if (files.mapimage.size) {
                     // Get tmp path
