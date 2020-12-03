@@ -36,6 +36,78 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+var map, sensorStyle, sensorValue, sensorFeature; // Utils
+
+function getSensorName() {
+  var sensorFeature = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+  var name = sensorFeature.customData.sensorName;
+  return name;
+}
+
+function getSensorValue() {
+  var sensorFeature = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+  var sensorValue = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+  if (sensorValue) {
+    return sensorValue;
+  } else {
+    return '';
+  } // value = props.customData.last
+  // return value || "20.3°C"
+
+}
+
+function getSensorIcon() {
+  var sensorFeature = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+  var type = sensorFeature.customData.sensorType;
+  if (type == 'door') return "\uF52A";else if (type == 'temperature') return "\uF2C8";else if (type == 'voltage') return "\uF0E7";else return "\uF041"; // return '/images/ol_logo.png'
+} // End utils
+
+
+sensorStyle = function sensorStyle() {
+  var sensorFeature = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+  var sensorValue = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+  return [new _style.Style({
+    // image: new Icon({
+    //   img: canvas,
+    //   imgSize: [canvas.width, canvas.height]
+    // }),
+    text: new _style.Text({
+      scale: 1,
+      text: getSensorIcon(sensorFeature = sensorFeature),
+      font: 'normal 26px FontAwesome',
+      offsetY: -5
+    })
+  }), new _style.Style({
+    text: new _style.Text({
+      scale: 1,
+      text: getSensorName(sensorFeature = sensorFeature),
+      font: 'normal 16px Calibri',
+      offsetY: 23
+    })
+  }), new _style.Style({
+    text: new _style.Text({
+      scale: 1,
+      text: getSensorValue(sensorFeature = sensorFeature, sensorValue = sensorValue),
+      font: 'normal 16px Calibri',
+      offsetY: 40
+    })
+  })];
+}; // detect map container
+// let getLocation = async (sensorId) => {
+//   let response = await fetch("/api/read-location/?sensorId=" + sensorId)
+//   return response.json()
+// }
+
+
 function showNotification(message) {
   var error = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
   if (error == 0) $("notification").append("<div class=\"messages hideMe\">\n                                  <div class=\"alert alert-info mt-3 mb-0\" role=\"alert\">\n                                  <i class=\"fas fa-barcode\"></i>\n                                      <background></background>\n                                      " + message + "\n                                  </div>\n                              </div>").show('slow');else if (error == 1) $("notification").append("<div class=\"messages hideMe\">\n                                  <div class=\"alert alert-danger mt-3 mb-0\" role=\"alert\">\n                                      <i class=\"fas fa-exclamation-triangle\"></i>\n                                      <background></background>\n                                      " + message + "\n                                  </div>\n                              </div>").show('slow');else if (error == 2) $("notification").append("<div class=\"messages hideMe\">\n                                      <div class=\"alert alert-success mt-3 mb-0\" role=\"alert\">\n                                          <i class=\"fas fa-print\"></i>\n                                          <background></background>\n                                          " + message + "\n                                      </div>\n                              </div>").show('slow');else if (error == 3) $("notification").append("<div class=\"messages hideMe\">\n                                      <div class=\"alert alert-info mt-3 mb-0\" role=\"alert\">\n                                          <i class=\"fas fa-times-circle\"></i>\n                                          <background></background>\n                                          " + message + "\n                                      </div>\n                              </div>").show('slow');else if (error == 4) $("notification").append("<div class=\"messages hideMe\">\n                              <div class=\"alert alert-info mt-3 mb-0\" role=\"alert\">\n                                  <background></background>\n                                  " + message + "\n                              </div>\n                          </div>").show('slow');
@@ -70,9 +142,7 @@ if (!userData_raw.error) userData_raw.forEach(function (sensor) {
   if (sensor.zoneId == searchObj.id) {
     mapOption = sensor.map;
   }
-}); // Global vars
-
-var map; // Do magic stuff
+}); // Do magic stuff
 
 if ((!mapOption || mapOption == 'NULL') && searchObj.id) {
   // show splash
@@ -367,7 +437,7 @@ if ($("#map .custom-map")) {
 
 var socketChannel = 'socketChannel';
 socket.on(socketChannel, function _callee3(data) {
-  var currentValueBox, msg, _msg, layers;
+  var currentValueBox, msg, _msg, layers, _i, _Object$entries, _Object$entries$_i, ol_index, sensor;
 
   return regeneratorRuntime.async(function _callee3$(_context3) {
     while (1) {
@@ -403,12 +473,33 @@ socket.on(socketChannel, function _callee3(data) {
             _msg = JSON.parse(data.message);
             console.log(_msg);
             layers = map.map.getLayers();
-            layers.array_[1].setStyle([new _style.Style({
-              text: new _style.Text({
-                scale: 1.3,
-                text: _msg.cId + "\n" + _msg.value
-              })
-            })]);
+            window.layers = layers; // console.log(layers)
+            // array_[1].style_[0].text_.text_
+
+            for (_i = 0, _Object$entries = Object.entries(layers.array_[1].values_.source.uidIndex_); _i < _Object$entries.length; _i++) {
+              _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2), ol_index = _Object$entries$_i[0], sensor = _Object$entries$_i[1];
+
+              if (sensor.customData.sensorId == _msg.cId) {
+                // console.log(msg.cId, msg.value)
+                // sensor.setStyle(sensorStyle(sensorFeature = sensor, sensorValue = msg.value))
+                sensor.setStyle(new _style.Style({
+                  text: new _style.Text({
+                    scale: 1,
+                    text: _msg.cId,
+                    font: 'normal 16px Calibri',
+                    offsetY: -5
+                  })
+                }));
+              }
+            } // layers.values_.source.uidIndex_.setStyle([
+            //   new Style({
+            //     text: new Text({
+            //       scale: 1.3,
+            //       text: msg.cId + "\n" + msg.value,
+            //     })
+            //   })
+            // ])
+
           }
 
         case 4:
@@ -734,114 +825,6 @@ function createMap() {
     }
   }); // console.log(sensors)
   // end sensors of this zone
-  // var source = new ol.source.Vector({
-  //   features: [
-  //     new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([24, 40]))),
-  //     new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([24, 44]))),
-  //     new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([24, 45.5]))),
-  //     new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([24, 45])))],
-  //   test: "string"
-  // });
-  // console.log(source)
-  // debugger
-  // var clusterSource = new ol.source.Cluster({
-  //   distance: 75,
-  //   source: source
-  // });
-  // var styleCache = {};
-  // function getLatestValue(pinLocation) {
-  //   var val = undefined
-  //   // var val = sensorValuesJson
-  //   sensorDictionary.forEach(sensor => {
-  //     // console.log(sensor[1], sensor[0], pinLocation, sensor[0].equals(pinLocation) === true)
-  //     // this loads too many times - it may be slow when there will be more sensors
-  //     // console.log(sensor[1], sensorValuesJson)
-  //     if (sensor[0].equals(pinLocation) === true) {
-  //       // console.log(sensor[1], sensor[0].equals(pinLocation) === true, sensorValuesJson)
-  //       sensorValuesJson.forEach(sensorVal => {
-  //         if (sensor[1] == sensorVal[0]) {
-  //           if (sensor[1].includes("source")) {
-  //             val = parseFloat(sensorVal[1]) + "V"
-  //           } else {
-  //             val = parseFloat(sensorVal[1]) + "°C"
-  //           }
-  //         }
-  //       })
-  //       // val = sensorValuesJson[sensor[1]]
-  //       // val = parseFloat(val)
-  //       // val = sensor[1]
-  //       // val = await latest[0].value
-  //     }
-  //   })
-  //   if (val == undefined) {
-  //     return "undefined"
-  //   } else {
-  //     return val
-  //   }
-  // }
-  // var pinLocation
-  // let latestValue
-  // var clusters = new ol.layer.Vector({
-  //   source: clusterSource,
-  //   style: function (feature) {
-  //     var size = feature.get('features').length;
-  //     pinLocation = feature.getGeometry().flatCoordinates
-  //     // console.log(pinLocation)
-  //     var style
-  //     if (!style && size > 1) {
-  //       // style when cluster
-  //       style = new ol.style.Style({
-  //         image: new ol.style.Circle({
-  //           radius: 20,
-  //           fill: new ol.style.Fill({
-  //             color: '#ffc107'
-  //           })
-  //         }),
-  //         text: new ol.style.Text({
-  //           scale: 2.8,
-  //           text: size.toString(),
-  //           fill: new ol.style.Fill({
-  //             color: 'black'
-  //           })
-  //         })
-  //       });
-  //       styleCache[size] = style;
-  //       return style
-  //     } else if (!style && size <= 1) {
-  //       // style when single
-  //       style = new ol.style.Style({
-  //         image: new ol.style.Icon({
-  //           anchor: [0.5, 0.5],
-  //           anchorXUnits: 'fraction',
-  //           anchorYUnits: 'fraction',
-  //           src: '/images/ol_logo.png',
-  //           scale: 0.05,
-  //           radius: 10,
-  //         }),
-  //         text: new ol.style.Text({
-  //           // text: 'test',
-  //           padding: [1, 0, 0, 4],
-  //           // text: getLatestValue(pinLocation).toString(),
-  //           text: '20',
-  //           placement: 'point',
-  //           scale: 2,
-  //           textAlign: 'center',
-  //           textBaseline: 'middle',
-  //           offsetX: 2,
-  //           offsetY: -40,
-  //           backgroundFill: new ol.style.Fill({
-  //             color: 'black'
-  //           }),
-  //           fill: new ol.style.Fill({
-  //             color: 'white'
-  //           })
-  //         })
-  //       });
-  //       styleCache[size] = style;
-  //       return style
-  //     }
-  //   }
-  // });
   // Example map layer
 
   var extent = [0, 0, 720, 550];
@@ -893,19 +876,27 @@ function createMap() {
     for (var _iterator2 = sensors[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
       var sensor = _step2.value;
 
-      if (sensor.x == 0) {
+      // console.log(sensor.x, sensor.y)
+      if (sensor.x == 0 && sensor.y == 0) {
+        // [ ] TODO: check when sensor is not defined
         var feature = new ol.Feature(new ol.geom.Point([undefinedX, undefinedY]));
         feature['customData'] = _objectSpread({}, sensor, {
           last: null
         });
         features.push(feature);
-        console.log(feature);
-        undefinedX += 20;
+        undefinedX += 50;
 
         if (undefinedX > 500) {
           undefinedX = 0;
-          undefinedY += 50;
+          undefinedY += 100;
         }
+      } else {
+        var _feature = new ol.Feature(new ol.geom.Point([sensor.x, sensor.y]));
+
+        _feature['customData'] = _objectSpread({}, sensor, {
+          last: null
+        });
+        features.push(_feature);
       }
     } // End get sensor to feature
 
@@ -924,21 +915,6 @@ function createMap() {
     }
   }
 
-  function getSensorName(props) {
-    var name = props.customData.sensorName;
-    return name;
-  }
-
-  function getSensorValue(props) {
-    var value = props.customData.last;
-    return value || "20.3°C";
-  }
-
-  function getSensorIcon(props) {
-    var type = props.customData.sensorType;
-    if (type == 'door') return "\uF52A";else if (type == 'temperature') return "\uF2C8";else if (type == 'voltage') return "\uF0E7";else return "\uF041"; // return '/images/ol_logo.png'
-  }
-
   var source = new _Vector.default({
     // features: [iconFeature],
     features: features
@@ -949,37 +925,14 @@ function createMap() {
   // var ctx = canvas.getContext('2d');
   // ctx.fillStyle = 'green';
   // ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // How sensor appear on map
+  // moved up
 
   var vectorLayer = new _layer.Vector({
     source: source,
     style: function style(feature) {
       // console.log(feature.get('name'))
-      return [new _style.Style({
-        // image: new Icon({
-        //   img: canvas,
-        //   imgSize: [canvas.width, canvas.height]
-        // }),
-        text: new _style.Text({
-          scale: 1,
-          text: getSensorIcon(feature),
-          font: 'normal 26px FontAwesome',
-          offsetY: -5
-        })
-      }), new _style.Style({
-        text: new _style.Text({
-          scale: 1,
-          text: getSensorName(feature),
-          font: 'normal 16px Calibri',
-          offsetY: 23
-        })
-      }), new _style.Style({
-        text: new _style.Text({
-          scale: 1,
-          text: getSensorValue(feature),
-          font: 'normal 16px Calibri',
-          offsetY: 40
-        })
-      })];
+      return sensorStyle(sensorFeature = feature);
     }
   }); // End exmaple map layer
 
@@ -1018,15 +971,43 @@ function createMap() {
     })
   });
   map.addInteraction(modify); // Hover over points and do actions
-  // map.on('pointermove', function (event) {
-  //   let map = event.map;
-  //   let feature = map.forEachFeatureAtPixel(
-  //     event.pixel, function (feature, layer) {
-  //       return feature
-  //     }
-  //   )
-  //   // console.log(feature)
-  // })
+
+  modify.on('modifyend', function (event) {
+    var sensors = event.features.array_;
+    var _iteratorNormalCompletion3 = true;
+    var _didIteratorError3 = false;
+    var _iteratorError3 = undefined;
+
+    try {
+      var _loop = function _loop() {
+        var sensor = _step3.value;
+        var sensorId = sensor.customData.sensorId;
+        var x = sensor.geometryChangeKey_.target.flatCoordinates[0];
+        var y = sensor.geometryChangeKey_.target.flatCoordinates[1];
+        fetch("/api/v3/save-position?x=" + x + "&y=" + y + "&sensor=" + sensorId).then(function (result) {
+          console.log(sensorId, 'modified');
+        }); // console.log(sensor)
+      };
+
+      for (var _iterator3 = sensors[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+        _loop();
+      }
+    } catch (err) {
+      _didIteratorError3 = true;
+      _iteratorError3 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+          _iterator3.return();
+        }
+      } finally {
+        if (_didIteratorError3) {
+          throw _iteratorError3;
+        }
+      }
+    }
+  }); // 0: 281.03851318359375
+  // 1: 319.3243408203125
   // var draw, snap; // global so we can remove them later
   // var typeSelect = document.getElementById('type');
   // function addInteractions() {

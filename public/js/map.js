@@ -48,101 +48,67 @@ import {
 //   set
 // } = require("ol/transform");
 
-/*var iconFeature = new ol.Feature({
-      geometry: new ol.geom.Point([2898477.708941509, 5530897.323059931]),
-      name: 'Null Island',
-      population: 4000,
-      rainfall: 500
-    });
+// Global vars
+let map, sensorStyle, sensorValue, sensorFeature
 
-    var iconStyle = new ol.style.Style({
-      image: new ol.style.Icon({
-        anchor: [0, 0],
-        anchorXUnits: 'fraction',
-        anchorYUnits: 'fraction',
-        src: 'https://openlayers.org/en/v3.20.1/examples/data/icon.png',
-        scale: 20
-      })
-    });
+// Utils
+function getSensorName(sensorFeature = false) {
+  let name = sensorFeature.customData.sensorName
+  return name
+}
 
-    iconFeature.setStyle(iconStyle);
+function getSensorValue(sensorFeature = false, sensorValue = false) {
+  if (sensorValue) {
+    return sensorValue
+  } else {
+    return ''
+  }
+  // value = props.customData.last
+  // return value || "20.3°C"
+}
 
-    var vectorSource = new ol.source.Vector({
-      features: [iconFeature]
-    });
+function getSensorIcon(sensorFeature = false) {
+  let type = sensorFeature.customData.sensorType
+  if (type == 'door')
+    return '\uf52a'
+  else if (type == 'temperature')
+    return '\uf2c8'
+  else if (type == 'voltage')
+    return '\uf0e7'
+  else
+    return '\uf041'
+  // return '/images/ol_logo.png'
+}
+// End utils
 
-    var vectorLayer = new ol.layer.Vector({
-      source: vectorSource
-    });
-
-    var map = new ol.Map({
-      target: 'map',
-      layers: [
-        new ol.layer.Tile({
-          source: new ol.source.OSM()
-        })
-      ],
-      view: new ol.View({
-        center: ol.proj.fromLonLat([26.08, 44.45]),
-        zoom: 7
-      })
-    });*/
-
-/*var feature = new ol.Feature({
-  // geometry: new ol.geom.Point(ol.proj.fromLonLat([26.08, 44.45]))
-  geometry: new ol.geom.Point([2898477.708941509, 5530897.323059931]),
-})*/
-
-/* const fillStyle = new ol.style.Fill({
-       color: [255, 0, 0, 1]
-     })
- 
-     const strokeStyle = new ol.style.Stroke({
-       color: [0, 255, 0, 1],
-       width: 1.2
-     })
- 
-     const circleStyle = new ol.style.Circle({
-       fill: new ol.style.Fill({
-         color: [0, 0, 255, 1]
-       }),
-       radius: 7,
-       stroke: strokeStyle
-     })
- 
-     var iconStyle = new Style({
-       image: new Icon({
-         anchor: [0.5, 46],
-         anchorXUnits: 'fraction',
-         anchorYUnits: 'pixels',
-         src: 'https://openlayers.org/en/v3.20.1/examples/data/icon.png'
-       })
-     });
- 
-     var layer = new ol.layer.Vector({
-       source: new ol.source.Vector({
-         features: [feature]
-       }),
-       style: new ol.style.Style({
-         fill: fillStyle,
-         stroke: strokeStyle,
-         image: circleStyle
-       })
-     });
- 
-     map.addLayer(layer);*/
-
-// if (ol.Map.prototype.getLayer === undefined) {
-//   ol.Map.prototype.getLayer = function (id) {
-//     var layer;
-//     this.getLayers().forEach(function (lyr) {
-//       if (id == lyr.get('id')) {
-//         layer = lyr;
-//       }
-//     });
-//     return layer;
-//   }
-// }
+sensorStyle = (sensorFeature=false, sensorValue=false) => {
+  return [new Style({
+    // image: new Icon({
+    //   img: canvas,
+    //   imgSize: [canvas.width, canvas.height]
+    // }),
+    text: new Text({
+      scale: 1,
+      text: getSensorIcon(sensorFeature = sensorFeature),
+      font: 'normal 26px FontAwesome',
+      offsetY: -5
+    })
+  }), new Style({
+    text: new Text({
+      scale: 1,
+      text: getSensorName(sensorFeature = sensorFeature),
+      font: 'normal 16px Calibri',
+      offsetY: 23
+    })
+  }), new Style({
+    text: new Text({
+      scale: 1,
+      text: getSensorValue(sensorFeature = sensorFeature, sensorValue = sensorValue),
+      font: 'normal 16px Calibri',
+      offsetY: 40
+    })
+  })]
+}
 
 // detect map container
 // let getLocation = async (sensorId) => {
@@ -257,9 +223,6 @@ if (!userData_raw.error)
       mapOption = sensor.map
     }
   })
-
-// Global vars
-let map
 
 // Do magic stuff
 if ((!mapOption || mapOption == 'NULL') && searchObj.id) {
@@ -641,14 +604,32 @@ socket.on(socketChannel, async (data) => {
     console.log(msg)
 
     let layers = map.map.getLayers()
-    layers.array_[1].setStyle([
-      new Style({
-        text: new Text({
-          scale: 1.3,
-          text: msg.cId + "\n" + msg.value,
-        })
-      })
-    ])
+    window.layers = layers
+    // console.log(layers)
+    // array_[1].style_[0].text_.text_
+    for (const [ol_index, sensor] of Object.entries(layers.array_[1].values_.source.uidIndex_)) {
+      if (sensor.customData.sensorId == msg.cId) {
+        // console.log(msg.cId, msg.value)
+        // sensor.setStyle(sensorStyle(sensorFeature = sensor, sensorValue = msg.value))
+        sensor.setStyle(new Style({
+          text: new Text({
+            scale: 1,
+            text: msg.cId,
+            font: 'normal 16px Calibri',
+            offsetY: -5
+          })
+        }))
+      }
+    }
+
+    // layers.values_.source.uidIndex_.setStyle([
+    //   new Style({
+    //     text: new Text({
+    //       scale: 1.3,
+    //       text: msg.cId + "\n" + msg.value,
+    //     })
+    //   })
+    // ])
 
   }
 
@@ -934,140 +915,6 @@ function createMap(coordinates = '', sensorValuesJson = '') {
   // console.log(sensors)
   // end sensors of this zone
 
-  // var source = new ol.source.Vector({
-  //   features: [
-  //     new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([24, 40]))),
-  //     new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([24, 44]))),
-  //     new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([24, 45.5]))),
-  //     new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([24, 45])))],
-  //   test: "string"
-  // });
-
-  // console.log(source)
-
-  // debugger
-
-  // var clusterSource = new ol.source.Cluster({
-  //   distance: 75,
-  //   source: source
-  // });
-
-  // var styleCache = {};
-
-  // function getLatestValue(pinLocation) {
-  //   var val = undefined
-  //   // var val = sensorValuesJson
-
-  //   sensorDictionary.forEach(sensor => {
-  //     // console.log(sensor[1], sensor[0], pinLocation, sensor[0].equals(pinLocation) === true)
-
-  //     // this loads too many times - it may be slow when there will be more sensors
-  //     // console.log(sensor[1], sensorValuesJson)
-
-  //     if (sensor[0].equals(pinLocation) === true) {
-
-  //       // console.log(sensor[1], sensor[0].equals(pinLocation) === true, sensorValuesJson)
-
-  //       sensorValuesJson.forEach(sensorVal => {
-  //         if (sensor[1] == sensorVal[0]) {
-  //           if (sensor[1].includes("source")) {
-  //             val = parseFloat(sensorVal[1]) + "V"
-  //           } else {
-  //             val = parseFloat(sensorVal[1]) + "°C"
-  //           }
-  //         }
-
-  //       })
-
-  //       // val = sensorValuesJson[sensor[1]]
-
-  //       // val = parseFloat(val)
-  //       // val = sensor[1]
-  //       // val = await latest[0].value
-  //     }
-  //   })
-
-  //   if (val == undefined) {
-  //     return "undefined"
-  //   } else {
-  //     return val
-  //   }
-
-  // }
-
-  // var pinLocation
-  // let latestValue
-
-  // var clusters = new ol.layer.Vector({
-  //   source: clusterSource,
-  //   style: function (feature) {
-
-  //     var size = feature.get('features').length;
-
-  //     pinLocation = feature.getGeometry().flatCoordinates
-
-  //     // console.log(pinLocation)
-
-  //     var style
-  //     if (!style && size > 1) {
-  //       // style when cluster
-  //       style = new ol.style.Style({
-  //         image: new ol.style.Circle({
-  //           radius: 20,
-  //           fill: new ol.style.Fill({
-  //             color: '#ffc107'
-  //           })
-  //         }),
-  //         text: new ol.style.Text({
-  //           scale: 2.8,
-  //           text: size.toString(),
-  //           fill: new ol.style.Fill({
-  //             color: 'black'
-  //           })
-  //         })
-  //       });
-  //       styleCache[size] = style;
-  //       return style
-  //     } else if (!style && size <= 1) {
-  //       // style when single
-  //       style = new ol.style.Style({
-  //         image: new ol.style.Icon({
-  //           anchor: [0.5, 0.5],
-  //           anchorXUnits: 'fraction',
-  //           anchorYUnits: 'fraction',
-  //           src: '/images/ol_logo.png',
-  //           scale: 0.05,
-  //           radius: 10,
-  //         }),
-  //         text: new ol.style.Text({
-  //           // text: 'test',
-  //           padding: [1, 0, 0, 4],
-  //           // text: getLatestValue(pinLocation).toString(),
-  //           text: '20',
-  //           placement: 'point',
-  //           scale: 2,
-  //           textAlign: 'center',
-  //           textBaseline: 'middle',
-  //           offsetX: 2,
-  //           offsetY: -40,
-  //           backgroundFill: new ol.style.Fill({
-  //             color: 'black'
-  //           }),
-  //           fill: new ol.style.Fill({
-  //             color: 'white'
-  //           })
-  //         })
-  //       });
-  //       styleCache[size] = style;
-
-  //       return style
-
-  //     }
-
-  //   }
-  // });
-
-
   // Example map layer
   let extent = [0, 0, 720, 550];
 
@@ -1115,42 +962,23 @@ function createMap(coordinates = '', sensorValuesJson = '') {
   let features = new Array()
   let undefinedX = 0, undefinedY = 0
   for (const sensor of sensors) {
-    if (sensor.x == 0) {
+    // console.log(sensor.x, sensor.y)
+    if (sensor.x == 0 && sensor.y == 0) { // [ ] TODO: check when sensor is not defined
       let feature = new ol.Feature(new ol.geom.Point([undefinedX, undefinedY]))
       feature['customData'] = { ...sensor, last: null }
       features.push(feature)
-      console.log(feature)
-      undefinedX += 20
+      undefinedX += 50
       if (undefinedX > 500) {
         undefinedX = 0
-        undefinedY += 50
+        undefinedY += 100
       }
+    } else {
+      let feature = new ol.Feature(new ol.geom.Point([sensor.x, sensor.y]))
+      feature['customData'] = { ...sensor, last: null }
+      features.push(feature)
     }
   }
   // End get sensor to feature
-
-  function getSensorName(props) {
-    let name = props.customData.sensorName
-    return name
-  }
-
-  function getSensorValue(props) {
-    let value = props.customData.last
-    return value || "20.3°C"
-  }
-
-  function getSensorIcon(props) {
-    let type = props.customData.sensorType
-    if (type == 'door')
-      return '\uf52a'
-    else if (type == 'temperature')
-      return '\uf2c8'
-    else if (type == 'voltage')
-      return '\uf0e7'
-    else
-      return '\uf041'
-    // return '/images/ol_logo.png'
-  }
 
   var source = new VectorSource({
     // features: [iconFeature],
@@ -1166,36 +994,14 @@ function createMap(coordinates = '', sensorValuesJson = '') {
   // ctx.fillStyle = 'green';
   // ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  // How sensor appear on map
+  // moved up
+
   let vectorLayer = new VectorLayer({
     source: source,
     style: function (feature) {
       // console.log(feature.get('name'))
-      return [new Style({
-        // image: new Icon({
-        //   img: canvas,
-        //   imgSize: [canvas.width, canvas.height]
-        // }),
-        text: new Text({
-          scale: 1,
-          text: getSensorIcon(feature),
-          font: 'normal 26px FontAwesome',
-          offsetY: -5
-        })
-      }), new Style({
-        text: new Text({
-          scale: 1,
-          text: getSensorName(feature),
-          font: 'normal 16px Calibri',
-          offsetY: 23
-        })
-      }), new Style({
-        text: new Text({
-          scale: 1,
-          text: getSensorValue(feature),
-          font: 'normal 16px Calibri',
-          offsetY: 40
-        })
-      })]
+      return sensorStyle(sensorFeature = feature)
     }
   });
   // End exmaple map layer
@@ -1242,15 +1048,21 @@ function createMap(coordinates = '', sensorValuesJson = '') {
   map.addInteraction(modify);
 
   // Hover over points and do actions
-  // map.on('pointermove', function (event) {
-  //   let map = event.map;
-  //   let feature = map.forEachFeatureAtPixel(
-  //     event.pixel, function (feature, layer) {
-  //       return feature
-  //     }
-  //   )
-  //   // console.log(feature)
-  // })
+  modify.on('modifyend', function (event) {
+    let sensors = event.features.array_
+    for (const sensor of sensors) {
+      const sensorId = sensor.customData.sensorId
+      const x = sensor.geometryChangeKey_.target.flatCoordinates[0]
+      const y = sensor.geometryChangeKey_.target.flatCoordinates[1]
+      fetch("/api/v3/save-position?x=" + x + "&y=" + y + "&sensor=" + sensorId).then(result => {
+        console.log(sensorId, 'modified')
+      })
+      // console.log(sensor)
+    }
+  })
+
+  // 0: 281.03851318359375
+  // 1: 319.3243408203125
 
   // var draw, snap; // global so we can remove them later
   // var typeSelect = document.getElementById('type');
