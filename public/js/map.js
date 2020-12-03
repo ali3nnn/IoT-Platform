@@ -343,7 +343,7 @@ let icon = {
 // Everything happens if custom-map is present
 if ($("#map .custom-map")) {
 
-  // undefinedSensorsTemplate
+  // Sensors with no location
   let undefinedSensorsTemplate = (sensorList) => {
 
     let sensorToDisplay = ''
@@ -427,7 +427,7 @@ if ($("#map .custom-map")) {
 
       // Info
       // console.log(sensor.alerts)
-      let infoClass = ''
+      let infoClass = 'normal-state'
       if (sensor.alerts == 1)
         infoClass = 'alert-active'
       else if (sensor.alerts == 2)

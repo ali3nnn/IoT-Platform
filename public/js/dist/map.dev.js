@@ -242,7 +242,7 @@ var icon = {
 }; // Everything happens if custom-map is present
 
 if ($("#map .custom-map")) {
-  // undefinedSensorsTemplate
+  // Sensors with no location
   var undefinedSensorsTemplate = function undefinedSensorsTemplate(sensorList) {
     var sensorToDisplay = '';
     var _iteratorNormalCompletion = true;
@@ -316,7 +316,7 @@ if ($("#map .custom-map")) {
               if (sensor.sensorType == 'door') iconToShow = icon[sensor.sensorType][0];else iconToShow = icon[sensor.sensorType]; // Info
               // console.log(sensor.alerts)
 
-              infoClass = '';
+              infoClass = 'normal-state';
               if (sensor.alerts == 1) infoClass = 'alert-active';else if (sensor.alerts == 2) infoClass = 'alarm-active';else if ([3, 4].includes(sensor.alerts)) infoClass = 'no-power'; // Sensor on map
 
               $(".custom-map").append("\n            <div sensor=\"" + sensor.sensorId + "\" type=\"" + sensor.sensorType + "\" class=\"" + infoClass + " sensor-disabled sensor-item draggable ui-widget-content\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"" + sensor.sensorId + "\">\n              " + iconToShow + "\n              <span class='sensorName'>" + sensor.sensorName + "</span>\n              <span class='sensorValue'>No data</span>\n              <span class=\"not-live pulse\"></span>\n            </div>"); // Make sensor on map draggable
