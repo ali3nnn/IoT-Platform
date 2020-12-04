@@ -1,14 +1,11 @@
 // Imports
 // ==================================
-const http = require('http') // its a default package of node.js
+// const http = require('http') // its a default package of node.js
 const express = require('express')
-
-var app = require('express')();
+const app = express()
 // var http = require('http').Server(app);
 // var io = require('socket.io')(http);
-
 var fs = require('fs');
-
 const path = require('path')
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv')
@@ -22,11 +19,8 @@ const axios = require('axios')
 const moment = require('moment')
 const formidable = require('formidable');
 const removeDiacritics = require('diacritics').remove;
-// global.fetch = require("node-fetch");
 const mime = require('mime');
-// const { exec } = require("child_process");
 const _ = require('lodash');
-
 const Handlebars = require('handlebars');
 const HandlebarsIntl = require('handlebars-intl');
 
@@ -64,7 +58,7 @@ Handlebars.registerHelper('times', function (n, block) {
 Handlebars.registerHelper('eq', function () {
     const args = Array.prototype.slice.call(arguments, 0, -1);
     return args.every(function (expression) {
-        return args[0] == expression;
+        return args[0] == expression;  
     });
 });
 
@@ -4801,55 +4795,11 @@ app.get('/api/v3/query-influx', (req, res) => {
     })
 })
 
+// problems with port - alaways opens a child and leaves it open
+
 const PORT = process.env.PORTDEV;
+// const PORT = 5000
 
-var server = app.listen(PORT, console.log(`NodeJS started on port ${PORT}`)).on('error', function (err) {
+app.listen(PORT, console.log(`NodeJS started on port ${PORT}`)).on('error', function (err) {
     console.log(err)
-
-    if (err) {
-        // checkPort()
-        // process.exit();
-        // console.log(`port:`,port)
-        // let kill = killPort(port)
-    }
 });
-
-// let checkPort = () => {
-//     exec('netstat -ltnup | grep 5000', (error, stdout, stderr) => {
-//         if (error) {
-//             console.log(`error: ${error.message}`)
-//             process.exit(1);
-//             return
-//         } else if (stderr) {
-//             console.log(`stderr: ${stderr}`)
-//             process.exit(1);
-//             return
-//         } else {
-//             let pid = parseInt(String(stdout).split('LISTEN')[1].split('/node')[0])
-
-//             killPort(pid)
-//         }
-
-//     })
-// }
-
-let killPort = (pid) => {
-
-//     exec(`kill ` + pid, (error2, stdout2, stderr2) => {
-//         if (error2) {
-//             console.log(`error2: ${error2.message}`)
-//             process.exit(1);
-//             return
-//         } else if (stderr2) {
-//             console.log(`stderr2: ${stderr2}`)
-//             process.exit(1);
-//             return
-//         } else if (stdout2) {
-//             console.log(`stdout2: ${stdout2}`)
-//             process.exit(1);
-//         } else {
-//             console.log("kill " + pid)
-//             process.exit(1);
-//         }
-//     })
-}

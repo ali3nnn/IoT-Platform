@@ -625,14 +625,20 @@ export function downloadCSVMulti(args) {
             if (args.data[sensor]) {
                 if (args.types[columnIndex] == 'door') { // add column for DOOR
                     // console.log("door:", args.data[sensor].rows[rowIndex].value)
-                    if (args.data[sensor].rows[rowIndex].value != null)
-                        row += args.data[sensor].rows[rowIndex].value + ' min open'
+                    if(args.data[sensor].rows[rowIndex])
+                        if (args.data[sensor].rows[rowIndex].value != null)
+                            row += args.data[sensor].rows[rowIndex].value + ' min open'
                     else
                         row += " "
 
                 }
                 else if (args.types[columnIndex] == 'temperature') { // add column for TEMPERATURE
-                    let value = roundToTwo(parseFloat(args.data[sensor].rows[rowIndex].value))
+                    let value
+                    try {
+                        value = roundToTwo(parseFloat(args.data[sensor].rows[rowIndex].value))
+                    } catch {
+                        value = null
+                    }
                     if (value || value == 0)
                         row += roundToTwo(parseFloat(args.data[sensor].rows[rowIndex].value)) + " °C"
                     else

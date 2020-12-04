@@ -688,10 +688,17 @@ function downloadCSVMulti(args) {
           if (args.types[columnIndex] == 'door') {
             // add column for DOOR
             // console.log("door:", args.data[sensor].rows[rowIndex].value)
-            if (args.data[sensor].rows[rowIndex].value != null) row += args.data[sensor].rows[rowIndex].value + ' min open';else row += " ";
+            if (args.data[sensor].rows[rowIndex]) if (args.data[sensor].rows[rowIndex].value != null) row += args.data[sensor].rows[rowIndex].value + ' min open';else row += " ";
           } else if (args.types[columnIndex] == 'temperature') {
             // add column for TEMPERATURE
-            var value = roundToTwo(parseFloat(args.data[sensor].rows[rowIndex].value));
+            var value = void 0;
+
+            try {
+              value = roundToTwo(parseFloat(args.data[sensor].rows[rowIndex].value));
+            } catch (_unused) {
+              value = null;
+            }
+
             if (value || value == 0) row += roundToTwo(parseFloat(args.data[sensor].rows[rowIndex].value)) + " °C";else row += " ";
           }
         } else row += " ";

@@ -246,7 +246,7 @@ let zoneModal = (id, zoneid, location1, location2, location3, custommap, olmap, 
 
                                 <div class="form-group">
                                     <input type="radio" `+ custommap + ` name="map" value="` + (() => { return (path == 'NULL' || !path) ? 'custom' : path })() + `"> Custom Map ` + (() => { return (path == 'NULL' || !path) ? '' : '(<a target="_blank" rel="noopener noreferrer" href="/images/custom-maps/' + path + '">Image</a>)' })() + ` </input> <br>
-                                    <input type="radio" `+ olmap + ` name="map" value="ol"> OL Map </input>
+                                    <input type="radio" `+ olmap + ` name="map" value="ol"> World map</input>
                                 </div>
 
                                 <div class="form-group">
