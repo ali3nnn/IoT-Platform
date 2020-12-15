@@ -23,5 +23,6 @@ module.exports = {
                 loader: 'url-loader'
             }
         ]
-    }
+    },
+    watch: true
 };

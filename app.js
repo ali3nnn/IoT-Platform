@@ -717,9 +717,12 @@ app.get('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, asy
                     })
                 })
         } else {
-            res.send({
-                error: "This sensor has been initialized"
-            })
+            res.redirect('/map/zone?zoneid='+userData[0].zoneId)
+            // res.send({
+            //     ...getQuery,
+            //     zoneId:userData[0].zoneId,
+            //     userData
+            // })
         }
     } else if (sess.username) {
         // TODO: display a graph with values of this sensor
@@ -843,14 +846,18 @@ app.get('/api/v3/get-sensor-data', (req, res) => {
 
     // Process time
     let todayRaw = new Date();
+    // todayRaw.setDate(todayRaw.getDate()-1)
     // let todayQueryDoor = todayRaw.getFullYear() + '-' + (todayRaw.getMonth() + 1) + '-' + (todayRaw.getDate() - 1 < 10 ? '0' + todayRaw.getDate() - 1 : todayRaw.getDate() - 1) + ' ' + '00:00:00'
     // let todayQueryGeneral = todayRaw.getFullYear() + '-' + (todayRaw.getMonth() + 1) + '-' + (todayRaw.getDate()-1 < 10 ? '0' + todayRaw.getDate()-1 : todayRaw.getDate()-1) + ' ' + '00:00:00'
-    let todayQueryDoor = todayRaw.toISOString().split("T")[0] + ' 00:00:00'
+    // let todayQueryDoor = todayRaw.toISOString().split("T")[0] + ' 00:00:00'
     let todayQueryGeneral = todayRaw.toISOString().split("T")[0] + ' 00:00:00'
 
     let influxQuery
     if (['door'].includes(req.query.type)) {
         // console.log(req.query.type)
+        let todayRaw = new Date();
+        todayRaw.setDate(todayRaw.getDate()-1)
+        let todayQueryDoor = todayRaw.toISOString().split("T")[0] + ' 00:00:00'
         influxQuery = "SELECT value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQueryDoor + "' and time<now() order by time desc;"
         // influxQuery = "SELECT value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQuery + "' and time<now() order by time desc;"
     } else {
