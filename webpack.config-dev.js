@@ -15,6 +15,7 @@ module.exports = {
                 use: [
                     "style-loader", // inject css into dom
                     "css-loader", // take css and insert it into js
+                    // "autoprefixer",
                     "sass-loader", // convert sass to css
                 ]
             },

@@ -477,7 +477,7 @@ function roundToTwo(num) {
 // Used for exporting sensor charts
 export function downloadCSV(args) {
 
-    console.log(args)
+    // console.log(args)
 
     let data, filename, link;
     let csv = "";
@@ -488,7 +488,7 @@ export function downloadCSV(args) {
 
     if (args.sensorType == 'door') {
         ylabels = ylabels.map(value => {
-            return value ? "closed" : value == null ? "not recorded" : "open"
+            return value ? "closed" : value == null ? " " : "open"
         })
         xlabels = xlabels.map(time => {
             return time ? time.split("T")[0] + " " + time.split("T")[1].split(".")[0] : time
@@ -498,22 +498,22 @@ export function downloadCSV(args) {
         })
         jsonUniqueByDate = _.uniqBy(json, 'time')
         // Header of table
-        csv = "Date,State\n"
+        csv = "Date,State (min open)\n"
     } else if (args.sensorType == 'temperature') {
         ylabels = ylabels.map(value => {
-            return value ? value.toFixed(1) : "not recorded"
+            return value ? value.toFixed(1) : " "
         })
         xlabels = xlabels.map(time => {
             return time ? time.replace(":00.000Z", "").replace("T", " ") : time
         })
         // Header of table
-        csv = "Date,Temperature\n"
+        csv = "Date,Temperature (°C)\n"
     }
 
-    console.log(json)
-    console.log(jsonUniqueByDate) // TODO: extract value form this json to put in CSV
-    console.log(xlabels)
-    console.log(ylabels)
+    // console.log(json)
+    // console.log(jsonUniqueByDate) // TODO: extract value form this json to put in CSV
+    // console.log(xlabels)
+    // console.log(ylabels)
 
     for (var i = 0; i < ylabels.length; i++) {
         csv += xlabels[i] + "," + ylabels[i].toString() + "\n"
@@ -539,15 +539,23 @@ export function downloadCSV(args) {
 // Used for reports from settings
 export function downloadCSVMulti(args) {
 
-    // console.log(args.date)
+    console.log(args)
 
     var data, filename, link;
     var csv = "";
 
+    // function to append unit in header
+    const unit = (idx) => {
+        if(args.types[idx] == 'door')
+            return ' (min open)'
+        else if(args.types[idx] == 'temperature')
+            return ' (°C)'
+    }
+
     // Header of table
     csv = "Date,"
     args.sensors.forEach((item, index) => {
-        csv += item
+        csv += item + unit(index)
         if (index != args.sensors.length - 1)
             csv += ","
     })
@@ -626,7 +634,7 @@ export function downloadCSVMulti(args) {
                 if (args.types[columnIndex] == 'door') { // add column for DOOR
                     // console.log("door:", args.data[sensor].rows[rowIndex].value)
                     if (args.data[sensor].rows[rowIndex].value != null)
-                        row += args.data[sensor].rows[rowIndex].value + ' min open'
+                        row += args.data[sensor].rows[rowIndex].value
                     else
                         row += " "
 
@@ -634,7 +642,7 @@ export function downloadCSVMulti(args) {
                 else if (args.types[columnIndex] == 'temperature') { // add column for TEMPERATURE
                     let value = roundToTwo(parseFloat(args.data[sensor].rows[rowIndex].value))
                     if (value || value == 0)
-                        row += roundToTwo(parseFloat(args.data[sensor].rows[rowIndex].value)) + " °C"
+                        row += roundToTwo(parseFloat(args.data[sensor].rows[rowIndex].value))
                     else
                         row += " "
                 }
@@ -669,6 +677,7 @@ export function downloadCSVMulti(args) {
 
 // Used to make the requests before going to downloadCSVMulti()
 export function getMultiReport(listOfZones, date = []) {
+
     if (listOfZones) {
 
         let sensorsRaw = userData_raw.filter((item, index) => {

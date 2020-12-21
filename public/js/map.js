@@ -58,8 +58,18 @@ function getSensorName(sensorFeature = false) {
 }
 
 function getSensorValue(sensorFeature = false, sensorValue = false) {
+  let unitMeasure = ''
+
+  let type = sensorFeature.customData.sensorType
+  if (type == 'door')
+    unitMeasure = ''
+  else if (type == 'temperature')
+    unitMeasure = '℃'
+  else if (type == 'voltage')
+    unitMeasure = 'V'
+
   if (sensorValue) {
-    return sensorValue
+    return sensorValue + ' ' + unitMeasure
   } else {
     return ''
   }
@@ -81,7 +91,7 @@ function getSensorIcon(sensorFeature = false) {
 }
 // End utils
 
-sensorStyle = (sensorFeature=false, sensorValue=false) => {
+sensorStyle = (sensorFeature = false, sensorValue = false) => {
   return [new Style({
     // image: new Icon({
     //   img: canvas,
@@ -588,48 +598,47 @@ socket.on(socketChannel, async (data) => {
       // Append value and symbol
       $(item).html(parseFloat(data.message).toFixed(1) + symbol())
     }
-
   })
 
   // NEW TOPIC dataPub
   // dataPub {cId: "DAS001TCORA", value: 23.992979}
   if (data.topic == 'dataPub') {
-    let msg = JSON.parse(data.message)
-    updateCurrentValueOnMap(msg.cId, parseFloat(msg.value).toFixed(1))
+    // let msg = JSON.parse(data.message)
+    // updateCurrentValueOnMap(msg.cId, parseFloat(msg.value).toFixed(1))
   }
 
   // OL MAP REFRESH
   if (mapOption == 'ol' && data.topic == 'dataPub') {
+
     let msg = JSON.parse(data.message)
     console.log(msg)
+    console.log(vectorLayerFeature)
 
     let layers = map.map.getLayers()
-    window.layers = layers
+    // window.layers = layers
     // console.log(layers)
     // array_[1].style_[0].text_.text_
     for (const [ol_index, sensor] of Object.entries(layers.array_[1].values_.source.uidIndex_)) {
       if (sensor.customData.sensorId == msg.cId) {
         // console.log(msg.cId, msg.value)
+        // console.log(vectorLayerFeature)
         // sensor.setStyle(sensorStyle(sensorFeature = sensor, sensorValue = msg.value))
-        sensor.setStyle(new Style({
-          text: new Text({
-            scale: 1,
-            text: msg.cId,
-            font: 'normal 16px Calibri',
-            offsetY: -5
-          })
-        }))
+        for (const feature of window.vectorLayerFeature) {
+          // console.log(feature)
+          if (feature.customData.sensorId == msg.cId)
+            sensor.setStyle(sensorStyle(sensorFeature = feature, sensorValue = msg.value.toFixed(2)))
+        }
+
+        // sensor.setStyle([new Style({
+        //   text: new Text({
+        //     scale: 1,
+        //     text: msg.cId + '\n' + msg.value.toFixed(2),
+        //     font: 'normal 16px Calibri',
+        //     offsetY: -5
+        //   })
+        // })])
       }
     }
-
-    // layers.values_.source.uidIndex_.setStyle([
-    //   new Style({
-    //     text: new Text({
-    //       scale: 1.3,
-    //       text: msg.cId + "\n" + msg.value,
-    //     })
-    //   })
-    // ])
 
   }
 
@@ -887,6 +896,7 @@ function getCenterOfMap() {
 function createMap(coordinates = '', sensorValuesJson = '') {
 
   let result = {}
+  window.vectorLayerFeature = []
 
   // var features = new Array();
   // for (var i = 0; i < coordinates.length; ++i) {
@@ -1001,6 +1011,9 @@ function createMap(coordinates = '', sensorValuesJson = '') {
     source: source,
     style: function (feature) {
       // console.log(feature.get('name'))
+      if (!vectorLayerFeature.includes(feature)) {
+        vectorLayerFeature.push(feature)
+      }
       return sensorStyle(sensorFeature = feature)
     }
   });

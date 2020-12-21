@@ -717,7 +717,7 @@ app.get('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, asy
                     })
                 })
         } else {
-            res.redirect('/map/zone?zoneid='+userData[0].zoneId)
+            res.redirect('/map/zone?zoneid=' + userData[0].zoneId)
             // res.send({
             //     ...getQuery,
             //     zoneId:userData[0].zoneId,
@@ -854,9 +854,8 @@ app.get('/api/v3/get-sensor-data', (req, res) => {
 
     let influxQuery
     if (['door'].includes(req.query.type)) {
-        // console.log(req.query.type)
         let todayRaw = new Date();
-        todayRaw.setDate(todayRaw.getDate()-1)
+        todayRaw.setDate(todayRaw.getDate() - 1)
         let todayQueryDoor = todayRaw.toISOString().split("T")[0] + ' 00:00:00'
         influxQuery = "SELECT value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQueryDoor + "' and time<now() order by time desc;"
         // influxQuery = "SELECT value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQuery + "' and time<now() order by time desc;"
@@ -880,7 +879,7 @@ app.get('/api/v3/get-sensor-data', (req, res) => {
 
             if (paddingStyle == 1) {
 
-                // Push 0 or 1 from current time to last time in influx
+                // PUSH CURRENT TIME VALUE
                 let lastValue = result[0].value
                 if (lastValue == 1) { // Fills with 1s
                     let lastTimestamp = new Date(result[0].time)
@@ -892,9 +891,10 @@ app.get('/api/v3/get-sensor-data', (req, res) => {
                     finalResult.push({ "time": new Date(currentDate).toISOString(), "value": 0, "info": "init with current time" })
                 }
 
-                // Padding results
+                // MARK START AND END OF OPEN AND CLOSED TIME
                 let rightBeforeTime
                 result.forEach((item, index) => {
+                    // if (index - 1 in result && result[index - 1] != item.value) {
                     if (item.value == 0) { // if item.value == 0
                         // get current time
                         let time = item.time
@@ -918,6 +918,7 @@ app.get('/api/v3/get-sensor-data', (req, res) => {
                             finalResult.push({ "time": rightBeforeTime.toISOString(), "value": 0, "info": "rightBefore 1" })
                         }
                     }
+                    // }
                 })
 
                 // Filter only today's data
@@ -982,7 +983,7 @@ app.get('/api/v3/get-sensor-data', (req, res) => {
                     oldestValue = finalResult[finalResult.length - 1].value // earliest value recorded today
                     let midnight = new Date()
                     midnight = midnight.toISOString().split("T")[0] + 'T00:00:00.000Z'
-                    if(oldestValue==1) { // if sensor started with 1, put at midnight
+                    if (oldestValue == 1) { // if sensor started with 1, put at midnight
                         finalResultFiltered.push({ "time": midnight, "value": null })
                     } else {
                         finalResultFiltered.push({ "time": midnight, "value": null })
@@ -1298,7 +1299,7 @@ app.get('/api/v3/get-interval', async (req, res) => {
     // if(sensorType=='door') {
     //     query = influxQuery = "SELECT value FROM sensors where sensorId='" + sensorId + "' and time>='" + req.query.start + "' and time<="+req.query.end+" order by time desc;"
     // } else if (sensorType=='temperature') {
-        query = "select mean(value) as value from sensors where sensorId='" + sensorId + "' and time<='" + req.query.end + "' and time>='" + req.query.start + "' group by time(" + averageTimeInterval(diff) + ") order by time desc"
+    query = "select mean(value) as value from sensors where sensorId='" + sensorId + "' and time<='" + req.query.end + "' and time>='" + req.query.start + "' group by time(" + averageTimeInterval(diff) + ") order by time desc"
     // }
     // console.log(query)
 
@@ -1325,6 +1326,29 @@ app.get("/api/v3/save-position", (req, res) => {
         })
     } else {
         res.status(403).send("Not logged in");
+    }
+})
+
+app.get('/api/v3/set-sensor-name', (req, res) => {
+    sess = req.session
+    if (sess.username) {
+        // console.log(req.query)
+        // Build query
+        const query = "UPDATE sensors SET sensorName='" + req.query.name + "' WHERE sensorId='" + req.query.sensorId + "';"
+        // Check string
+        let spaceCount = req.query.name.split(" ").length - 1;
+        if (req.query.name.length == spaceCount) {
+            res.status(200).send({ msg: "Enter a proper name" });
+        } else {
+            // console.log(query)
+            mysqlReader(query).then((result) => {
+                res.status(200).send({ msg: "Update performed" });
+            }).catch(err => {
+                res.status(400).send({ msg: "Error" });
+            })
+        }
+    } else {
+        res.status(403).send({ msg: "Not logged in" });
     }
 })
 
@@ -3445,7 +3469,7 @@ app.get('/api/get-zones', (req, res) => {
             res.status(200).send(result)
         })
 
-    } 
+    }
     else if (sess.role == "admin") {
 
         // It returns a list of locations and users associated with that location
@@ -3468,7 +3492,7 @@ app.get('/api/get-zones', (req, res) => {
 
         // res.status(200).send(undefined)
 
-    } 
+    }
     else {
         res.status(401).send("You are not logged in!")
     }
@@ -3503,9 +3527,9 @@ app.post('/api/edit-zone', authDashboard, async (req, res) => {
 
         // Drop all access for sensors in this zone
         let dropUserAccess
-        if(sess.role=='superadmin')
+        if (sess.role == 'superadmin')
             dropUserAccess = await mysqlReader("delete from userAccess where sensorId IN (" + finalSensorList + ")")
-        else if(sess.role=='admin')
+        else if (sess.role == 'admin')
             dropUserAccess = true
 
         // Get user list
@@ -3533,9 +3557,9 @@ app.post('/api/edit-zone', authDashboard, async (req, res) => {
         if (valuesToInsert()) {
             // console.log("GRANT ADMIN FOR:", valuesToInsert())
             let grantUserAccess
-            if(sess.role=='superadmin')
+            if (sess.role == 'superadmin')
                 grantUserAccess = await mysqlReader("insert into userAccess (sensorId, username) VALUES " + valuesToInsert())
-            else if(sess.role=='admin')
+            else if (sess.role == 'admin')
                 grantUserAccess = true
         } else {
             grantUserAccess = true
@@ -4424,7 +4448,7 @@ app.post('/api/v3/multi-report/hourly', (req, res) => {
         // Query for DOOR
         if (item == 'door') {
 
-            console.log(item, sensorIds)
+            // console.log(item, sensorIds)
             sensorTypes.isDoor = true
 
             // Return how many times a door has been open or closed in an hour
@@ -4434,7 +4458,7 @@ app.post('/api/v3/multi-report/hourly', (req, res) => {
             queryDoor = influxReader(query)
         } else if (item == 'temperature') { // Query for TEMPERATURE
 
-            console.log(item, sensorIds)
+            // console.log(item, sensorIds)
             sensorTypes.isTemperature = true
 
             // Return average of temperature for each hour
@@ -4483,7 +4507,7 @@ app.post('/api/v3/multi-report/hourly', (req, res) => {
                 dayEnd = new Date(end); // new Date() creates a date with 2 hours less than inserted
                 dayEnd.setTime(dayEnd.getTime() - dayEnd.getTimezoneOffset() * 60 * 1000); // adjust the date
 
-                console.log(dayStart, dayEnd)
+                // console.log(dayStart, dayEnd)
 
                 for (let d = dayStart; d <= dayEnd; d.setHours(d.getHours() + 1)) {
                     let time = d.toISOString()
@@ -4527,11 +4551,11 @@ app.post('/api/v3/multi-report/hourly', (req, res) => {
                     if (newState == 0) {
                         let currentTimeInflux = data.time.getNanoTime()
                         let previousTime
-                        // try {
-                        previousTime = sensor.rows[index - 1].time.getNanoTime()
-                        // } catch(e) {
-                        //     previousTime = currentTime.getTime() * 1000000
-                        // }
+                        try {
+                            previousTime = sensor.rows[index - 1].time.getNanoTime()
+                        } catch (e) {
+                            previousTime = currentTime.getTime() * 1000000
+                        }
                         let duration = (previousTime - currentTimeInflux)
                         let millis = duration / 1000000
                         let seconds = millis / 1000
@@ -4654,7 +4678,7 @@ app.post('/api/v3/multi-report', (req, res) => {
         // Query for DOOR
         if (item == 'door') {
 
-            console.log(item, sensorIds)
+            // console.log(item, sensorIds)
             sensorTypes.isDoor = true
 
             // Return how many times a door has been open or closed in an hour
@@ -4666,7 +4690,7 @@ app.post('/api/v3/multi-report', (req, res) => {
         }
         else if (item == 'temperature') {
 
-            console.log(item, sensorIds)
+            // console.log(item, sensorIds)
             sensorTypes.isTemperature = true
 
             // Return average of temperature for each hour
@@ -4749,14 +4773,20 @@ app.post('/api/v3/multi-report', (req, res) => {
                         oldYear = newYear
                     }
 
+
+                    // console.log(index)
+
                     if (newState == 0) {
                         let currentTimeInflux = data.time.getNanoTime()
                         let previousTime
-                        // try {
-                        previousTime = sensor.rows[index - 1].time.getNanoTime()
-                        // } catch(e) {
-                        //     previousTime = currentTime.getTime() * 1000000
-                        // }
+
+                        // console.log("currentTimeInflux", currentTimeInflux)
+                        // console.log("sensor.rows[index - 1]", sensor.rows[index - 1])
+                        try {
+                            previousTime = sensor.rows[index - 1].time.getNanoTime()
+                        } catch (e) {
+                            previousTime = currentTime.getTime() * 1000000
+                        }
                         let duration = (previousTime - currentTimeInflux)
                         let millis = duration / 1000000
                         let seconds = millis / 1000
@@ -4842,21 +4872,21 @@ var server = app.listen(PORT, console.log(`NodeJS started on port ${PORT}`)).on(
 
 let killPort = (pid) => {
 
-//     exec(`kill ` + pid, (error2, stdout2, stderr2) => {
-//         if (error2) {
-//             console.log(`error2: ${error2.message}`)
-//             process.exit(1);
-//             return
-//         } else if (stderr2) {
-//             console.log(`stderr2: ${stderr2}`)
-//             process.exit(1);
-//             return
-//         } else if (stdout2) {
-//             console.log(`stdout2: ${stdout2}`)
-//             process.exit(1);
-//         } else {
-//             console.log("kill " + pid)
-//             process.exit(1);
-//         }
-//     })
+    //     exec(`kill ` + pid, (error2, stdout2, stderr2) => {
+    //         if (error2) {
+    //             console.log(`error2: ${error2.message}`)
+    //             process.exit(1);
+    //             return
+    //         } else if (stderr2) {
+    //             console.log(`stderr2: ${stderr2}`)
+    //             process.exit(1);
+    //             return
+    //         } else if (stdout2) {
+    //             console.log(`stdout2: ${stdout2}`)
+    //             process.exit(1);
+    //         } else {
+    //             console.log("kill " + pid)
+    //             process.exit(1);
+    //         }
+    //     })
 }

@@ -4386,6 +4386,10 @@ article[sensortype="door"] {
       top: calc(50% - 10px);
       position: relative;
       color: black;
+      -webkit-transform: translate(-50%, -50%);
+      -webkit-transform: -webkit-translate(-50%, -50%);
+      -ms-transform: translate(-50%, -50%);
+      -o-transform: translate(-50%, -50%);
       transform: translate(-50%, -50%);
       display: none;
       text-align: center;
@@ -4980,8 +4984,8 @@ div#map {
         .pulse {
           margin: 0 auto;
           position: absolute;
-          top: 10px;
-          right: 10px;
+          top: 5px;
+          right: 5px;
         }
         .sensorName {
           font-size: 13px;
@@ -5672,6 +5676,9 @@ article[class*="live-card-"] {
 // End Live Animation Pulse
 
 // Live Animation Simple Pulse
+.safari .pulse {
+  display:none;
+}
 .pulse {
   margin-right: 10px;
   display: inline-block;
@@ -5715,6 +5722,32 @@ article[class*="live-card-"] {
   }
 }
 // End Animation Simple Pulse
+
+// Sensor Name Edit
+article[class*="graph-"] {
+  .card-header {
+    .edit-sensor-name {
+        display: inline-block;
+        opacity: 0;
+        visibility: hidden;
+        position: absolute;
+        right: -30px;
+        top: -1px;
+    }
+    &:hover {
+      cursor:pointer;
+      .edit-sensor-name {
+          opacity: 1;
+          visibility: visible;
+          &:hover i {
+            font-weight:bold;
+            // color: var(--yellow);
+          }
+      }
+    }
+  }
+}
+// End Sensor Name Edit
 
 article[class*="graph-"],
 article[class*="live-card-"] {
@@ -6261,6 +6294,14 @@ div#reportrange i:last-child {
 }
 
 /* Chart Style */
+
+// temperature is sensor label
+.custom_tooltip {
+  background:var(--yellow);
+  padding: 3px 5px;
+  border-radius:5px;
+  display:block;
+}
 
 article[class*="graph-"]:not([class*="live"]) {
   background: var(--body-bg);

@@ -180,6 +180,7 @@ function defaultSensorView(sensor) {
 
             <h3 class="card-title">
                 <i class='update-icon'></i>
+                <div class='edit-sensor-name'><i class="far fa-edit"></i></div>
                 <span>` + sensor.sensorMeta.sensorName + `</span> |
                 <b>` + sensor.sensorMeta.sensorId + `</b>
             </h3>
@@ -253,6 +254,27 @@ function triggerSensorView(sensorId) {
         saveSensorSettings(sensorId)
     })
 
+    // Edit sensor name
+    $('.graph-' + sensorId + ' .card-title .edit-sensor-name').on('click', function (event) {
+        let name = prompt('Type a new name for ' + sensorId, $('.graph-' + sensorId + ' .card-title span').text());
+        if (name && sensorId) {
+            const params = new URLSearchParams({ name, sensorId });
+            let url = "/api/v3/set-sensor-name?" + params.toString()
+            // console.log(url)
+            $.ajax({
+                url: url,
+                type: 'GET'
+            }).done((result) => {
+                // console.log(result.msg)
+                if (result.msg == "Update performed") {
+                    $('.graph-' + sensorId + ' .card-title span').html(name)
+                }
+                // let res = result.json()
+                // console.log(res.msg)
+            })
+        }
+    });
+
     // Trigger calendar
     var currentHourPm = moment().format("HH")
     var currentMin = moment().format("mm")
@@ -309,6 +331,9 @@ let getSensorDataCustomInterval = async (sensor, start, end) => {
         $("body").addClass("calendar-active")
     }
 
+    // console.log("calendar-active for ",sensor)
+    $("article.graph-" + sensor).addClass("calendar-active")
+
     // Building the url
     const url = "/api/v3/get-interval?sensorId=" + sensor + "&start=" + start + "&end=" + end
 
@@ -363,13 +388,20 @@ let chartList = []
 // Plot data
 function plotData(sensorId, source = 'attr') {
 
+    // [ ] TODO: skip charts witch class .calendar-active
+    // console.log($("article.graph-" + sensorId)[0].className)
+    if ($("article.graph-" + sensorId).hasClass("calendar-active")) {
+        return
+    }
+
     // [*] TODO: check source attr
     // [*] TODO: get data
     // [ ] TODO: display data
     if (source == 'attr') { // this source should run only when page is loaded
         // Get Data
-        let rawData = $(`article.graph-` + sensorId + ``).attr("sensorData")
-        let sensorType = $(`article.graph-` + sensorId + ``).attr("sensorType")
+        let rawData = $(`article.graph-` + sensorId).attr("sensorData")
+        let sensorType = $(`article.graph-` + sensorId).attr("sensorType")
+        // console.log(rawData)
         let sensorData = JSON.parse(rawData)
         // console.log(sensorData)
         // Add Canvas for chart
@@ -384,12 +416,101 @@ function plotData(sensorId, source = 'attr') {
         let labels = getValuesFromObject('time', sensorData)
         let data = getValuesFromObject('value', sensorData)
 
-        // General ptions of timeseries chart
+        // General options of timeseries chart
         let options = {
             animation: false,
             responsive: true,
             maintainAspectRatio: false,
             drawBorder: false,
+            tooltips: {
+                // Disable the on-canvas tooltip
+                enabled: false,
+                mode: 'index',
+                intersect: false,
+
+                custom: function(tooltipModel) {
+                    // Tooltip Element
+                    var tooltipEl = document.getElementById('chartjs-tooltip');
+                    let sensorType = chart.titleBlock.chart.config.data.datasets[0].label
+                    // Create element on first render
+                    if (!tooltipEl) {
+                        tooltipEl = document.createElement('div');
+                        tooltipEl.id = 'chartjs-tooltip';
+                        tooltipEl.innerHTML = '<table class="custom_tooltip '+sensorType+'_tooltip"></table>';
+                        document.body.appendChild(tooltipEl);
+                    }
+
+                    // Hide if no tooltip
+                    if (tooltipModel.opacity === 0) {
+                        tooltipEl.style.opacity = 0;
+                        return;
+                    }
+
+                    // Set caret Position
+                    tooltipEl.classList.remove('above', 'below', 'no-transform');
+                    if (tooltipModel.yAlign) {
+                        tooltipEl.classList.add(tooltipModel.yAlign);
+                    } else {
+                        tooltipEl.classList.add('no-transform');
+                    }
+
+                    function getBody(bodyItem) {
+                        return bodyItem.lines;
+                    }
+
+                    // Set Text
+                    if (tooltipModel.body) {
+                        var titleLines = tooltipModel.title || [];
+                        titleLines = titleLines.map(title => title.replace("T"," ").split(".")[0])
+                        var bodyLines = tooltipModel.body.map(getBody);
+                        if(sensorType=='door') {
+                            let state = bodyLines[0][0].split(":")[1]
+                            if(state==1) {
+                                bodyLines[0][0] = "open"
+                            } else {
+                                bodyLines[0][0] = "closed"
+                            }
+                        }
+
+                        var innerHtml = '<thead>';
+
+                        titleLines.forEach(function(title) {
+                            innerHtml += '<tr><th>' + title + '</th></tr>';
+                        });
+                        innerHtml += '</thead><tbody>';
+
+                        bodyLines.forEach(function(body, i) {
+                            var colors = tooltipModel.labelColors[i];
+                            var style = 'background:' + colors.backgroundColor;
+                            // var style = 'background: white';
+                            style += '; border-color:' + colors.borderColor;
+                            style += '; border-width: 2px';
+                            style += '; color: white';
+                            var span = '<span style="' + style + '"></span>';
+                            innerHtml += '<tr><td>' + span + body + '</td></tr>';
+                        });
+                        innerHtml += '</tbody>';
+
+                        var tableRoot = tooltipEl.querySelector('table');
+                        tableRoot.innerHTML = innerHtml;
+                    }
+
+                    // `this` will be the overall tooltip
+                    var position = this._chart.canvas.getBoundingClientRect();
+
+                    // Display, position, and set styles for font
+                    tooltipEl.style.opacity = 1;
+                    tooltipEl.style.position = 'absolute';
+                    tooltipEl.style.left = 10 + position.left + window.pageXOffset + tooltipModel.caretX + 'px';
+                    tooltipEl.style.top = position.top + window.pageYOffset + tooltipModel.caretY + 'px';
+                    tooltipEl.style.fontFamily = tooltipModel._bodyFontFamily;
+                    tooltipEl.style.fontSize = tooltipModel.bodyFontSize + 'px';
+                    tooltipEl.style.fontStyle = tooltipModel._bodyFontStyle;
+                    tooltipEl.style.padding = tooltipModel.yPadding + 'px ' + tooltipModel.xPadding + 'px';
+                    tooltipEl.style.pointerEvents = 'none';
+                    tooltipEl.style.transition = '0.23s';
+                }
+            },
             legend: {
                 labels: {
                     fontColor: 'white'
@@ -477,8 +598,8 @@ function plotData(sensorId, source = 'attr') {
             pointBorderColor: '#343a40',
             pointBackgroundColor,
             pointHoverBackgroundColor: "#ffc107",
-            pointRadius: 3,
-            pointHoverRadius: 7,
+            pointRadius: 2,
+            pointHoverRadius: 4,
             pointBorderWidth: 1,
             borderWidth: 1,
             lineTension: 0.2
@@ -487,7 +608,7 @@ function plotData(sensorId, source = 'attr') {
         if (sensorType == 'door') {
             datasetConfig.lineTension = 0
             datasetConfig.pointRadius = pointRadius
-            datasetConfig.pointHoverRadius = 7
+            datasetConfig.pointHoverRadius = pointRadius.map(point => point + 2)
             datasetConfig.pointBorderWidth = 0
             datasetConfig.borderWidth = 1
             // console.log(options.scales.yAxes[0])
@@ -534,9 +655,45 @@ function plotData(sensorId, source = 'attr') {
         }
         // end TYPE of CHART based on sensorType
 
+        Chart.defaults.LineWithLine = Chart.defaults.line;
+        Chart.controllers.LineWithLine = Chart.controllers.line.extend({
+            draw: function(ease) {
+               Chart.controllers.line.prototype.draw.call(this, ease);
+
+               if (this.chart.tooltip._active && this.chart.tooltip._active.length) {
+                  var activePoint = this.chart.tooltip._active[0],
+                      ctx = this.chart.ctx,
+                      x = activePoint.tooltipPosition().x,
+                      y = activePoint.tooltipPosition().y,
+                      topY = activePoint.tooltipPosition().y,
+                      bottomY = this.chart.scales['y-axis-0'].bottom;
+
+                  // draw line
+                  ctx.save();
+                  ctx.beginPath();
+                  ctx.moveTo(x , topY);
+                  ctx.lineTo(x, bottomY);
+                  ctx.lineWidth = 2;
+                  ctx.strokeStyle = datasetConfig.pointHoverBackgroundColor;
+                  ctx.stroke();
+                  ctx.restore();
+
+                  // draw Circle
+                  ctx.save();
+                  ctx.beginPath();
+                  ctx.arc(x , topY, datasetConfig.pointHoverRadius, 0, 2 * Math.PI);
+                  ctx.fillStyle = datasetConfig.pointHoverBackgroundColor;
+                  ctx.fill();
+                  ctx.stroke();
+
+               }
+            }
+           });
+
         // console.log(labels)
         let chart = new Chart(canvas, {
-            type,
+            // type,
+            type: 'LineWithLine',
             data: {
                 labels: labels,
                 datasets,
@@ -806,58 +963,82 @@ let mainLoader = async () => {
 
     // Get data from influx for each sensor
     let sensorDataRaw = []
+    let sensorsWithBattery = []
+    let sensorCounter = 0
+
     for (const sensor of sensorMetaRaw) {
         // Get influx data for each sensor
         let sensorData = await getSensorData(sensor.sensorId, sensor.sensorType)
         sensorDataRaw.push({ sensorMeta: sensor, sensorData })
-    }
-
-    let sensorsWithBattery = []
-
-    for (const sensor of sensorDataRaw) {
-        // Testing
-        // if(sensor.sensorMeta.sensorId=='DAS001TCORA') {[
-        //     sensor.sensorMeta.alerts = 3
-        // ]}
-        // if(sensor.sensorMeta.sensorId=='DAS003TCORA') {[
-        //     sensor.sensorMeta.alerts = 1
-        // ]}
-        // if(sensor.sensorMeta.sensorId=='DAS005TCORA') {[
-        //     sensor.sensorMeta.alerts = 2
-        // ]}
 
         // Append the default sensor view (current value + graph) for each sensor
-        $(".card-container").append(defaultSensorView(sensor));
+        $(".card-container").append(defaultSensorView(sensorDataRaw[sensorDataRaw.length - 1]));
 
         // Enable trigger events on defaultSensorView components after append
-        triggerSensorView(sensor.sensorMeta.sensorId)
+        triggerSensorView(sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.sensorId)
 
         // Plot data on graph based on sensorData attr
-        plotData(sensor.sensorMeta.sensorId)
+        plotData(sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.sensorId)
 
         // Sensors w/ battery functionality
-        if (sensor.sensorMeta.battery == 1)
-            sensorsWithBattery.push(sensor.sensorMeta.sensorId)
+        if (sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.battery == 1)
+            sensorsWithBattery.push(sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.sensorId)
+
+        if (sensorCounter == 0) {// Add info box - location
+            let location3 = sensorDataRaw[0].sensorMeta.location3
+            let location2 = sensorDataRaw[0].sensorMeta.location2
+
+            appendInfoBox({
+                title: location2,
+                message: location3,
+                icon: '<i class="fas fa-compass"></i>',
+                class: ''
+            })
+
+            sensorCounter++
+        }
+
     }
 
+    // let sensorsWithBattery = []
+
+    // for (const sensor of sensorDataRaw) {
+    //     // Testing
+    //     // if(sensor.sensorMeta.sensorId=='DAS001TCORA') {[
+    //     //     sensor.sensorMeta.alerts = 3
+    //     // ]}
+    //     // if(sensor.sensorMeta.sensorId=='DAS003TCORA') {[
+    //     //     sensor.sensorMeta.alerts = 1
+    //     // ]}
+    //     // if(sensor.sensorMeta.sensorId=='DAS005TCORA') {[
+    //     //     sensor.sensorMeta.alerts = 2
+    //     // ]}
+
+    //     // Append the default sensor view (current value + graph) for each sensor
+    //     $(".card-container").append(defaultSensorView(sensor));
+
+    //     // Enable trigger events on defaultSensorView components after append
+    //     triggerSensorView(sensor.sensorMeta.sensorId)
+
+    //     // Plot data on graph based on sensorData attr
+    //     plotData(sensor.sensorMeta.sensorId)
+
+    //     // Sensors w/ battery functionality
+    //     if (sensor.sensorMeta.battery == 1)
+    //         sensorsWithBattery.push(sensor.sensorMeta.sensorId)
+    // }
+
     // Add info box
-    let location3 = sensorDataRaw[0].sensorMeta.location3
-    let location2 = sensorDataRaw[0].sensorMeta.location2
 
-    appendInfoBox({
-        title: location2,
-        message: location3,
-        icon: '<i class="fas fa-compass"></i>',
-        class: ''
-    })
+    // let location3 = sensorDataRaw[0].sensorMeta.location3
+    // let location2 = sensorDataRaw[0].sensorMeta.location2
 
-    // Counter sensor with battery functionality
-    // let sensorsWithBattery = userData_raw.filter((item,index)=>{
-    //     if(item.battery == 1)
-    //         return item
+    // appendInfoBox({
+    //     title: location2,
+    //     message: location3,
+    //     icon: '<i class="fas fa-compass"></i>',
+    //     class: ''
     // })
-
-    // console.log(sensorsWithBattery)
 
     let alert = 0, alarm = 0, power = 0
 
@@ -964,11 +1145,11 @@ let run = async () => {
 run()
 
 // switch-context button listener
-const goToMap = function() {
-    let url = window.location.origin + '/map' + window.location.search.replace("zone","")
+const goToMap = function () {
+    let url = window.location.origin + '/map' + window.location.search.replace("zone", "")
     window.location.replace(url)
 }
 
-$(".switch-context").on('click',()=>{
+$(".switch-context").on('click', () => {
     goToMap()
 })
