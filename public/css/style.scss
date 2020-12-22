@@ -4990,18 +4990,17 @@ div#map {
     &.custom-map {
       // both undefined and on map
       .sensor-item {
-        // Door state
-        // div[type="door"] {
+
+          white-space: nowrap;
+
           &.state-open {
-            // @extend .alert-active;
             background: var(--warning)
             
           }
           &.state-closed {
-            // @extend .alert-active;
-            // background:var(--yellow)
+            background:var(--success)
           }
-        // }
+          
         .pulse {
           margin: 0 auto;
           position: absolute;
@@ -5195,6 +5194,7 @@ div#map > div.custom-map > .sensor-item:hover:after {
   width: auto;
   height: auto;
   display: block;
+  z-index:999;
   .undefinedSensorsInner {
     // display: none;
     position: relative;

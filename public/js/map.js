@@ -367,7 +367,7 @@ if ($("#map .custom-map")) {
 
       // console.log(sensor.sensorId, sensor.sensorType, iconToShow)
 
-      sensorToDisplay += `<span class='sensor-disabled sensor-item' type="` + sensor.sensorType + `" sensor='` + sensor.sensorId + `'>
+      sensorToDisplay += `<span class='sensor-disabled sensor-item' name="`+sensor.sensorName+`" type="` + sensor.sensorType + `" sensor='` + sensor.sensorId + `' title="Click aici pentru a adauga senzorul pe harta">
 
                             <div class='medium-view'>
                               `+ iconToShow + `
@@ -440,7 +440,7 @@ if ($("#map .custom-map")) {
 
       // Append sensor item on map
       $(".custom-map").append(`
-            <div sensor="` + sensor.sensorId + `" type="` + sensor.sensorType + `" class="` + infoClass + ` sensor-disabled sensor-item draggable ui-widget-content" data-toggle="tooltip" data-placement="top" title="` + sensor.sensorId + `">
+            <div name="`+sensor.sensorName+`" sensor="` + sensor.sensorId + `" type="` + sensor.sensorType + `" class="` + infoClass + ` sensor-disabled sensor-item draggable ui-widget-content" data-toggle="tooltip" data-placement="top" title="` + sensor.sensorId + `">
               <!-- medium view -->
               <div class='medium-view'>
                 `+ iconToShow + `
@@ -490,23 +490,22 @@ if ($("#map .custom-map")) {
 
       // Define sensor location
       $(".undefinedSensorsInner").on('click', (e) => {
-        let sensorElement = e.target.parentElement
+        let sensorElement = e.target.parentElement.parentElement
         let sensorId = sensorElement.getAttribute("sensor")
         let sensorType = sensorElement.getAttribute("type")
-        let sensorName = $(sensorElement).children(".sensorName")[0].innerText
-
-        let iconToShow
-        if (sensor.sensorType == 'door')
-          iconToShow = icon[sensorType][0]
-        else
-          iconToShow = icon[sensorType]
+        let sensorName = sensorElement.getAttribute("name")
+        let sensorClasses = sensorElement.getAttribute("class")
 
         // Clone & append
-        let sensorCloned = $(".custom-map .undefinedSensorsInner .sensor-item[sensor=" + sensorId + "]").clone()
-        $(".custom-map").append(sensorCloned)
+        // console.log(sensorElement,sensorId,sensorType,sensorName)
+        let sensorCloned = $(".custom-map .undefinedSensorsInner .sensor-item[sensor=" + sensorId + "] .medium-view").clone()
+        // console.log(sensorCloned)
+        $(".custom-map").append(`<div name="`+sensorName+`" sensor="`+sensorId+`" type="`+sensorType+`" class="`+sensorClasses+`"><div class="medium-view">`+sensorCloned[0].innerHTML+`</div><div class="small-view"><span class="sensorName">`+sensorName+`</span></div></div>`)
+        // console.log(sensorCloned)
 
         // Make it draggable
-        sensorCloned.addClass("draggable")
+        // sensorCloned.addClass("draggable")
+        $(".sensor-item[sensor='"+sensorId+"']").addClass("draggable")
         $(`.draggable[sensor='` + sensorId + `']`).draggable({
           grid: [1, 1],
           create: function (event, ui) {
@@ -526,13 +525,14 @@ if ($("#map .custom-map")) {
           stop: function (event, ui) {
             const sensorId = $(this).attr('sensor')
             fetch("/api/v3/save-position?x=" + ui.position.left + "&y=" + ui.position.top + "&sensor=" + sensorId).then(result => {
-              console.log(result)
+              // console.log(result)
+              sensorElement.remove()
             })
           },
         });
 
         // Remove it from undefined group
-        sensorElement.remove()
+        // sensorElement.remove()
       })
     }
 
