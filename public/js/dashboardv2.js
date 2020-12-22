@@ -463,6 +463,8 @@ function plotData(sensorId, source = 'attr') {
                         var titleLines = tooltipModel.title || [];
                         titleLines = titleLines.map(title => title.replace("T", " ").split(".")[0])
                         var bodyLines = tooltipModel.body.map(getBody);
+
+                        // Special text for DOOR type
                         if (sensorType == 'door') {
                             let state = bodyLines[0][0].split(":")[1]
                             if (state == 1) {
@@ -498,17 +500,27 @@ function plotData(sensorId, source = 'attr') {
                     // `this` will be the overall tooltip
                     var position = this._chart.canvas.getBoundingClientRect();
 
+                    // console.log(position.left, window.pageXOffset, tooltipModel.caretX, this._chart.width)
+
                     // Display, position, and set styles for font
                     tooltipEl.style.opacity = 1;
                     tooltipEl.style.position = 'absolute';
-                    tooltipEl.style.left = 10 + position.left + window.pageXOffset + tooltipModel.caretX + 'px';
-                    tooltipEl.style.top = position.top + window.pageYOffset + tooltipModel.caretY + 'px';
+
+                    // Switch side of tooltip
+                    if (this._chart.width - tooltipModel.caretX - 20 > tooltipModel.width) {
+                        tooltipEl.style.left = 20 + position.left + window.pageXOffset + tooltipModel.caretX + 'px';
+                    }
+                    else {
+                        tooltipEl.style.left = -tooltipModel.width + position.left + window.pageXOffset + tooltipModel.caretX + 'px';
+                    }
+                    // tooltipEl.style.top = position.top + window.pageYOffset + tooltipModel.caretY + 'px';
+                    tooltipEl.style.top = position.top + window.pageYOffset + tooltipModel.height + 'px';
                     tooltipEl.style.fontFamily = tooltipModel._bodyFontFamily;
                     tooltipEl.style.fontSize = tooltipModel.bodyFontSize + 'px';
                     tooltipEl.style.fontStyle = tooltipModel._bodyFontStyle;
                     tooltipEl.style.padding = tooltipModel.yPadding + 'px ' + tooltipModel.xPadding + 'px';
                     tooltipEl.style.pointerEvents = 'none';
-                    tooltipEl.style.transition = '0.23s';
+                    tooltipEl.style.transition = '0.2s';
                 }
             },
             legend: {
