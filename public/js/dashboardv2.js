@@ -466,9 +466,9 @@ function plotData(sensorId, source = 'attr') {
                         if (sensorType == 'door') {
                             let state = bodyLines[0][0].split(":")[1]
                             if (state == 1) {
-                                bodyLines[0][0] = "open"
-                            } else {
                                 bodyLines[0][0] = "closed"
+                            } else {
+                                bodyLines[0][0] = "open"
                             }
                         }
 
