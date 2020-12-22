@@ -353,7 +353,7 @@ let icon = {
 // Everything happens if custom-map is present
 if ($("#map .custom-map")) {
 
-  // undefinedSensorsTemplate
+  // Build undefined sensors
   let undefinedSensorsTemplate = (sensorList) => {
 
     let sensorToDisplay = ''
@@ -365,11 +365,17 @@ if ($("#map .custom-map")) {
       else
         iconToShow = icon[sensor.sensorType]
 
+      // console.log(sensor.sensorId, sensor.sensorType, iconToShow)
+
       sensorToDisplay += `<span class='sensor-disabled sensor-item' type="` + sensor.sensorType + `" sensor='` + sensor.sensorId + `'>
-                            `+ iconToShow + `
-                            <span class='sensorName'>` + sensor.sensorName + `</span>
-                            <span class='sensorValue'>No data</span>
-                            <span class="not-live pulse"></span>
+
+                            <div class='medium-view'>
+                              `+ iconToShow + `
+                              <span class='sensorName'>`+ sensor.sensorName + `</span>
+                              <span class='sensorValue'>No data</span>
+                              <span class="not-live pulse"></span>
+                            </div>
+
                           </span>`
     }
     return `<div class='undefinedSensorsWrapper'>
@@ -400,20 +406,11 @@ if ($("#map .custom-map")) {
   // Append sensors on map
   userDataFinal.forEach(async (sensor, index) => {
 
-    // if (sensor.zoneId == zoneId) {
-    // sensorsInThisZone.push(sensor)
-
-    // console.log(sensor, index, userDataFinal.length-1)
-
     // if NO POSITION was set then put then in corner
     if (!sensor.x || !sensor.y) {
-
-      // Push all the sensors without a location
       sensorsWithUndefinedLocation.push(sensor) // @ last itteration append the sensors
-
-      // console.log(sensor,index, userDataFinal.length-1)
-
-    } else { // if POSITION was set append them on the map
+    } else { 
+      // if POSITION was set append them on the map
 
       // Get location of sensor
       const position = {
@@ -421,14 +418,7 @@ if ($("#map .custom-map")) {
         left: parseInt(sensor.x)
       }
 
-      // let icon = {
-      //   'door': '<i class="fas fa-door-closed"></i>',
-      //   'temperature':'<i class="fas fa-thermometer-three-quarters"></i>',
-      //   'voltage':'<i class="fas fa-bolt"></i>'
-      // }
-
-      // console.log(sensor.sensorName, sensor.sensorType, icon[sensor.sensorType])
-
+      // Icon
       let iconToShow
       if (sensor.sensorType == 'door')
         iconToShow = icon[sensor.sensorType][0]
@@ -436,7 +426,6 @@ if ($("#map .custom-map")) {
         iconToShow = icon[sensor.sensorType]
 
       // Info
-      // console.log(sensor.alerts)
       let infoClass = ''
       if (sensor.alerts == 1)
         infoClass = 'alert-active'
@@ -445,16 +434,30 @@ if ($("#map .custom-map")) {
       else if ([3, 4].includes(sensor.alerts))
         infoClass = 'no-power'
 
-      // Sensor on map
+      // infoClass = 'alarm-active'
+
+      // console.log(sensor)
+
+      // Append sensor item on map
       $(".custom-map").append(`
             <div sensor="` + sensor.sensorId + `" type="` + sensor.sensorType + `" class="` + infoClass + ` sensor-disabled sensor-item draggable ui-widget-content" data-toggle="tooltip" data-placement="top" title="` + sensor.sensorId + `">
-              `+ iconToShow + `
-              <span class='sensorName'>`+ sensor.sensorName + `</span>
-              <span class='sensorValue'>No data</span>
-              <span class="not-live pulse"></span>
+              <!-- medium view -->
+              <div class='medium-view'>
+                `+ iconToShow + `
+                <span class='sensorName'>`+ sensor.sensorName + `</span>
+                <span class='sensorValue'>No data</span>
+                <span class="not-live pulse"></span>
+              </div>
+              <!-- end medium view -->
+
+              <!-- small view -->
+              <div class='small-view'>
+                <span class='sensorName'>`+ sensor.sensorName + `</span>
+              </div>
+              <!-- end small view -->
             </div>`)
 
-      // Make sensor on map draggable
+      // Make sensor draggable
       $(`.draggable[sensor='` + sensor.sensorId + `']`).draggable({
         grid: [1, 1],
         create: function (event, ui) {
@@ -477,7 +480,7 @@ if ($("#map .custom-map")) {
     // This is for the last itteration
     if (index == userDataFinal.length - 1 && sensorsWithUndefinedLocation.length) {
 
-      // Append undefined sensors to their box
+      // Append undefined sensors
       $("#map .custom-map").append(undefinedSensorsTemplate(sensorsWithUndefinedLocation))
 
       // Toggle sensors box
@@ -485,7 +488,7 @@ if ($("#map .custom-map")) {
         $(".undefinedSensorsInner").toggleClass("hidden")
       })
 
-      // When you click on a sensor it should be removed from current location and appended to custom-map
+      // Define sensor location
       $(".undefinedSensorsInner").on('click', (e) => {
         let sensorElement = e.target.parentElement
         let sensorId = sensorElement.getAttribute("sensor")
@@ -498,17 +501,8 @@ if ($("#map .custom-map")) {
         else
           iconToShow = icon[sensorType]
 
-        // console.log(".custom-map .undefinedSensorsInner .sensor-item[sensor='"+sensorId+"']")
-
+        // Clone & append
         let sensorCloned = $(".custom-map .undefinedSensorsInner .sensor-item[sensor=" + sensorId + "]").clone()
-
-        // $(".custom-map").append(`
-        //         <div sensor="` + sensorId + `" class="sensor-disabled sensor-item draggable ui-widget-content" data-toggle="tooltip" data-placement="top"  title="` + sensorId + `">
-        //           <i class="fad fa-signal-stream"></i>
-        //           <span class='sensorName'>`+ sensorName + `</span>
-        //           <span class='sensorValue'>No data</span>
-        //         </div>`)
-
         $(".custom-map").append(sensorCloned)
 
         // Make it draggable
@@ -537,6 +531,7 @@ if ($("#map .custom-map")) {
           },
         });
 
+        // Remove it from undefined group
         sensorElement.remove()
       })
     }
@@ -550,12 +545,11 @@ if ($("#map .custom-map")) {
   let listOfSensorsType = getValuesFromObject('sensorType', userDataFinal)
   let sensorsTypeJson = arrayToJson(listOfSensorsId, listOfSensorsType)
 
+  // Update all doors at once at runtime
   fetch('/api/v3/query-influx?query=' + 'select value from sensors where sensorId =~ /' + listOfSensorsId.join("|") + '/ group by sensorId order by time desc limit 1')
     .then(async result => {
       result = await result.json()
-      // console.log(result, sensorsTypeJson)
       result.forEach((item) => {
-        // console.log(item.sensorId, parseFloat(item.value).toFixed(1))
         updateCurrentValueOnMap(item.sensorId, parseFloat(item.value).toFixed(1), item.time)
       })
 
@@ -603,16 +597,16 @@ socket.on(socketChannel, async (data) => {
   // NEW TOPIC dataPub
   // dataPub {cId: "DAS001TCORA", value: 23.992979}
   if (data.topic == 'dataPub') {
-    // let msg = JSON.parse(data.message)
-    // updateCurrentValueOnMap(msg.cId, parseFloat(msg.value).toFixed(1))
+    let msg = JSON.parse(data.message)
+    updateCurrentValueOnMap(msg.cId, parseFloat(msg.value).toFixed(1))
   }
 
   // OL MAP REFRESH
   if (mapOption == 'ol' && data.topic == 'dataPub') {
 
     let msg = JSON.parse(data.message)
-    console.log(msg)
-    console.log(vectorLayerFeature)
+    // console.log(msg)
+    // console.log(vectorLayerFeature)
 
     let layers = map.map.getLayers()
     // window.layers = layers
@@ -643,8 +637,12 @@ socket.on(socketChannel, async (data) => {
   }
 
 })
+// END Connect sensor to MQTT
+// ============================
 
 let updateCurrentValueOnMap = (id, value, date = false) => {
+  // console.log("updateCurrentValueOnMap", id, value)
+
   let type = $("#map .sensor-item[sensor='" + id + "']").attr("type")
 
   let symbol = (type) => {
@@ -673,8 +671,20 @@ let updateCurrentValueOnMap = (id, value, date = false) => {
   if (type == 'door') {
     // console.log(id, value, icon[type][parseInt(value)])
     $("#map .sensor-item[sensor='" + id + "'] i").remove()
-    $("#map .sensor-item[sensor='" + id + "']").prepend(icon[type][parseInt(value)])
+    $("#map .sensor-item[sensor='" + id + "'] .medium-view").prepend(icon[type][parseInt(value)])
     $("#map .sensor-item[sensor='" + id + "'] .sensorValue").html(value == 1 ? 'closed' : 'open')
+    // change color whep open/closed
+    if(value == 1) {
+      // green
+      // $("#map .sensor-item[sensor='" + id + "']").attr("state","closed")
+      $("#map .sensor-item[sensor='" + id + "']").removeClass("state-open").addClass("state-closed")
+    } else if (value == 0) {
+      // yellow
+      // $("#map .sensor-item[sensor='" + id + "']").attr("state","open")
+      $("#map .sensor-item[sensor='" + id + "']").removeClass("state-closed").addClass("state-open")
+    } else {
+      // alarm - red
+    }
   } else {
     $("#map .sensor-item[sensor='" + id + "'] .sensorValue").html(value + symbol(type))
   }

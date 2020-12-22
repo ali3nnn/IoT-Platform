@@ -428,7 +428,7 @@ function plotData(sensorId, source = 'attr') {
                 mode: 'index',
                 intersect: false,
 
-                custom: function(tooltipModel) {
+                custom: function (tooltipModel) {
                     // Tooltip Element
                     var tooltipEl = document.getElementById('chartjs-tooltip');
                     let sensorType = chart.titleBlock.chart.config.data.datasets[0].label
@@ -436,7 +436,7 @@ function plotData(sensorId, source = 'attr') {
                     if (!tooltipEl) {
                         tooltipEl = document.createElement('div');
                         tooltipEl.id = 'chartjs-tooltip';
-                        tooltipEl.innerHTML = '<table class="custom_tooltip '+sensorType+'_tooltip"></table>';
+                        tooltipEl.innerHTML = '<table class="custom_tooltip ' + sensorType + '_tooltip"></table>';
                         document.body.appendChild(tooltipEl);
                     }
 
@@ -461,11 +461,11 @@ function plotData(sensorId, source = 'attr') {
                     // Set Text
                     if (tooltipModel.body) {
                         var titleLines = tooltipModel.title || [];
-                        titleLines = titleLines.map(title => title.replace("T"," ").split(".")[0])
+                        titleLines = titleLines.map(title => title.replace("T", " ").split(".")[0])
                         var bodyLines = tooltipModel.body.map(getBody);
-                        if(sensorType=='door') {
+                        if (sensorType == 'door') {
                             let state = bodyLines[0][0].split(":")[1]
-                            if(state==1) {
+                            if (state == 1) {
                                 bodyLines[0][0] = "open"
                             } else {
                                 bodyLines[0][0] = "closed"
@@ -474,12 +474,12 @@ function plotData(sensorId, source = 'attr') {
 
                         var innerHtml = '<thead>';
 
-                        titleLines.forEach(function(title) {
+                        titleLines.forEach(function (title) {
                             innerHtml += '<tr><th>' + title + '</th></tr>';
                         });
                         innerHtml += '</thead><tbody>';
 
-                        bodyLines.forEach(function(body, i) {
+                        bodyLines.forEach(function (body, i) {
                             var colors = tooltipModel.labelColors[i];
                             var style = 'background:' + colors.backgroundColor;
                             // var style = 'background: white';
@@ -582,7 +582,7 @@ function plotData(sensorId, source = 'attr') {
                 backgroundColor.push(chartColors.blue2)
                 pointBackgroundColor.push(chartColors.blue)
                 borderColor.push(chartColors.blue)
-                pointRadius.push(0)
+                pointRadius.push(2)
             })
         else {
             backgroundColor = chartColors.blue2
@@ -591,7 +591,7 @@ function plotData(sensorId, source = 'attr') {
         }
         // end build arrays of colors
 
-        // DATASET options based on sensorType
+        // Graph view config general
         let datasetConfig = {
             backgroundColor,
             borderColor,
@@ -605,90 +605,73 @@ function plotData(sensorId, source = 'attr') {
             lineTension: 0.2
         }
 
+        // console.log(pointRadius)
+
+        // Graph view config for door
         if (sensorType == 'door') {
             datasetConfig.lineTension = 0
             datasetConfig.pointRadius = pointRadius
-            datasetConfig.pointHoverRadius = pointRadius.map(point => point + 2)
-            datasetConfig.pointBorderWidth = 0
+            // datasetConfig.pointHoverRadius = pointRadius.map(item => item + 2)
+            datasetConfig.pointBorderWidth = 1
             datasetConfig.borderWidth = 1
-            // console.log(options.scales.yAxes[0])
             options.scales.yAxes[0].ticks['max'] = 1
             options.scales.yAxes[0].ticks['min'] = 0
         }
-        // end DATASET options based on sensorType
 
-        // TYPE of CHART based on sensorType
+        // Add graph config
         let type, datasets
-        if (sensorType == 'door') {
-            type = 'line'
-            datasets = [{
-                label: sensorType,
-                data: data,
-                backgroundColor: datasetConfig.backgroundColor,
-                borderColor: datasetConfig.borderColor,
-                pointBorderColor: datasetConfig.pointBorderColor,
-                pointBackgroundColor: datasetConfig.pointBackgroundColor,
-                pointHoverBackgroundColor: datasetConfig.pointHoverBackgroundColor,
-                pointRadius: datasetConfig.pointRadius,
-                pointHoverRadius: datasetConfig.pointHoverRadius,
-                pointBorderWidth: datasetConfig.pointBorderWidth,
-                borderWidth: datasetConfig.borderWidth,
-                lineTension: datasetConfig.lineTension
-            }]
-        }
-        else {
-            type = 'line'
-            datasets = [{
-                label: sensorType,
-                data: data,
-                backgroundColor: datasetConfig.backgroundColor,
-                borderColor: datasetConfig.borderColor,
-                pointBorderColor: datasetConfig.pointBorderColor,
-                pointBackgroundColor: datasetConfig.pointBackgroundColor,
-                pointHoverBackgroundColor: datasetConfig.pointHoverBackgroundColor,
-                pointRadius: datasetConfig.pointRadius,
-                pointHoverRadius: datasetConfig.pointHoverRadius,
-                pointBorderWidth: datasetConfig.pointBorderWidth,
-                borderWidth: datasetConfig.borderWidth,
-                lineTension: datasetConfig.lineTension
-            }]
-        }
+        type = 'line'
+        datasets = [{
+            label: sensorType,
+            data: data,
+            backgroundColor: datasetConfig.backgroundColor,
+            borderColor: datasetConfig.borderColor,
+            pointBorderColor: datasetConfig.pointBorderColor,
+            pointBackgroundColor: datasetConfig.pointBackgroundColor,
+            pointHoverBackgroundColor: datasetConfig.pointHoverBackgroundColor,
+            pointRadius: datasetConfig.pointRadius,
+            pointHoverRadius: datasetConfig.pointHoverRadius,
+            pointBorderWidth: datasetConfig.pointBorderWidth,
+            borderWidth: datasetConfig.borderWidth,
+            lineTension: datasetConfig.lineTension
+        }]
+        // }
         // end TYPE of CHART based on sensorType
 
         Chart.defaults.LineWithLine = Chart.defaults.line;
         Chart.controllers.LineWithLine = Chart.controllers.line.extend({
-            draw: function(ease) {
-               Chart.controllers.line.prototype.draw.call(this, ease);
+            draw: function (ease) {
+                Chart.controllers.line.prototype.draw.call(this, ease);
 
-               if (this.chart.tooltip._active && this.chart.tooltip._active.length) {
-                  var activePoint = this.chart.tooltip._active[0],
-                      ctx = this.chart.ctx,
-                      x = activePoint.tooltipPosition().x,
-                      y = activePoint.tooltipPosition().y,
-                      topY = activePoint.tooltipPosition().y,
-                      bottomY = this.chart.scales['y-axis-0'].bottom;
+                if (this.chart.tooltip._active && this.chart.tooltip._active.length) {
+                    var activePoint = this.chart.tooltip._active[0],
+                        ctx = this.chart.ctx,
+                        x = activePoint.tooltipPosition().x,
+                        y = activePoint.tooltipPosition().y,
+                        topY = activePoint.tooltipPosition().y,
+                        bottomY = this.chart.scales['y-axis-0'].bottom;
 
-                  // draw line
-                  ctx.save();
-                  ctx.beginPath();
-                  ctx.moveTo(x , topY);
-                  ctx.lineTo(x, bottomY);
-                  ctx.lineWidth = 2;
-                  ctx.strokeStyle = datasetConfig.pointHoverBackgroundColor;
-                  ctx.stroke();
-                  ctx.restore();
+                    // draw line
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(x, topY);
+                    ctx.lineTo(x, bottomY);
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = datasetConfig.pointHoverBackgroundColor;
+                    ctx.stroke();
+                    ctx.restore();
 
-                  // draw Circle
-                  ctx.save();
-                  ctx.beginPath();
-                  ctx.arc(x , topY, datasetConfig.pointHoverRadius, 0, 2 * Math.PI);
-                  ctx.fillStyle = datasetConfig.pointHoverBackgroundColor;
-                  ctx.fill();
-                  ctx.stroke();
+                    // draw Circle
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(x, topY, datasetConfig.pointHoverRadius, 0, 2 * Math.PI);
+                    ctx.fillStyle = datasetConfig.pointHoverBackgroundColor;
+                    ctx.fill();
+                    ctx.stroke();
 
-               }
+                }
             }
-           });
+        });
 
         // console.log(labels)
         let chart = new Chart(canvas, {
@@ -729,17 +712,16 @@ function plotData(sensorId, source = 'attr') {
                         //             dataset.pointBackgroundColor[i] = chartColors.red2;
                         //         }
                         //     }
-
                     } else { //if not temperature sensor
-                        for (var i = 0; i < dataset.data.length; i++) {
-                            if (isNaN(parseInt(dataset.data[i - 1])) || isNaN(parseInt(dataset.data[i + 1]))) {
-                                dataset.pointRadius[i] = 3
-                            } else if (parseInt(dataset.data[i - 1]) == 0 || parseInt(dataset.data[i + 1]) == 0) {
-                                dataset.pointRadius[i] = 3
-                            } else {
-                                dataset.pointRadius[i] = 0
-                            }
-                        }
+                        // for (var i = 0; i < dataset.data.length; i++) {
+                        //     if (isNaN(parseInt(dataset.data[i - 1])) || isNaN(parseInt(dataset.data[i + 1]))) {
+                        //         dataset.pointRadius[i] = 3
+                        //     } else if (parseInt(dataset.data[i - 1]) == 0 || parseInt(dataset.data[i + 1]) == 0) {
+                        //         dataset.pointRadius[i] = 3
+                        //     } else {
+                        //         dataset.pointRadius[i] = 0
+                        //     }
+                        // }
                     }
                 }
             }]

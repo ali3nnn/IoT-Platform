@@ -4373,6 +4373,15 @@ article[sensortype="voltage"] {
   }
 }
 
+// article[state*="closed"] {
+//   background:red
+// }
+
+// article[state="open"] {
+//   background:yellow
+// }
+
+// dashboard
 article[sensortype="door"] {
   // Remove calendar icon on graph
   #reportrange {
@@ -4981,6 +4990,18 @@ div#map {
     &.custom-map {
       // both undefined and on map
       .sensor-item {
+        // Door state
+        // div[type="door"] {
+          &.state-open {
+            // @extend .alert-active;
+            background: var(--warning)
+            
+          }
+          &.state-closed {
+            // @extend .alert-active;
+            // background:var(--yellow)
+          }
+        // }
         .pulse {
           margin: 0 auto;
           position: absolute;
@@ -5106,11 +5127,6 @@ div#map {
 
 
 // Test dot over map
-div#map > div.custom-map > .sensor-item > * {
-  opacity: 0;
-  visibility: hidden;
-}
-
 div#map > div.custom-map > .sensor-item:after {
   display:none !important
 }
@@ -5125,16 +5141,38 @@ div#map > div.custom-map > .sensor-item:hover {
 }
 
 div#map > div.custom-map > .sensor-item {
-  width: 0;
-  height: 0;
+  // width: 70;
+  // height: 20;
   min-width: initial;
-  padding: 7px;
-  border-radius: 100%;
+  padding: 0px;
+  border-radius: 5px;
+  & > .medium-view {
+    // opacity: 0;
+    // visibility: hidden;
+    display: none;
+  }
+  & > .small-view {
+    // opacity: 1;
+    // visibility: visible;
+    display: block;
+    padding: 2px 10px;
+    & > .sensorName {
+      padding-top: 0;
+    }
+  }
 }
 
-div#map > div.custom-map > .sensor-item:hover > * {
-  opacity: 1;
-  visibility: visible;
+div#map > div.custom-map > .sensor-item:hover {
+  & > .medium-view {
+    // opacity: 1;
+    // visibility: visible;
+    display:block;
+  }
+  & > .small-view {
+    // opacity: 0;
+    // visibility: hidden;
+    display:none;
+  }
 }
 
 div#map > div.custom-map > .sensor-item:hover:after {
