@@ -6,9 +6,10 @@
   "scripts": {
     "init": "pm2 start app.js --name 'anygo'",
     "dev": "concurrently 'npm run stop' 'pm2-dev app.js' 'npm run build'",
-    "prod": "webpack --config webpack.config.js --mode=production && pm2 start anygo --watch",
+    "prod": "npm run build:prod && pm2 start anygo --watch",
     "stop": "pm2 stop anygo",
-    "build": "webpack --config webpack.config-dev.js --mode=development"
+    "build:dev": "webpack --config webpack.config-dev.js --mode=development",
+    "build:prod": "webpack --config webpack.config.js --mode=production"
   },
   "author": "Alex Barbu",
   "license": "ISC",
