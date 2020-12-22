@@ -4838,7 +4838,7 @@ app.get('/api/v3/query-influx', (req, res) => {
     })
 })
 
-const PORT = process.env.PORTANYSENSOR;
+const PORT = process.env.PORTANYGO;
 
 var server = app.listen(PORT, console.log(`NodeJS started on port ${PORT}`)).on('error', function (err) {
     console.log(err)
@@ -4850,43 +4850,3 @@ var server = app.listen(PORT, console.log(`NodeJS started on port ${PORT}`)).on(
         // let kill = killPort(port)
     }
 });
-
-// let checkPort = () => {
-//     exec('netstat -ltnup | grep 5000', (error, stdout, stderr) => {
-//         if (error) {
-//             console.log(`error: ${error.message}`)
-//             process.exit(1);
-//             return
-//         } else if (stderr) {
-//             console.log(`stderr: ${stderr}`)
-//             process.exit(1);
-//             return
-//         } else {
-//             let pid = parseInt(String(stdout).split('LISTEN')[1].split('/node')[0])
-
-//             killPort(pid)
-//         }
-
-//     })
-// }
-
-let killPort = (pid) => {
-
-    //     exec(`kill ` + pid, (error2, stdout2, stderr2) => {
-    //         if (error2) {
-    //             console.log(`error2: ${error2.message}`)
-    //             process.exit(1);
-    //             return
-    //         } else if (stderr2) {
-    //             console.log(`stderr2: ${stderr2}`)
-    //             process.exit(1);
-    //             return
-    //         } else if (stdout2) {
-    //             console.log(`stdout2: ${stdout2}`)
-    //             process.exit(1);
-    //         } else {
-    //             console.log("kill " + pid)
-    //             process.exit(1);
-    //         }
-    //     })
-}

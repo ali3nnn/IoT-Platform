@@ -1,6 +1,6 @@
-# ANYSENSOR.RO
+# ANYGO.RO
 
-ANYSENSOR is the main dashboard for our sensors
+ANYGO is the main dashboard for our conveyors
 
 ## Installation
 
