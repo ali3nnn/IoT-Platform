@@ -4,7 +4,8 @@
   "description": "Anysensor.ro",
   "main": "app.js",
   "scripts": {
-    "dev": "pm2-dev app.js",
+    "init": "pm2 start app.js --name 'anysensor'",
+    "dev": "concurrently 'npm run stop' 'pm2-dev app.js' 'npm run build'",
     "prod": "webpack --config webpack.config.js --mode=production && pm2 start anysensor --watch",
     "stop": "pm2 stop anysensor",
     "build": "webpack --config webpack.config-dev.js --mode=development"
@@ -19,6 +20,7 @@
     "bootstrap": "^4.5.0",
     "chart.js": "^2.9.3",
     "chartjs": "^0.3.24",
+    "concurrently": "^5.3.0",
     "confirm-dialog": "^0.1.2",
     "cookie-parser": "^1.4.5",
     "crypto-random-string": "^3.3.0",
