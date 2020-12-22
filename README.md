@@ -1,6 +1,6 @@
 # ANYSENSOR.RO
 
-ANYSENSOR is the main platform for controlling our conveyors
+ANYSENSOR is the main dashboard for our sensors
 
 ## Installation
 
