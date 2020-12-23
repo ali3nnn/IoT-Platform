@@ -902,10 +902,14 @@ socket.on(socketChannel, async (data) => {
 
     // NEW TOPIC dataPub
     // dataPub {cId: "DAS001TCORA", value: 23.992979}
-    let msg
+    let msg, value
     if (data.topic == 'dataPub') {
         msg = JSON.parse(data.message)
-        updateCurrentValue(msg.cId, parseFloat(msg.value).toFixed(1))
+        value = parseFloat(msg.value).toFixed(1)
+        if(value>-200)
+            updateCurrentValue(msg.cId, value)
+        else
+            console.warn("Device",msg.cId,"send weird value:",value)
     }
 
     // Listen for no power state
