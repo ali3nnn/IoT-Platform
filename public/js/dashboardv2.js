@@ -1,3 +1,4 @@
+// first line test git
 import { deprecationHandler } from 'moment'
 import {
     getDistinctValuesFromObject,
@@ -24,10 +25,9 @@ function defaultSensorView(sensor) {
     // sensorId = String(sensorId)
     let sensorData = JSON.stringify(sensor.sensorData)
 
-    // console.log(sensor.sensorMeta.sensorId,sensor.sensorMeta.alerts)
+    // console.log(sensor.sensorMeta.sensorId,sensor.sensorMeta.battery)
 
-    // Sensor state 0/1/2/3
-    let alertClass = ''
+    // Sensor state 0/1/2/3,4
     let alertClass2 = ''
     if (sensor.sensorMeta.alerts == 1) {
         // alertClass = 'alert-active' 
@@ -37,14 +37,14 @@ function defaultSensorView(sensor) {
         // alertClass = 'alarm-active'
         alertClass2 = 'alarm-active'
     }
-    else if ([3, 4].includes(sensor.sensorMeta.alerts))
+    else if ([3, 4].includes(sensor.sensorMeta.alerts) && sensor.sensorMeta.battery == 1)
         alertClass2 = 'no-power'
 
     // current value gauge component
     var currentValueView = `
-    <article class="card height-control `+ alertClass2 + ` live-card-` + sensor.sensorMeta.sensorId + `" sensorId="` + sensor.sensorMeta.sensorId + `" sensortype="` + sensor.sensorMeta.sensorType + `">
+    <article class="card height-control `+ alertClass2 + ` live-card-` + sensor.sensorMeta.sensorId + `" sensorId="` + sensor.sensorMeta.sensorId + `" sensortype="` + sensor.sensorMeta.sensorType + `" battery="`+sensor.sensorMeta.battery+`">
 
-        <div class="card-header `+ alertClass + `">
+        <div class="card-header">
             <h3 class="card-title">
                 <i class='update-icon'></i>
                 Current Value
@@ -119,9 +119,9 @@ function defaultSensorView(sensor) {
     </div>`
 
     var doorLive = `
-    <article class="card height-control `+ alertClass2 + ` live-card-` + sensor.sensorMeta.sensorId + `" sensorId="` + sensor.sensorMeta.sensorId + `" sensortype="` + sensor.sensorMeta.sensorType + `">
+    <article class="card height-control `+ alertClass2 + ` live-card-` + sensor.sensorMeta.sensorId + `" sensorId="` + sensor.sensorMeta.sensorId + `" sensortype="` + sensor.sensorMeta.sensorType + `" battery="`+sensor.sensorMeta.battery+`">
 
-        <div class="card-header `+ alertClass + `">
+        <div class="card-header">
             <h3 class="card-title">
                 <i class='update-icon'></i>
                 Door live
@@ -388,9 +388,13 @@ let chartList = []
 // Plot data
 function plotData(sensorId, source = 'attr') {
 
-    // [ ] TODO: skip charts witch class .calendar-active
+    // [*] TODO: skip charts witch class .calendar-active
     // console.log($("article.graph-" + sensorId)[0].className)
     if ($("article.graph-" + sensorId).hasClass("calendar-active")) {
+        return
+    }
+    
+    if ($(`article.graph-` + sensorId).length == 0) {
         return
     }
 
@@ -402,7 +406,9 @@ function plotData(sensorId, source = 'attr') {
         let rawData = $(`article.graph-` + sensorId).attr("sensorData")
         let sensorType = $(`article.graph-` + sensorId).attr("sensorType")
         // console.log(rawData)
-        let sensorData = JSON.parse(rawData)
+        let sensorData
+        // if(rawData != undefined)
+        sensorData = JSON.parse(rawData)
         // console.log(sensorData)
         // Add Canvas for chart
         $(`article.graph-` + sensorId + ` .card-body a.spinner`).remove()
@@ -580,7 +586,7 @@ function plotData(sensorId, source = 'attr') {
         })
 
         data = data.map(value => {
-            return value ? value.toFixed(1) : value
+            return value ? Math.round(value * 10) / 10 : value
         })
         // end remap labels and data
 
@@ -663,12 +669,14 @@ function plotData(sensorId, source = 'attr') {
                         topY = activePoint.tooltipPosition().y,
                         bottomY = this.chart.scales['y-axis-0'].bottom;
 
+                    // console.log(x, y, topY, bottomY)
+
                     // draw line
                     ctx.save();
                     ctx.beginPath();
-                    ctx.moveTo(x, topY);
+                    ctx.moveTo(x, 32);
                     ctx.lineTo(x, bottomY);
-                    ctx.lineWidth = 2;
+                    ctx.lineWidth = 1;
                     ctx.strokeStyle = datasetConfig.pointHoverBackgroundColor;
                     ctx.stroke();
                     ctx.restore();
@@ -901,10 +909,14 @@ socket.on(socketChannel, async (data) => {
 
     // NEW TOPIC dataPub
     // dataPub {cId: "DAS001TCORA", value: 23.992979}
-    let msg
+    let msg, value
     if (data.topic == 'dataPub') {
         msg = JSON.parse(data.message)
-        updateCurrentValue(msg.cId, parseFloat(msg.value).toFixed(1))
+        value = parseFloat(msg.value).toFixed(1)
+        if(value>-200)
+            updateCurrentValue(msg.cId, value)
+        else
+            console.warn("Device",msg.cId,"send weird value:",value)
     }
 
     // Listen for no power state
@@ -913,7 +925,7 @@ socket.on(socketChannel, async (data) => {
         if (parseInt(msg.value)) {
             // add class no power to cId
             if (!$(".live-card-" + msg.cId).hasClass('no-power')) {
-                $(".live-card-" + msg.cId).removeClass("alert-active").removeClass("alarm-active").addClass("no-power")
+                $(".live-card-" + msg.cId+"[battery='1']").removeClass("alert-active").removeClass("alarm-active").addClass("no-power")
                 let currentPower = $(".battery-info h3").html().split('/')
                 currentPower[0] = Math.min(parseInt(currentPower[0]) + 1, currentPower[1])
                 $(".battery-info h3").html(currentPower[0] + ' / ' + currentPower[1])
