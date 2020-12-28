@@ -4,6 +4,7 @@ var _moment = require("moment");
 
 var _utils = require("./utils.js");
 
+// first line test git
 var getSensorData = function getSensorData(id, type) {
   var response;
   return regeneratorRuntime.async(function getSensorData$(_context) {
@@ -33,10 +34,9 @@ function updateDataForChart(sensor) {
 
 function defaultSensorView(sensor) {
   // sensorId = String(sensorId)
-  var sensorData = JSON.stringify(sensor.sensorData); // console.log(sensor.sensorMeta.sensorId,sensor.sensorMeta.alerts)
-  // Sensor state 0/1/2/3
+  var sensorData = JSON.stringify(sensor.sensorData); // console.log(sensor.sensorMeta.sensorId,sensor.sensorMeta.battery)
+  // Sensor state 0/1/2/3,4
 
-  var alertClass = '';
   var alertClass2 = '';
 
   if (sensor.sensorMeta.alerts == 1) {
@@ -45,10 +45,10 @@ function defaultSensorView(sensor) {
   } else if (sensor.sensorMeta.alerts == 2) {
     // alertClass = 'alarm-active'
     alertClass2 = 'alarm-active';
-  } else if ([3, 4].includes(sensor.sensorMeta.alerts)) alertClass2 = 'no-power'; // current value gauge component
+  } else if ([3, 4].includes(sensor.sensorMeta.alerts) && sensor.sensorMeta.battery == 1) alertClass2 = 'no-power'; // current value gauge component
 
 
-  var currentValueView = "\n    <article class=\"card height-control " + alertClass2 + " live-card-" + sensor.sensorMeta.sensorId + "\" sensorId=\"" + sensor.sensorMeta.sensorId + "\" sensortype=\"" + sensor.sensorMeta.sensorType + "\">\n\n        <div class=\"card-header " + alertClass + "\">\n            <h3 class=\"card-title\">\n                <i class='update-icon'></i>\n                Current Value\n            </h3>\n            <span class='card-settings-button'>\n                <i class=\"far fa-sliders-h\"></i>\n            </span>\n        </div>\n\n        <div class=\"card-body\">\n           <div class=\"" + sensor.sensorMeta.sensorId + "-currentValue\">\n                <div id=\"" + sensor.sensorMeta.sensorId + "-gauge\" class=\"gauge-container two\">\n                    <span class=\"currentValue\">0</span>\n                    " + function () {
+  var currentValueView = "\n    <article class=\"card height-control " + alertClass2 + " live-card-" + sensor.sensorMeta.sensorId + "\" sensorId=\"" + sensor.sensorMeta.sensorId + "\" sensortype=\"" + sensor.sensorMeta.sensorType + "\" battery=\"" + sensor.sensorMeta.battery + "\">\n\n        <div class=\"card-header\">\n            <h3 class=\"card-title\">\n                <i class='update-icon'></i>\n                Current Value\n            </h3>\n            <span class='card-settings-button'>\n                <i class=\"far fa-sliders-h\"></i>\n            </span>\n        </div>\n\n        <div class=\"card-body\">\n           <div class=\"" + sensor.sensorMeta.sensorId + "-currentValue\">\n                <div id=\"" + sensor.sensorMeta.sensorId + "-gauge\" class=\"gauge-container two\">\n                    <span class=\"currentValue\">0</span>\n                    " + function () {
     return ![null, 'NaN', undefined, ''].includes(sensor.sensorMeta.min) ? '<span class=\'minAlertGauge\' value=\' ' + sensor.sensorMeta.min + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>min: ' + sensor.sensorMeta.min + '</span> ' : '<span class=\'minAlertGauge noAlertGauge\' value=\' ' + sensor.sensorMeta.min + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>No min alert</span> ';
   }() + "\n                    " + function () {
     return ![null, 'NaN', undefined, ''].includes(sensor.sensorMeta.max) ? '<span class=\'maxAlertGauge\' value=\' ' + sensor.sensorMeta.max + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>max: ' + sensor.sensorMeta.max + '</span> ' : '<span class=\'maxAlertGauge noAlertGauge\' value=\' ' + sensor.sensorMeta.max + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>No max alert</span> ';
@@ -65,7 +65,7 @@ function defaultSensorView(sensor) {
 
   var newItemLive = "\n    <article class=\"card height-control live-card-" + sensor.sensorMeta.sensorId + "\">\n\n    <div class=\"card-header\">\n        <h3 class=\"card-title\">\n            <i class='update-icon'></i>\n            Live Update\n        </h3>\n    </div>\n\n    <div class=\"card-body\">\n        <div class=\"" + sensor.sensorMeta.sensorId + "-newItem\">\n\n            <a href=\"#\" class='spinner " + sensor.sensorMeta.sensorId + "-newItem-spinner'>\n                <span>Loading...</span>\n            </a>\n\n            <div id=\"" + sensor.sensorMeta.sensorId + "-floatinBall\" class=\"hidden-element\"></div>\n\n        </div>\n    </div>";
 
-  var doorLive = "\n    <article class=\"card height-control " + alertClass2 + " live-card-" + sensor.sensorMeta.sensorId + "\" sensorId=\"" + sensor.sensorMeta.sensorId + "\" sensortype=\"" + sensor.sensorMeta.sensorType + "\">\n\n        <div class=\"card-header " + alertClass + "\">\n            <h3 class=\"card-title\">\n                <i class='update-icon'></i>\n                Door live\n            </h3>\n            <span class='card-settings-button'>\n                <i class=\"far fa-sliders-h\"></i>\n            </span>\n        </div>\n\n        <div class=\"card-body\">\n           <div class=\"" + sensor.sensorMeta.sensorId + "-currentValue\">\n                <div id=\"" + sensor.sensorMeta.sensorId + "-gauge\" class=\"gauge-container two\">\n                    <span class=\"doorState\" state=\"unknown\">\n                        <i class=\"fas fa-door-closed\"></i>\n                        <i class=\"fas fa-door-open\"></i>\n                    </span>\n                    " + function () {
+  var doorLive = "\n    <article class=\"card height-control " + alertClass2 + " live-card-" + sensor.sensorMeta.sensorId + "\" sensorId=\"" + sensor.sensorMeta.sensorId + "\" sensortype=\"" + sensor.sensorMeta.sensorType + "\" battery=\"" + sensor.sensorMeta.battery + "\">\n\n        <div class=\"card-header\">\n            <h3 class=\"card-title\">\n                <i class='update-icon'></i>\n                Door live\n            </h3>\n            <span class='card-settings-button'>\n                <i class=\"far fa-sliders-h\"></i>\n            </span>\n        </div>\n\n        <div class=\"card-body\">\n           <div class=\"" + sensor.sensorMeta.sensorId + "-currentValue\">\n                <div id=\"" + sensor.sensorMeta.sensorId + "-gauge\" class=\"gauge-container two\">\n                    <span class=\"doorState\" state=\"unknown\">\n                        <i class=\"fas fa-door-closed\"></i>\n                        <i class=\"fas fa-door-open\"></i>\n                    </span>\n                    " + function () {
     return ![null, 'NaN', undefined, 0, '0', ''].includes(sensor.sensorMeta.openTimer) ? '<span class=\'openTimer\' value=\' ' + sensor.sensorMeta.openTimer + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>open: ' + sensor.sensorMeta.openTimer + '</span> ' : '<span class=\'openTimer noAlertGauge\' value=\' ' + sensor.sensorMeta.openTimer + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>open: <i class="fas fa-infinity"></i></span> ';
   }() + "\n                    " + function () {
     return ![null, 'NaN', undefined, 0, '0', ''].includes(sensor.sensorMeta.closedTimer) ? '<span class=\'closedTimer\' value=\' ' + sensor.sensorMeta.closedTimer + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>closed: ' + sensor.sensorMeta.closedTimer + '</span> ' : '<span class=\'closedTimer noAlertGauge\' value=\' ' + sensor.sensorMeta.closedTimer + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>closed: <i class="fas fa-infinity"></i></span> ';
@@ -76,7 +76,7 @@ function defaultSensorView(sensor) {
   }() + "placeholder=\"Set closed limit in seconds\" class=\"input input-closed\">\n\n                </div>\n            </div>\n        </div>\n    </article>\n    "; // graph view component
 
 
-  var graphView = "\n\n    <article class=\"card height-control " + sensor.sensorMeta.sensorId + "-card graph-" + sensor.sensorMeta.sensorId + "\" sensorType=\"" + sensor.sensorMeta.sensorType + "\" sensorId=\"" + sensor.sensorMeta.sensorId + "\" sensorData='" + sensorData + "'>\n    \n        <div class=\"card-header\">\n\n            <h3 class=\"card-title\">\n                <i class='update-icon'></i>\n                <span>" + sensor.sensorMeta.sensorName + "</span> |\n                <b>" + sensor.sensorMeta.sensorId + "</b>\n            </h3>\n    \n            <div class=\"card-tools\">\n                <ul class=\"pagination pagination-sm\">\n\n                    <li class=\"page-item\">\n                        <div id=\"reportrange\" style=\"background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%\">\n                            <i class=\"fa fa-calendar\"></i>&nbsp;\n                            <span></span> <i class=\"fa fa-caret-down\"></i>\n                        </div>\n                    </li>\n\n                    <li class=\"page-item\">\n                        <div id=\"report\" class=\"tooltip_test\" style=\"background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%\">\n                            <i class=\"fas fa-file-csv\"></i>\n                            <span class=\"tooltiptext\">Download CSV</span>\n                        </div>\n                    </li>\n\n                </ul>\n            </div>\n    \n        </div>\n        \n    \n        <div class=\"card-body\">\n            <a href=\"#\" class='spinner " + sensor.sensorMeta.sensorId + "-graph-spinner'>\n                <span>Loading...</span>\n            </a> \n            <div class=\"" + sensor.sensorMeta.sensorId + "-graph-calendar graph-calendar\">\n                Time interval for " + sensor.sensorMeta.sensorId + " \n                <input name=\"dates\" value=\"Button Change\"> \n            </div> \n        </div>\n        \n    </article>"; // stack the components
+  var graphView = "\n\n    <article class=\"card height-control " + sensor.sensorMeta.sensorId + "-card graph-" + sensor.sensorMeta.sensorId + "\" sensorType=\"" + sensor.sensorMeta.sensorType + "\" sensorId=\"" + sensor.sensorMeta.sensorId + "\" sensorData='" + sensorData + "'>\n    \n        <div class=\"card-header\">\n\n            <h3 class=\"card-title\">\n                <i class='update-icon'></i>\n                <div class='edit-sensor-name'><i class=\"far fa-edit\"></i></div>\n                <span>" + sensor.sensorMeta.sensorName + "</span> |\n                <b>" + sensor.sensorMeta.sensorId + "</b>\n            </h3>\n    \n            <div class=\"card-tools\">\n                <ul class=\"pagination pagination-sm\">\n\n                    <li class=\"page-item\">\n                        <div id=\"reportrange\" style=\"background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%\">\n                            <i class=\"fa fa-calendar\"></i>&nbsp;\n                            <span></span> <i class=\"fa fa-caret-down\"></i>\n                        </div>\n                    </li>\n\n                    <li class=\"page-item\">\n                        <div id=\"report\" class=\"tooltip_test\" style=\"background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%\">\n                            <i class=\"fas fa-file-csv\"></i>\n                            <span class=\"tooltiptext\">Download CSV</span>\n                        </div>\n                    </li>\n\n                </ul>\n            </div>\n    \n        </div>\n        \n    \n        <div class=\"card-body\">\n            <a href=\"#\" class='spinner " + sensor.sensorMeta.sensorId + "-graph-spinner'>\n                <span>Loading...</span>\n            </a> \n            <div class=\"" + sensor.sensorMeta.sensorId + "-graph-calendar graph-calendar\">\n                Time interval for " + sensor.sensorMeta.sensorId + " \n                <input name=\"dates\" value=\"Button Change\"> \n            </div> \n        </div>\n        \n    </article>"; // stack the components
 
   if (sensor.sensorMeta.sensorType == 'counter') {
     return newItemLive + graphView;
@@ -104,6 +104,30 @@ function triggerSensorView(sensorId) {
 
   $(".live-card-" + sensorId + " .card-settings-button-update").on('click', function () {
     saveSensorSettings(sensorId);
+  }); // Edit sensor name
+
+  $('.graph-' + sensorId + ' .card-title .edit-sensor-name').on('click', function (event) {
+    var name = prompt('Type a new name for ' + sensorId, $('.graph-' + sensorId + ' .card-title span').text());
+
+    if (name && sensorId) {
+      var params = new URLSearchParams({
+        name: name,
+        sensorId: sensorId
+      });
+      var url = "/api/v3/set-sensor-name?" + params.toString(); // console.log(url)
+
+      $.ajax({
+        url: url,
+        type: 'GET'
+      }).done(function (result) {
+        // console.log(result.msg)
+        if (result.msg == "Update performed") {
+          $('.graph-' + sensorId + ' .card-title span').html(name);
+        } // let res = result.json()
+        // console.log(res.msg)
+
+      });
+    }
   }); // Trigger calendar
 
   var currentHourPm = moment().format("HH");
@@ -167,8 +191,10 @@ var getSensorDataCustomInterval = function getSensorDataCustomInterval(sensor, s
         case 0:
           if (!$("body").hasClass("calendar-active")) {
             $("body").addClass("calendar-active");
-          } // Building the url
+          } // console.log("calendar-active for ",sensor)
 
+
+          $("article.graph-" + sensor).addClass("calendar-active"); // Building the url
 
           url = "/api/v3/get-interval?sensorId=" + sensor + "&start=" + start + "&end=" + end; // Making the request
 
@@ -207,7 +233,7 @@ var getSensorDataCustomInterval = function getSensorDataCustomInterval(sensor, s
             });
           });
 
-        case 3:
+        case 4:
         case "end":
           return _context3.stop();
       }
@@ -221,15 +247,28 @@ var chartList = []; // Plot data
 function plotData(sensorId) {
   var source = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'attr';
 
-  // [*] TODO: check source attr
+  // [*] TODO: skip charts witch class .calendar-active
+  // console.log($("article.graph-" + sensorId)[0].className)
+  if ($("article.graph-" + sensorId).hasClass("calendar-active")) {
+    return;
+  }
+
+  if ($("article.graph-" + sensorId).length == 0) {
+    return;
+  } // [*] TODO: check source attr
   // [*] TODO: get data
   // [ ] TODO: display data
+
+
   if (source == 'attr') {
     // this source should run only when page is loaded
     // Get Data
-    var rawData = $("article.graph-" + sensorId + "").attr("sensorData");
-    var sensorType = $("article.graph-" + sensorId + "").attr("sensorType");
-    var sensorData = JSON.parse(rawData); // console.log(sensorData)
+    var rawData = $("article.graph-" + sensorId).attr("sensorData");
+    var sensorType = $("article.graph-" + sensorId).attr("sensorType"); // console.log(rawData)
+
+    var sensorData; // if(rawData != undefined)
+
+    sensorData = JSON.parse(rawData); // console.log(sensorData)
     // Add Canvas for chart
 
     $("article.graph-" + sensorId + " .card-body a.spinner").remove();
@@ -242,13 +281,111 @@ function plotData(sensorId) {
 
     var canvas = $("canvas#" + sensorId + "-graph")[0].getContext("2d");
     var labels = (0, _utils.getValuesFromObject)('time', sensorData);
-    var data = (0, _utils.getValuesFromObject)('value', sensorData); // General ptions of timeseries chart
+    var data = (0, _utils.getValuesFromObject)('value', sensorData); // General options of timeseries chart
 
     var options = {
       animation: false,
       responsive: true,
       maintainAspectRatio: false,
       drawBorder: false,
+      tooltips: {
+        // Disable the on-canvas tooltip
+        enabled: false,
+        mode: 'index',
+        intersect: false,
+        custom: function custom(tooltipModel) {
+          // Tooltip Element
+          var tooltipEl = document.getElementById('chartjs-tooltip');
+          var sensorType = chart.titleBlock.chart.config.data.datasets[0].label; // Create element on first render
+
+          if (!tooltipEl) {
+            tooltipEl = document.createElement('div');
+            tooltipEl.id = 'chartjs-tooltip';
+            tooltipEl.innerHTML = '<table class="custom_tooltip ' + sensorType + '_tooltip"></table>';
+            document.body.appendChild(tooltipEl);
+          } // Hide if no tooltip
+
+
+          if (tooltipModel.opacity === 0) {
+            tooltipEl.style.opacity = 0;
+            return;
+          } // Set caret Position
+
+
+          tooltipEl.classList.remove('above', 'below', 'no-transform');
+
+          if (tooltipModel.yAlign) {
+            tooltipEl.classList.add(tooltipModel.yAlign);
+          } else {
+            tooltipEl.classList.add('no-transform');
+          }
+
+          function getBody(bodyItem) {
+            return bodyItem.lines;
+          } // Set Text
+
+
+          if (tooltipModel.body) {
+            var titleLines = tooltipModel.title || [];
+            titleLines = titleLines.map(function (title) {
+              return title.replace("T", " ").split(".")[0];
+            });
+            var bodyLines = tooltipModel.body.map(getBody); // Special text for DOOR type
+
+            if (sensorType == 'door') {
+              var state = bodyLines[0][0].split(":")[1];
+
+              if (state == 1) {
+                bodyLines[0][0] = "closed";
+              } else {
+                bodyLines[0][0] = "open";
+              }
+            }
+
+            var innerHtml = '<thead>';
+            titleLines.forEach(function (title) {
+              innerHtml += '<tr><th>' + title + '</th></tr>';
+            });
+            innerHtml += '</thead><tbody>';
+            bodyLines.forEach(function (body, i) {
+              var colors = tooltipModel.labelColors[i];
+              var style = 'background:' + colors.backgroundColor; // var style = 'background: white';
+
+              style += '; border-color:' + colors.borderColor;
+              style += '; border-width: 2px';
+              style += '; color: white';
+              var span = '<span style="' + style + '"></span>';
+              innerHtml += '<tr><td>' + span + body + '</td></tr>';
+            });
+            innerHtml += '</tbody>';
+            var tableRoot = tooltipEl.querySelector('table');
+            tableRoot.innerHTML = innerHtml;
+          } // `this` will be the overall tooltip
+
+
+          var position = this._chart.canvas.getBoundingClientRect(); // console.log(position.left, window.pageXOffset, tooltipModel.caretX, this._chart.width)
+          // Display, position, and set styles for font
+
+
+          tooltipEl.style.opacity = 1;
+          tooltipEl.style.position = 'absolute'; // Switch side of tooltip
+
+          if (this._chart.width - tooltipModel.caretX - 20 > tooltipModel.width) {
+            tooltipEl.style.left = 20 + position.left + window.pageXOffset + tooltipModel.caretX + 'px';
+          } else {
+            tooltipEl.style.left = -tooltipModel.width + position.left + window.pageXOffset + tooltipModel.caretX + 'px';
+          } // tooltipEl.style.top = position.top + window.pageYOffset + tooltipModel.caretY + 'px';
+
+
+          tooltipEl.style.top = position.top + window.pageYOffset + tooltipModel.height + 'px';
+          tooltipEl.style.fontFamily = tooltipModel._bodyFontFamily;
+          tooltipEl.style.fontSize = tooltipModel.bodyFontSize + 'px';
+          tooltipEl.style.fontStyle = tooltipModel._bodyFontStyle;
+          tooltipEl.style.padding = tooltipModel.yPadding + 'px ' + tooltipModel.xPadding + 'px';
+          tooltipEl.style.pointerEvents = 'none';
+          tooltipEl.style.transition = '0.2s';
+        }
+      },
       legend: {
         labels: {
           fontColor: 'white'
@@ -303,7 +440,7 @@ function plotData(sensorId) {
       return time.replace('Z', '');
     });
     data = data.map(function (value) {
-      return value ? value.toFixed(1) : value;
+      return value ? Math.round(value * 10) / 10 : value;
     }); // end remap labels and data
     // Build arrays of colors
 
@@ -315,13 +452,13 @@ function plotData(sensorId) {
       backgroundColor.push(chartColors.blue2);
       pointBackgroundColor.push(chartColors.blue);
       borderColor.push(chartColors.blue);
-      pointRadius.push(0);
+      pointRadius.push(2);
     });else {
       backgroundColor = chartColors.blue2;
       pointBackgroundColor = chartColors.blue;
       borderColor = chartColors.blue;
     } // end build arrays of colors
-    // DATASET options based on sensorType
+    // Graph view config general
 
     var datasetConfig = {
       backgroundColor: backgroundColor,
@@ -329,66 +466,79 @@ function plotData(sensorId) {
       pointBorderColor: '#343a40',
       pointBackgroundColor: pointBackgroundColor,
       pointHoverBackgroundColor: "#ffc107",
-      pointRadius: 3,
-      pointHoverRadius: 7,
+      pointRadius: 2,
+      pointHoverRadius: 4,
       pointBorderWidth: 1,
       borderWidth: 1,
       lineTension: 0.2
-    };
+    }; // console.log(pointRadius)
+    // Graph view config for door
 
     if (sensorType == 'door') {
       datasetConfig.lineTension = 0;
-      datasetConfig.pointRadius = pointRadius;
-      datasetConfig.pointHoverRadius = 7;
-      datasetConfig.pointBorderWidth = 0;
-      datasetConfig.borderWidth = 1; // console.log(options.scales.yAxes[0])
+      datasetConfig.pointRadius = pointRadius; // datasetConfig.pointHoverRadius = pointRadius.map(item => item + 2)
 
+      datasetConfig.pointBorderWidth = 1;
+      datasetConfig.borderWidth = 1;
       options.scales.yAxes[0].ticks['max'] = 1;
       options.scales.yAxes[0].ticks['min'] = 0;
-    } // end DATASET options based on sensorType
-    // TYPE of CHART based on sensorType
+    } // Add graph config
 
 
     var type, datasets;
+    type = 'line';
+    datasets = [{
+      label: sensorType,
+      data: data,
+      backgroundColor: datasetConfig.backgroundColor,
+      borderColor: datasetConfig.borderColor,
+      pointBorderColor: datasetConfig.pointBorderColor,
+      pointBackgroundColor: datasetConfig.pointBackgroundColor,
+      pointHoverBackgroundColor: datasetConfig.pointHoverBackgroundColor,
+      pointRadius: datasetConfig.pointRadius,
+      pointHoverRadius: datasetConfig.pointHoverRadius,
+      pointBorderWidth: datasetConfig.pointBorderWidth,
+      borderWidth: datasetConfig.borderWidth,
+      lineTension: datasetConfig.lineTension
+    }]; // }
+    // end TYPE of CHART based on sensorType
 
-    if (sensorType == 'door') {
-      type = 'line';
-      datasets = [{
-        label: sensorType,
-        data: data,
-        backgroundColor: datasetConfig.backgroundColor,
-        borderColor: datasetConfig.borderColor,
-        pointBorderColor: datasetConfig.pointBorderColor,
-        pointBackgroundColor: datasetConfig.pointBackgroundColor,
-        pointHoverBackgroundColor: datasetConfig.pointHoverBackgroundColor,
-        pointRadius: datasetConfig.pointRadius,
-        pointHoverRadius: datasetConfig.pointHoverRadius,
-        pointBorderWidth: datasetConfig.pointBorderWidth,
-        borderWidth: datasetConfig.borderWidth,
-        lineTension: datasetConfig.lineTension
-      }];
-    } else {
-      type = 'line';
-      datasets = [{
-        label: sensorType,
-        data: data,
-        backgroundColor: datasetConfig.backgroundColor,
-        borderColor: datasetConfig.borderColor,
-        pointBorderColor: datasetConfig.pointBorderColor,
-        pointBackgroundColor: datasetConfig.pointBackgroundColor,
-        pointHoverBackgroundColor: datasetConfig.pointHoverBackgroundColor,
-        pointRadius: datasetConfig.pointRadius,
-        pointHoverRadius: datasetConfig.pointHoverRadius,
-        pointBorderWidth: datasetConfig.pointBorderWidth,
-        borderWidth: datasetConfig.borderWidth,
-        lineTension: datasetConfig.lineTension
-      }];
-    } // end TYPE of CHART based on sensorType
-    // console.log(labels)
+    Chart.defaults.LineWithLine = Chart.defaults.line;
+    Chart.controllers.LineWithLine = Chart.controllers.line.extend({
+      draw: function draw(ease) {
+        Chart.controllers.line.prototype.draw.call(this, ease);
 
+        if (this.chart.tooltip._active && this.chart.tooltip._active.length) {
+          var activePoint = this.chart.tooltip._active[0],
+              ctx = this.chart.ctx,
+              x = activePoint.tooltipPosition().x,
+              y = activePoint.tooltipPosition().y,
+              topY = activePoint.tooltipPosition().y,
+              bottomY = this.chart.scales['y-axis-0'].bottom; // console.log(x, y, topY, bottomY)
+          // draw line
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(x, 32);
+          ctx.lineTo(x, bottomY);
+          ctx.lineWidth = 1;
+          ctx.strokeStyle = datasetConfig.pointHoverBackgroundColor;
+          ctx.stroke();
+          ctx.restore(); // draw Circle
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(x, topY, datasetConfig.pointHoverRadius, 0, 2 * Math.PI);
+          ctx.fillStyle = datasetConfig.pointHoverBackgroundColor;
+          ctx.fill();
+          ctx.stroke();
+        }
+      }
+    }); // console.log(labels)
 
     var chart = new Chart(canvas, {
-      type: type,
+      // type,
+      type: 'LineWithLine',
       data: {
         labels: labels,
         datasets: datasets
@@ -430,18 +580,17 @@ function plotData(sensorId) {
             //             dataset.pointBackgroundColor[i] = chartColors.red2;
             //         }
             //     }
-          } else {
-            //if not temperature sensor
-            for (var i = 0; i < dataset.data.length; i++) {
-              if (isNaN(parseInt(dataset.data[i - 1])) || isNaN(parseInt(dataset.data[i + 1]))) {
-                dataset.pointRadius[i] = 3;
-              } else if (parseInt(dataset.data[i - 1]) == 0 || parseInt(dataset.data[i + 1]) == 0) {
-                dataset.pointRadius[i] = 3;
-              } else {
-                dataset.pointRadius[i] = 0;
-              }
+          } else {//if not temperature sensor
+              // for (var i = 0; i < dataset.data.length; i++) {
+              //     if (isNaN(parseInt(dataset.data[i - 1])) || isNaN(parseInt(dataset.data[i + 1]))) {
+              //         dataset.pointRadius[i] = 3
+              //     } else if (parseInt(dataset.data[i - 1]) == 0 || parseInt(dataset.data[i + 1]) == 0) {
+              //         dataset.pointRadius[i] = 3
+              //     } else {
+              //         dataset.pointRadius[i] = 0
+              //     }
+              // }
             }
-          }
         }
       }]
     }); // console.log(chart.data)
@@ -574,7 +723,7 @@ function saveSensorSettings(sensorid) {
 
 var socketChannel = 'socketChannel';
 socket.on(socketChannel, function _callee(data) {
-  var currentValueBox, msg, currentPower, _currentPower;
+  var currentValueBox, msg, value, currentPower, _currentPower;
 
   return regeneratorRuntime.async(function _callee$(_context4) {
     while (1) {
@@ -595,7 +744,8 @@ socket.on(socketChannel, function _callee(data) {
 
           if (data.topic == 'dataPub') {
             msg = JSON.parse(data.message);
-            updateCurrentValue(msg.cId, parseFloat(msg.value).toFixed(1));
+            value = parseFloat(msg.value).toFixed(1);
+            if (value > -200) updateCurrentValue(msg.cId, value);else console.warn("Device", msg.cId, "send weird value:", value);
           } // Listen for no power state
 
 
@@ -605,7 +755,7 @@ socket.on(socketChannel, function _callee(data) {
             if (parseInt(msg.value)) {
               // add class no power to cId
               if (!$(".live-card-" + msg.cId).hasClass('no-power')) {
-                $(".live-card-" + msg.cId).removeClass("alert-active").removeClass("alarm-active").addClass("no-power");
+                $(".live-card-" + msg.cId + "[battery='1']").removeClass("alert-active").removeClass("alarm-active").addClass("no-power");
                 currentPower = $(".battery-info h3").html().split('/');
                 currentPower[0] = Math.min(parseInt(currentPower[0]) + 1, currentPower[1]);
                 $(".battery-info h3").html(currentPower[0] + ' / ' + currentPower[1]);
@@ -633,7 +783,7 @@ socket.on(socketChannel, function _callee(data) {
 var sensorMetaRaw; // init variable globally
 
 var mainLoader = function mainLoader() {
-  var url, zoneId, sensorBuffer, sensorDataRaw, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, sensor, sensorData, sensorsWithBattery, _i, _sensorDataRaw, _sensor, location3, location2, alert, alarm, power;
+  var url, zoneId, sensorBuffer, sensorDataRaw, sensorsWithBattery, sensorCounter, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, sensor, sensorData, location3, location2, alert, alarm, power;
 
   return regeneratorRuntime.async(function mainLoader$(_context5) {
     while (1) {
@@ -658,108 +808,123 @@ var mainLoader = function mainLoader() {
           }); // Get data from influx for each sensor
 
           sensorDataRaw = [];
+          sensorsWithBattery = [];
+          sensorCounter = 0;
           _iteratorNormalCompletion = true;
           _didIteratorError = false;
           _iteratorError = undefined;
-          _context5.prev = 9;
+          _context5.prev = 11;
           _iterator = sensorMetaRaw[Symbol.iterator]();
 
-        case 11:
+        case 13:
           if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-            _context5.next = 20;
+            _context5.next = 27;
             break;
           }
 
           sensor = _step.value;
-          _context5.next = 15;
+          _context5.next = 17;
           return regeneratorRuntime.awrap(getSensorData(sensor.sensorId, sensor.sensorType));
 
-        case 15:
+        case 17:
           sensorData = _context5.sent;
           sensorDataRaw.push({
             sensorMeta: sensor,
             sensorData: sensorData
-          });
+          }); // Append the default sensor view (current value + graph) for each sensor
 
-        case 17:
+          $(".card-container").append(defaultSensorView(sensorDataRaw[sensorDataRaw.length - 1])); // Enable trigger events on defaultSensorView components after append
+
+          triggerSensorView(sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.sensorId); // Plot data on graph based on sensorData attr
+
+          plotData(sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.sensorId); // Sensors w/ battery functionality
+
+          if (sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.battery == 1) sensorsWithBattery.push(sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.sensorId);
+
+          if (sensorCounter == 0) {
+            // Add info box - location
+            location3 = sensorDataRaw[0].sensorMeta.location3;
+            location2 = sensorDataRaw[0].sensorMeta.location2;
+            appendInfoBox({
+              title: location2,
+              message: location3,
+              icon: '<i class="fas fa-compass"></i>',
+              class: ''
+            });
+            sensorCounter++;
+          }
+
+        case 24:
           _iteratorNormalCompletion = true;
-          _context5.next = 11;
+          _context5.next = 13;
           break;
 
-        case 20:
-          _context5.next = 26;
+        case 27:
+          _context5.next = 33;
           break;
 
-        case 22:
-          _context5.prev = 22;
-          _context5.t0 = _context5["catch"](9);
+        case 29:
+          _context5.prev = 29;
+          _context5.t0 = _context5["catch"](11);
           _didIteratorError = true;
           _iteratorError = _context5.t0;
 
-        case 26:
-          _context5.prev = 26;
-          _context5.prev = 27;
+        case 33:
+          _context5.prev = 33;
+          _context5.prev = 34;
 
           if (!_iteratorNormalCompletion && _iterator.return != null) {
             _iterator.return();
           }
 
-        case 29:
-          _context5.prev = 29;
+        case 36:
+          _context5.prev = 36;
 
           if (!_didIteratorError) {
-            _context5.next = 32;
+            _context5.next = 39;
             break;
           }
 
           throw _iteratorError;
 
-        case 32:
-          return _context5.finish(29);
+        case 39:
+          return _context5.finish(36);
 
-        case 33:
-          return _context5.finish(26);
+        case 40:
+          return _context5.finish(33);
 
-        case 34:
-          sensorsWithBattery = [];
-
-          for (_i = 0, _sensorDataRaw = sensorDataRaw; _i < _sensorDataRaw.length; _i++) {
-            _sensor = _sensorDataRaw[_i];
-            // Testing
-            // if(sensor.sensorMeta.sensorId=='DAS001TCORA') {[
-            //     sensor.sensorMeta.alerts = 3
-            // ]}
-            // if(sensor.sensorMeta.sensorId=='DAS003TCORA') {[
-            //     sensor.sensorMeta.alerts = 1
-            // ]}
-            // if(sensor.sensorMeta.sensorId=='DAS005TCORA') {[
-            //     sensor.sensorMeta.alerts = 2
-            // ]}
-            // Append the default sensor view (current value + graph) for each sensor
-            $(".card-container").append(defaultSensorView(_sensor)); // Enable trigger events on defaultSensorView components after append
-
-            triggerSensorView(_sensor.sensorMeta.sensorId); // Plot data on graph based on sensorData attr
-
-            plotData(_sensor.sensorMeta.sensorId); // Sensors w/ battery functionality
-
-            if (_sensor.sensorMeta.battery == 1) sensorsWithBattery.push(_sensor.sensorMeta.sensorId);
-          } // Add info box
-
-
-          location3 = sensorDataRaw[0].sensorMeta.location3;
-          location2 = sensorDataRaw[0].sensorMeta.location2;
-          appendInfoBox({
-            title: location2,
-            message: location3,
-            icon: '<i class="fas fa-compass"></i>',
-            class: ''
-          }); // Counter sensor with battery functionality
-          // let sensorsWithBattery = userData_raw.filter((item,index)=>{
-          //     if(item.battery == 1)
-          //         return item
+        case 41:
+          // let sensorsWithBattery = []
+          // for (const sensor of sensorDataRaw) {
+          //     // Testing
+          //     // if(sensor.sensorMeta.sensorId=='DAS001TCORA') {[
+          //     //     sensor.sensorMeta.alerts = 3
+          //     // ]}
+          //     // if(sensor.sensorMeta.sensorId=='DAS003TCORA') {[
+          //     //     sensor.sensorMeta.alerts = 1
+          //     // ]}
+          //     // if(sensor.sensorMeta.sensorId=='DAS005TCORA') {[
+          //     //     sensor.sensorMeta.alerts = 2
+          //     // ]}
+          //     // Append the default sensor view (current value + graph) for each sensor
+          //     $(".card-container").append(defaultSensorView(sensor));
+          //     // Enable trigger events on defaultSensorView components after append
+          //     triggerSensorView(sensor.sensorMeta.sensorId)
+          //     // Plot data on graph based on sensorData attr
+          //     plotData(sensor.sensorMeta.sensorId)
+          //     // Sensors w/ battery functionality
+          //     if (sensor.sensorMeta.battery == 1)
+          //         sensorsWithBattery.push(sensor.sensorMeta.sensorId)
+          // }
+          // Add info box
+          // let location3 = sensorDataRaw[0].sensorMeta.location3
+          // let location2 = sensorDataRaw[0].sensorMeta.location2
+          // appendInfoBox({
+          //     title: location2,
+          //     message: location3,
+          //     icon: '<i class="fas fa-compass"></i>',
+          //     class: ''
           // })
-          // console.log(sensorsWithBattery)
-
           alert = 0, alarm = 0, power = 0;
           sensorDataRaw.forEach(function (item) {
             if (item.sensorMeta.alerts == 1) alert++;
@@ -789,12 +954,12 @@ var mainLoader = function mainLoader() {
 
           return _context5.abrupt("return", sensorMetaRaw);
 
-        case 45:
+        case 47:
         case "end":
           return _context5.stop();
       }
     }
-  }, null, null, [[9, 22, 26, 34], [27,, 29, 33]]);
+  }, null, null, [[11, 29, 33, 41], [34,, 36, 40]]);
 };
 
 var influxQuery = function influxQuery(query) {
@@ -864,7 +1029,7 @@ var initLiveData = function initLiveData() {
 initLiveData(); // Update charts continously
 
 var liveChart = function liveChart() {
-  var sensorDataRaw, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, sensor, sensorData, _i2, _sensorDataRaw2, _sensor2;
+  var sensorDataRaw, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, sensor, sensorData, _i, _sensorDataRaw, _sensor;
 
   return regeneratorRuntime.async(function liveChart$(_context8) {
     while (1) {
@@ -934,12 +1099,12 @@ var liveChart = function liveChart() {
           return _context8.finish(21);
 
         case 29:
-          for (_i2 = 0, _sensorDataRaw2 = sensorDataRaw; _i2 < _sensorDataRaw2.length; _i2++) {
-            _sensor2 = _sensorDataRaw2[_i2];
+          for (_i = 0, _sensorDataRaw = sensorDataRaw; _i < _sensorDataRaw.length; _i++) {
+            _sensor = _sensorDataRaw[_i];
             // Update json in element attribute before plotting
-            updateDataForChart(_sensor2); // Plot data on graph based on sensorData attr
+            updateDataForChart(_sensor); // Plot data on graph based on sensorData attr
 
-            plotData(_sensor2.sensorMeta.sensorId); // Log
+            plotData(_sensor.sensorMeta.sensorId); // Log
             // console.log(sensor.sensorMeta.sensorId)
           }
 
