@@ -9,9 +9,9 @@ var jQuery = require("jquery");
 
 window.jQuery = window.$ = jQuery; //Make jquery accesible from html files
 
-require('./bernigauge.js');
+// require('./bernigauge.js');
 
-require('./justgage/raphael-2.1.4.min.js');
+// require('./justgage/raphael-2.1.4.min.js');
 
 var moment = require('moment');
 

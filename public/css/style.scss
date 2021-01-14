@@ -5,6 +5,7 @@
   --neuro-inset: 5px 2px 10px #adadad, -5px -2px 10px #fffffd, inset 2px 2px 2px #fffffd, inset -2px -2px 2px #adadad;
   --neuro-mini: 2px 2px 2px #adadad69, -2px -2px 2px #fffffd69;
   --neuro-hover: 5px 2px 10px #adadad, -5px -2px 10px #fffffd, inset 3px 3px 5px #adadad, inset -3px -3px 5px #fffffd;
+  --neuro-black: 3px 4px 9px #0000005c, -3px -4px 9px #ffffff3b;
   --pulse-blue: #5a99d4;
   --bg-info: rgba(51, 153, 255, 1);
   --body-bg: #e4e4e2;
@@ -36,6 +37,17 @@
   --danger2: #dc3545d6;
   --light: #f8f9fa;
   --dark: #343a40;
+
+  --conveyor-run: #28a746d6;
+  --conveyor-stop: #989898;
+  --conveyor-energy: #4ba0fa;
+  --conveyor-acc: #ffc107;
+  --conveyor-error: #dc3545;
+  --conveyor-open: #ffc107;
+  --conveyor-closed: #28a746d6;
+  --conveyor-press: #dc3545;
+  --conveyor-released: #28a746d6;
+
   --breakpoint-xs: 0;
   --breakpoint-sm: 576px;
   --breakpoint-md: 768px;
@@ -4835,12 +4847,49 @@ margin-top: -30px; */
   --watermarkOpacity: 1;
 }
 
+// Conveyor Main Dashboard Style
+.conveyor-main-dashboard {
+  .card-container {
+    display: -ms-grid;
+    display: grid;
+    padding: 1rem 1rem 1rem 1rem;
+    /* grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); */
+    -ms-grid-columns: 1fr;
+    grid-template-columns: 1fr;
+    grid-column-gap: 5rem;
+    grid-row-gap: 1rem;
+    /* align-items: center; */
+    /* justify-items: center; */
+  }
+
+  .switch-context {
+    display:none;
+  }
+
+  article[class*="graph-"]:not([class*="live"]),
+  article[class*="controller-"]:not([class*="live"]) {
+    left: 0;
+  }
+
+  article[class*="graph-"]:not([class*="live"]) .card-body,
+  article[class*="controller-"]:not([class*="live"]) .card-body {
+    margin: 0px 0rem -10px 0rem;
+  }
+
+  .card {
+    -ms-grid-rows: 1fr;
+    grid-template-rows: 1fr;
+  }
+}
+
+// END Coneyor Main Dashboard Style
+
 .card-container {
   display: -ms-grid;
   display: grid;
   padding: 1rem 1rem 1rem 1rem;
   /* grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); */
-  -ms-grid-columns: 25% 5rem 3fr;
+  -ms-grid-columns: 25% 3fr;
   grid-template-columns: 25% 3fr;
   grid-column-gap: 5rem;
   grid-row-gap: 1rem;
@@ -4854,12 +4903,12 @@ margin-top: -30px; */
     grid-template-columns: 1fr;
   }
 
-  article[class*="graph-"]:not([class*="live"]) {
+  article[class*="graph-"]:not([class*="live"]),
+  article[class*="controller-"]:not([class*="live"]) {
     left: 0 !important;
-  }
-
-  article[class*="graph-"]:not([class*="live"]) .card-body {
-    margin: 0px -0.5rem -10px -0.5rem !important;
+    .card-body {
+      margin: 0px -0.5rem -10px -0.5rem !important;
+    }
   }
 }
 
@@ -4963,6 +5012,283 @@ margin-top: -30px; */
   height: 100%;
 }
 
+// Conveyor Layout Map
+div.conveyor-layout {
+
+  height: calc(500px - 0px - 0rem);
+  width: 100%;
+  position: relative;
+
+  & > div {
+    &.conveyor-layout-inner {
+      display: block;
+      overflow: scroll;
+      border-radius: 13px;
+      -webkit-box-shadow: var(--neuro);
+      box-shadow: var(--neuro);
+      min-width: 100%;
+      min-height: 100%;
+      position: relative;
+      background: #353b40;
+    }
+
+    &.new-items-conveyor {
+      /* background: pink; */
+      position: absolute;
+      /* display: block; */
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: auto;
+      padding: 10px;
+      border-top: 3px dashed white;
+      &:after {
+        content: "New sensors";
+        color: white;
+        position: absolute;
+        top: -30px;
+        left: 10px;
+      }
+      .sensor-item {
+        position:relative;
+      }
+    }
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    // &.custom-map {
+    // both undefined and on map
+    .sensor-item {
+
+      white-space: nowrap;
+      position: absolute;
+      display:inline-block;
+      background: var(--success);
+      margin: 5px;
+      top: 0;
+      left: 0;
+      transform: scale(1);
+      transition: width 0.2s ease, height 0.2s ease, transform 0.2s ease;
+      padding: 0px;
+      border-radius: 5px;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+
+      &:hover {
+        z-index:999;
+      }
+
+      // segment
+      &[state="run"] {
+        background:var(--conveyor-run) !important;
+      }
+      &[state="stop"] {
+        background:var(--conveyor-stop) !important;
+      }
+      &[state="energy"] {
+        background:var(--conveyor-energy) !important;
+      }
+      &[state="acc"] {
+        background:var(--conveyor-acc) !important;
+        &:before,
+        &:after {
+          content: "";    
+          width: 40px;
+          height: 40px;
+          border-radius: 3px;
+          border: 1px solid var(--conveyor-acc);
+          // background-color: var(--red);
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          margin: auto;
+          transform: scale(1);
+          transform-origin: center center;
+          animation: pulse-me-small 1s linear infinite;
+          z-index:-99;
+        }
+        &:after {
+          animation-delay: 1s;
+          z-index:-99;
+        }
+      }
+      // end segment
+
+      // gate 
+      &[state="open"] {
+        background:var(--conveyor-open) !important;
+        &:before,
+        &:after {
+          content: "";    
+          width: 40px;
+          height: 40px;
+          border-radius: 3px;
+          border: 1px solid var(--conveyor-open);
+          // background-color: var(--red);
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          margin: auto;
+          transform: scale(1);
+          transform-origin: center center;
+          animation: pulse-me-small 1s linear infinite;
+          z-index:-99;
+        }
+        &:after {
+          animation-delay: 1s;
+          z-index:-99;
+        }
+      }
+      &[state="closed"] {
+        background:var(--conveyor-closed) !important;
+      }
+      // end gate
+
+      // safety
+      &[type="safety"] {
+        border-top-left-radius: 100%;
+        border-top-right-radius: 100%;
+      }
+      &[state="press"] {
+        background:var(--conveyor-press) !important;
+        &:before,
+        &:after {
+          content: "";    
+          width: 40px;
+          height: 40px;
+          border-radius: 3px;
+          border: 1px solid var(--conveyor-press);
+          // background-color: var(--red);
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          margin: auto;
+          transform: scale(1);
+          transform-origin: center center;
+          animation: pulse-me-small 1s linear infinite;
+          z-index:-99;
+        }
+        &:after {
+          animation-delay: 1s;
+          z-index:-99;
+        }
+      }
+      &[state="released"] {
+        background:var(--conveyor-released) !important;
+      }
+      // end safety
+
+      // null
+      &[state="null"] {
+        background:var(--conveyor-stop) !important;
+      }
+      // end null
+
+      // error
+      &[state="error"] {
+        background:var(--conveyor-error) !important;
+        // @include conveyorItemPulse(var(--conveyor-error));
+        &:before,
+        &:after {
+          content: "";    
+          width: 40px;
+          height: 40px;
+          border-radius: 3px;
+          border: 1px solid var(--conveyor-error);
+          // background-color: var(--red);
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          margin: auto;
+          transform: scale(1);
+          transform-origin: center center;
+          animation: pulse-me-small 1s linear infinite;
+          z-index:-99;
+        }
+        &:after {
+          animation-delay: 1s;
+          z-index:-99;
+        }
+      }
+      // end error
+    
+      // pulse conveyor item
+
+      // end pulse conveyor item
+
+      & > .medium-view {
+        display: none;
+      }
+
+      & > .small-view {
+        
+        text-align: center;
+
+        & > .sensorName {
+          padding-top: 0;
+          // line-height: 70px;  
+          font-size: 13px;
+          display:none;
+        }
+
+      }
+
+      &.sensor-disabled {
+        background: #d0d0d0;
+      }
+
+      i {
+        display: block;
+        text-align: center;
+        font-size: 25px;
+        display: block;
+        text-align: center;
+        line-height: 40px;
+      }
+      
+      span {
+        display: block;
+        text-align: center;
+      }
+
+    }
+    
+  }
+}
+
+
+// Test dot over map
+div.conveyor-layout > div.conveyor-layout-inner > .sensor-item:after {
+  // display: none !important;
+}
+
+// div.conveyor-layout > div.conveyor-layout-inner > 
+
+div.conveyor-layout > div.conveyor-layout-inner > .sensor-item {
+}
+
+div.conveyor-layout > div.conveyor-layout-inner > .sensor-item:hover {
+  
+}
+
+div.conveyor-layout > div.conveyor-layout-inner > .sensor-item:hover:after {
+  // display: block !important;
+}
+// End test dot over map
+
+// END Conveyor Layout Map
+
 div#map {
   & > div {
     display: block;
@@ -4990,17 +5316,15 @@ div#map {
     &.custom-map {
       // both undefined and on map
       .sensor-item {
+        white-space: nowrap;
 
-          white-space: nowrap;
+        &.state-open {
+          background: var(--warning);
+        }
+        &.state-closed {
+          background: var(--success);
+        }
 
-          &.state-open {
-            background: var(--warning)
-            
-          }
-          &.state-closed {
-            background:var(--success)
-          }
-          
         .pulse {
           margin: 0 auto;
           position: absolute;
@@ -5056,7 +5380,7 @@ div#map {
             color: black;
             top: calc(100% - -8px);
             left: 0px;
-            font-weight:bold;
+            font-weight: bold;
             display: block;
             /* width: 100%; */
             /* transform: translateY(-50%); */
@@ -5074,7 +5398,6 @@ div#map {
             /* z-index: 0; */
             border-radius: 13px;
           }
-
         }
 
         // No power
@@ -5124,10 +5447,9 @@ div#map {
   }
 }
 
-
 // Test dot over map
 div#map > div.custom-map > .sensor-item:after {
-  display:none !important
+  display: none !important;
 }
 
 div#map > div.custom-map > .sensor-item:hover {
@@ -5165,17 +5487,17 @@ div#map > div.custom-map > .sensor-item:hover {
   & > .medium-view {
     // opacity: 1;
     // visibility: visible;
-    display:block;
+    display: block;
   }
   & > .small-view {
     // opacity: 0;
     // visibility: hidden;
-    display:none;
+    display: none;
   }
 }
 
 div#map > div.custom-map > .sensor-item:hover:after {
-  display:block !important;
+  display: block !important;
 }
 // End test dot over map
 
@@ -5194,7 +5516,7 @@ div#map > div.custom-map > .sensor-item:hover:after {
   width: auto;
   height: auto;
   display: block;
-  z-index:999;
+  z-index: 999;
   .undefinedSensorsInner {
     // display: none;
     position: relative;
@@ -5645,6 +5967,32 @@ div#gauge {
   border-radius: $circleSize/2;
 }
 
+@mixin conveyorItemPulse($color) {
+  &:before,
+  &:after {
+    content: "";    
+    width: 40px;
+    height: 40px;
+    border-radius: 3px;
+    border: 1px solid $color;
+    // background-color: var(--red);
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    transform: scale(1);
+    transform-origin: center center;
+    animation: pulse-me-small 1s linear infinite;
+    z-index:-99;
+  }
+  &:after {
+    animation-delay: 1s;
+    z-index:-99;
+  }
+}
+
 .pulse-container {
   position: absolute;
   float: left;
@@ -5706,6 +6054,24 @@ div#gauge {
   }
 }
 
+
+@keyframes pulse-me-small {
+  0% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.1;
+  }
+  70% {
+    opacity: 0.09;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
 article[class*="live-card-"] {
   // .card-title {
   //   left: 30px;
@@ -5715,7 +6081,7 @@ article[class*="live-card-"] {
 
 // Live Animation Simple Pulse
 .safari .pulse {
-  display:none;
+  display: none;
 }
 .pulse {
   margin-right: 10px;
@@ -5762,25 +6128,26 @@ article[class*="live-card-"] {
 // End Animation Simple Pulse
 
 // Sensor Name Edit
-article[class*="graph-"] {
+article[class*="graph-"],
+article[class*="controller-"] {
   .card-header {
     .edit-sensor-name {
-        display: inline-block;
-        opacity: 0;
-        visibility: hidden;
-        position: absolute;
-        right: -30px;
-        top: -1px;
+      display: inline-block;
+      opacity: 0;
+      visibility: hidden;
+      position: absolute;
+      right: -30px;
+      top: -1px;
     }
     &:hover {
-      cursor:pointer;
+      cursor: pointer;
       .edit-sensor-name {
-          opacity: 1;
-          visibility: visible;
-          &:hover i {
-            font-weight:bold;
-            // color: var(--yellow);
-          }
+        opacity: 1;
+        visibility: visible;
+        &:hover i {
+          font-weight: bold;
+          // color: var(--yellow);
+        }
       }
     }
   }
@@ -5788,7 +6155,8 @@ article[class*="graph-"] {
 // End Sensor Name Edit
 
 article[class*="graph-"],
-article[class*="live-card-"] {
+article[class*="live-card-"],
+article[class*="controller-"] {
   /* name, duration, timing function, delay, fill mode */
   /* -webkit-animation: fadeIn 600ms ease; */
   /* animation: fadeIn 600ms ease; */
@@ -5801,37 +6169,43 @@ article[class*="live-card-"] {
 }
 
 article[class*="graph-"]:nth-child(1),
-article[class*="live-card-"]:nth-child(1) {
+article[class*="live-card-"]:nth-child(1),
+article[class*="controller-"]:nth-child(1) {
   -webkit-animation-delay: 0.1s;
   animation-delay: 0.1s;
 }
 
 article[class*="graph-"]:nth-child(2),
-article[class*="live-card-"]:nth-child(2) {
+article[class*="live-card-"]:nth-child(2),
+article[class*="controller-"]:nth-child(2) {
   -webkit-animation-delay: 0.2s;
   animation-delay: 0.2s;
 }
 
 article[class*="graph-"]:nth-child(3),
-article[class*="live-card-"]:nth-child(3) {
+article[class*="live-card-"]:nth-child(3),
+article[class*="controller-"]:nth-child(3) {
   -webkit-animation-delay: 0.3s;
   animation-delay: 0.3s;
 }
 
 article[class*="graph-"]:nth-child(4),
-article[class*="live-card-"]:nth-child(4) {
+article[class*="live-card-"]:nth-child(4),
+article[class*="controller-"]:nth-child(4) {
   -webkit-animation-delay: 0.4s;
   animation-delay: 0.4s;
 }
 
 article[class*="graph-"]:nth-child(5),
-article[class*="live-card-"]:nth-child(5) {
+article[class*="live-card-"]:nth-child(5),
+article[class*="controller-"]:nth-child(5) {
   -webkit-animation-delay: 0.5s;
   animation-delay: 0.5s;
 }
 
 article[class*="graph-"]:nth-child(n + 6),
-article[class*="live-card-"]:nth-child(n + 6) {
+article[class*="live-card-"]:nth-child(n + 6),
+article[class*="controller-"]:nth-child(n + 6) {
   -webkit-animation-delay: 0.5s;
   animation-delay: 0.5s;
 }
@@ -6335,30 +6709,35 @@ div#reportrange i:last-child {
 
 // temperature is sensor label
 .custom_tooltip {
-  background:var(--yellow);
+  background: var(--yellow);
   padding: 3px 5px;
-  border-radius:5px;
-  display:block;
+  border-radius: 5px;
+  display: block;
 }
 
-article[class*="graph-"]:not([class*="live"]) {
+article[class*="graph-"]:not([class*="live"]),
+article[class*="controller-"]:not([class*="live"]) {
   background: var(--body-bg);
   position: relative;
   left: -1.5rem;
-  /* margin: 10px; */
   margin-bottom: 10px;
   -webkit-box-shadow: var(--neuro);
   box-shadow: var(--neuro);
   border-radius: 13px;
   .card-body {
     overflow: hidden;
-    background: var(--gray-dark);
-    /* border: none; */
+
     margin: 0px -1.5rem -10px -1.5rem;
     border-radius: 13px;
     -webkit-box-shadow: var(--neuro);
     box-shadow: var(--neuro);
     transform: scale(1);
+  }
+}
+
+article[class*="graph-"]:not([class*="live"]) {
+  .card-body {
+    background: var(--gray-dark);
     &:hover {
       transform: scale(1.01);
       cursor: pointer;
@@ -6367,6 +6746,12 @@ article[class*="graph-"]:not([class*="live"]) {
       max-width: 100%;
       min-height: 200px;
     }
+  }
+}
+
+article[class*="controller-"]:not([class*="live"]) {
+  .card-body {
+    background: var(--body-bg);
   }
 }
 
@@ -7114,30 +7499,50 @@ display: inline-block;
 border-bottom: 1px dotted black; */
 }
 
+@-webkit-keyframes tooltipHideAnimation {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@-moz-keyframes tooltipHideAnimation {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes tooltipHideAnimation {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+
 .tooltip_test .tooltiptext {
   visibility: hidden;
   /* width: 120px; */
-  background-color: #555;
-  color: #fff;
+  background-color: #d9a823;
+  color: black;
   text-align: center;
   border-radius: 6px;
   padding: 5px 0;
   position: absolute;
   z-index: 1;
-  top: 130%;
-  left: calc(50% - 20px);
-  margin-left: -60px;
+  // bottom: -31px;
+  top: 20px;
+  left: 50%;
+  -webkit-transform: translate(-50%, 50%);
+  -moz-transform: translate(-50%, 50%);
+  -o-transform: translate(-50%, 50%);
+  transform: translate(-50%, 50%);
   opacity: 0;
-  -webkit-transition: opacity 0.3s;
-  -o-transition: opacity 0.3s;
-  transition: opacity 0.3s;
+  -webkit-transition: opacity 0.3s ease-in;
+  -o-transition: opacity 0.3s ease-in;
+  transition: opacity 0.3s ease-in;
   display: table;
-  padding: 10px 10px;
-  font-size: 14px;
-  width: 158px;
+  padding: 0px 10px;
+  font-size: 14px;  
 }
 
 .tooltip_test .tooltiptext::after {
+  display:none;
   content: "";
   position: absolute;
   top: -10px;
@@ -7150,7 +7555,13 @@ border-bottom: 1px dotted black; */
 
 .tooltip_test:hover .tooltiptext {
   visibility: visible;
-  opacity: 1;
+  opacity: 1;  
+  // transition: opacity 0s;
+}
+
+.tooltip_test:active .tooltiptext {
+  visibility: hidden;
+  opacity: 0;  
 }
 
 /* Scanner Page */
@@ -7786,3 +8197,175 @@ div#map .splash-inner {
 }
 
 // End upload image
+
+// Dashboard conveyor
+.state-btn-inner {
+  width: 80px;
+  height: 40px;
+  margin: 0 auto;
+  border-radius: 50px;
+  display: inline-block;
+  position: relative;
+  background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAyklEQVQ4T42TaxHCQAyENw5wAhLACVUAUkABOCkSwEkdhNmbpHNckzv689L98toIAKjqGcAFwElEFr5ln6ruAMwA7iLyFBM/TPDuQSrxwf6fCKBoX2UMIYGYkg8BLOnVg2RiAEexGaQQq4w9e9klcxGLLAUwgDAcihlYAR1IvZA1sz/+AAaQjXhTQQVoe2Yo3E7UQiT2ijeQdojRtClOfVKvMVyVpU594kZK9zzySWTlcNqZY9tjCsUds00+A57z1e35xzlzJjee8xf0HYp+cOZQUQAAAABJRU5ErkJggg==")
+    no-repeat 50px center #e74c3c;
+  cursor: pointer;
+  -webkit-transition: background-color 0.4s ease-in-out;
+  -moz-transition: background-color 0.4s ease-in-out;
+  -o-transition: background-color 0.4s ease-in-out;
+  transition: background-color 0.4s ease-in-out;
+  cursor: pointer;
+  &.active {
+    background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAmUlEQVQ4T6WT0RWDMAhFeZs4ipu0mawZpaO4yevBc6hUIWLNd+4NeQDk5sE/PMkZwFvZywKSTxF5iUgH0C4JHGyF97IggFVSqyCFga0CvQSg70Mdwd8QSSr4sGBMcgavAgdvwQCtApvA2uKr1x7Pu++06ItrF5LXPB/CP4M0kKTwYRIDyRAOR9lJTuF0F0hOAJbKopVHOZN9ACS0UgowIx8ZAAAAAElFTkSuQmCC")
+      no-repeat 10px center #2ecc71;
+    .round-btn {
+      left: 45px;
+    }
+  }
+  .round-btn {
+    width: 30px;
+    height: 30px;
+    background-color: #fff;
+    border-radius: 50%;
+    display: inline-block;
+    position: absolute;
+    left: 5px;
+    top: 50%;
+    margin-top: -15px;
+    -webkit-transition: all 0.3s ease-in-out;
+    -moz-transition: all 0.3s ease-in-out;
+    -o-transition: all 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out;
+  }
+  .cb-value {
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    z-index: 9;
+    cursor: pointer;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+  }
+}
+
+// Dashboard conveyor
+article[class*="controller-"]:not([class*="live"]) {
+  .card-body {
+    background: var(--gray-dark);
+  }
+
+  .card-body-inner {
+    display: grid;
+    // grid-template-columns: 1fr 1fr 1fr;
+    // grid-template-rows: 1fr 1fr;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: 1fr;
+    gap: 0px 0px;
+    // grid-template-areas:
+    //   "status info1 info2"
+    //   "status info3 info4";
+    grid-template-areas: "status info1 info2 info3 info4";
+    justify-items: center;
+    height: 100%;
+    position: relative;
+    align-items: center;
+
+    & > * {
+      &:hover {
+        box-shadow: var(--neuro-black);
+        cursor: pointer;
+      }
+
+      box-shadow: none;
+      transition: all 0.2s ease-out;
+      padding: 20px;
+      border-radius: 13px;
+      min-width: 80px;
+      width: 100%;
+      height: 100%;
+
+      .grid-inner {
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      & > * > * {
+        display: block;
+        position: relative;
+        text-align: center;
+      }
+
+      i {
+        font-size: 32px;
+        color: white;
+      }
+
+      .conveyor-info-title {
+        font-size: 1.1rem;
+        font-weight: 400;
+        // color: #343a3f;
+        color: white;
+        font-weight: bolder;
+        text-transform: uppercase;
+        padding: 20px 0px 10px;
+      }
+
+      .conveyor-info-message {
+        font-size: 1.1rem;
+        font-weight: 400;
+        // color: #343a3f;
+        color: white;
+        font-weight: bolder;
+        // padding: 5px 0px 0px;
+
+        &.message-unknown {
+          // opacity: 0;
+          color: transparent;
+        }
+      }
+    }
+
+    .state-button {
+      grid-area: status;
+      // .conveyor-info-time {
+      //   padding-top: 10px
+      // }
+    }
+
+    .last-status {
+      grid-area: info1;
+    }
+
+    .usage-today {
+      grid-area: info2;
+    }
+
+    .usage-total {
+      grid-area: info3;
+    }
+
+    .usage-left {
+      grid-area: info4;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  article[class*="controller-"]:not([class*="live"]) {
+    .card-body {
+      // padding-top: 20px !important;
+      max-height: initial !important;
+    }
+    .card-body-inner {
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      grid-template-areas:
+        "status status"
+        "info1 info2"
+        "info3 info4";
+      gap: 10px 0px;
+    }
+  }
+}

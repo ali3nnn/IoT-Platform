@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "init": "pm2 start app.js --name 'anygo'",
-    "dev": "concurrently 'npm run stop' 'pm2-dev app.js' 'npm run build'",
+    "dev": "concurrently 'npm run stop' 'pm2-dev app.js' 'npm run build:dev'",
     "prod": "npm run build:prod && pm2 start anygo --watch",
     "stop": "pm2 stop anygo",
     "build:dev": "webpack --config webpack.config-dev.js --mode=development",
@@ -41,6 +41,7 @@
     "handlebars-intl": "^1.1.2",
     "hbs": "^4.1.1",
     "helmet": "^3.22.1",
+    "humanize-duration": "^3.25.0",
     "influx": "^5.5.2",
     "jbox": "^1.2.0",
     "jquery": "^3.5.1",

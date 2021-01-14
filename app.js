@@ -1,6 +1,6 @@
 // Imports
 // ==================================
-const http = require('http') // its a default package of node.js
+// const http = require('http') // its a default package of node.js
 const express = require('express')
 
 var app = require('express')();
@@ -10,7 +10,7 @@ var app = require('express')();
 var fs = require('fs');
 
 const path = require('path')
-const bodyParser = require('body-parser');
+// const bodyParser = require('body-parser');
 const dotenv = require('dotenv')
 const cookieParser = require('cookie-parser')
 const session = require('express-session');
@@ -19,16 +19,16 @@ const bcrypt = require('bcryptjs');
 const helmet = require('helmet');
 const url = require('url');
 const axios = require('axios')
-const moment = require('moment')
+// const moment = require('moment')
 const formidable = require('formidable');
-const removeDiacritics = require('diacritics').remove;
+// const removeDiacritics = require('diacritics').remove;
 // global.fetch = require("node-fetch");
-const mime = require('mime');
+// const mime = require('mime');
 // const { exec } = require("child_process");
 const _ = require('lodash');
 
 const Handlebars = require('handlebars');
-const HandlebarsIntl = require('handlebars-intl');
+// const HandlebarsIntl = require('handlebars-intl');
 
 const Influx = require('influx');
 const mysql = require('mysql');
@@ -116,10 +116,10 @@ const {
     isScannerAvailable,
     mqttOverSocketIoBridge,
     test,
-    getDistinctValuesFromObject,
-    replaceAll,
-    replaceDiacritics,
-    getDaysInMonth
+    // getDistinctValuesFromObject,
+    // replaceAll,
+    // replaceDiacritics,
+    // getDaysInMonth
     // trackurl
 } = require('./controllers/getInfo');
 const {
@@ -137,33 +137,6 @@ const influx = new Influx.InfluxDB({
     host: 'localhost',
     database: 'anysensor3',
 })
-
-// Influx Write - ASYNC
-function influxWriter(measurement, country, county, city, location, zone, username, type, sensorId, value, database = 'anysensor3', precision = 's') {
-    // console.log('Influx Write')
-    influx.writePoints([{
-        measurement,
-        tags: {
-            country,
-            county,
-            city,
-            location,
-            zone,
-            username,
-            type,
-            sensorId,
-        },
-        fields: {
-            value
-        }
-    }], {
-        database,
-        precision,
-    })
-        .catch(error => {
-            console.error(`Error saving data to InfluxDB! ${err.stack}`)
-        });
-}
 
 // Influx Query - PROMISE
 function influxReader(query) {
@@ -4322,6 +4295,20 @@ app.get("/api/socketio-access", (req, res) => {
     }
 })
 
+app.get("/api/set-device", async (req,res) => {
+    sess = req.session
+    
+    if(sess.username) {
+        if(req.query.status) {
+            // [ ] TODO
+            // create a column in sensor table in mysql called status with default null 
+            // this status should be updated in that column
+        }
+    }
+
+    res.status(200).send()
+
+})
 //=========================================
 // End Scale, Conveyor, Scanner API
 
