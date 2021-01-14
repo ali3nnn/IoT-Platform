@@ -41,6 +41,7 @@
     "handlebars-intl": "^1.1.2",
     "hbs": "^4.1.1",
     "helmet": "^3.22.1",
+    "humanize-duration": "^3.25.0",
     "influx": "^5.5.2",
     "jbox": "^1.2.0",
     "jquery": "^3.5.1",

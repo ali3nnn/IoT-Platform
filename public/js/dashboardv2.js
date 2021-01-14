@@ -1,26 +1,56 @@
-// first line test git
-import { deprecationHandler } from 'moment'
+
+
+// Imports
+// ======================================================
+// import { deprecationHandler } from 'moment'
+const humanizeDuration = require("humanize-duration");
+const _ = require('lodash');
+
 import {
     getDistinctValuesFromObject,
     getValuesFromObject,
     downloadCSV,
     getKeyByValue,
     timeoutAsync,
+    sendMessage
 } from './utils.js'
 
+import {
+    conveyor,
+    currentValueView,
+    graphView,
+    doorLive,
+    newItemLive,
+    conveyorLive,
+    conveyorLayout,
+    conveyorItem,
+    newItemsConveyorLayout,
+    states_dict
+} from './dashboard-components'
+// ======================================================
+
+
+// Fetch sensor data
+// ======================================================
 let getSensorData = async (id, type) => {
     let response = await fetch("/api/v3/get-sensor-data?id=" + id + "&type=" + type)
     return response.json()
 }
+// ======================================================
 
-// console.log(userData_raw)
-
+// ======================================================
 function updateDataForChart(sensor) {
     let sensorData = JSON.stringify(sensor.sensorData)
     $("article.graph-" + sensor.sensorMeta.sensorId).attr("sensorData", sensorData)
 }
+// ======================================================
 
+// Add different components
+// ======================================================
 function defaultSensorView(sensor) {
+
+    // console.log(sensor)
+    // window.sensor = sensor
 
     // sensorId = String(sensorId)
     let sensorData = JSON.stringify(sensor.sensorData)
@@ -30,209 +60,33 @@ function defaultSensorView(sensor) {
     // Sensor state 0/1/2/3,4
     let alertClass2 = ''
     if (sensor.sensorMeta.alerts == 1) {
-        // alertClass = 'alert-active' 
         alertClass2 = 'alert-active'
     }
     else if (sensor.sensorMeta.alerts == 2) {
-        // alertClass = 'alarm-active'
         alertClass2 = 'alarm-active'
     }
     else if ([3, 4].includes(sensor.sensorMeta.alerts) && sensor.sensorMeta.battery == 1)
         alertClass2 = 'no-power'
 
-    // current value gauge component
-    var currentValueView = `
-    <article class="card height-control `+ alertClass2 + ` live-card-` + sensor.sensorMeta.sensorId + `" sensorId="` + sensor.sensorMeta.sensorId + `" sensortype="` + sensor.sensorMeta.sensorType + `" battery="`+sensor.sensorMeta.battery+`">
-
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class='update-icon'></i>
-                Current Value
-            </h3>
-            <span class='card-settings-button'>
-                <i class="far fa-sliders-h"></i>
-            </span>
-        </div>
-
-        <div class="card-body">
-           <div class="` + sensor.sensorMeta.sensorId + `-currentValue">
-                <div id="` + sensor.sensorMeta.sensorId + `-gauge" class="gauge-container two">
-                    <span class="currentValue">0</span>
-                    `+ (() => { return ![null, 'NaN', undefined, ''].includes(sensor.sensorMeta.min) ? '<span class=\'minAlertGauge\' value=\' ' + sensor.sensorMeta.min + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>min: ' + sensor.sensorMeta.min + '</span> ' : '<span class=\'minAlertGauge noAlertGauge\' value=\' ' + sensor.sensorMeta.min + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>No min alert</span> ' })() + `
-                    `+ (() => { return ![null, 'NaN', undefined, ''].includes(sensor.sensorMeta.max) ? '<span class=\'maxAlertGauge\' value=\' ' + sensor.sensorMeta.max + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>max: ' + sensor.sensorMeta.max + '</span> ' : '<span class=\'maxAlertGauge noAlertGauge\' value=\' ' + sensor.sensorMeta.max + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>No max alert</span> ' })() + `
-                </div>
-                <p class='update-time-gauge'><span class="not-live pulse"></span><span class="time">Waiting to be updated...</span></p>
-            </div>
-        </div>
-
-        <div class='card-alerts-settings alert-` + sensor.sensorMeta.sensorId + `'>
-            <span class='card-settings-button-alert tooltip_test'>
-                <i class="fas fa-bell"></i>
-                <span class="tooltiptext">New feature is coming!</span>
-            </span>
-            <span class='card-settings-button-update tooltip_test'>
-                <i class="fas fa-save"></i>
-                <span class="tooltiptext">By clicking you will update alerts and location!</span>
-            </span>
-            <span class='card-settings-button-inner'>
-                <i class="far fa-sliders-h"></i>
-            </span>
-            <div class='settings-wrapper'>
-                <div class="slidecontainer">
-
-                    <p class='label-input'>Min: </p>
-                    <input type="number" name="minAlert" `+ (() => { return sensor.sensorMeta.min ? 'value="' + sensor.sensorMeta.min + '"' : 'placeholder="Set min alert"' })() + ` class="input input-min">
-                    <p class='label-input'>Max: </p>
-                    <input type="number" name="maxAlert" `+ (() => { return sensor.sensorMeta.max ? 'value="' + sensor.sensorMeta.max + '"' : 'placeholder="Set max alert"' })() + ` class="input input-max">
-                    <p class='label-input'>Lat: </p>
-                    <input type="number" name="xLat" `+ (() => { return sensor.sensorMeta.x ? 'value="' + sensor.sensorMeta.x + '"' : 'placeholder="Set x position"' })() + ` class="input input-lat">
-                    <p class='label-input'>Long: </p>
-                    <input type="number" name="yLong" `+ (() => { return sensor.sensorMeta.y ? 'value="' + sensor.sensorMeta.y + '"' : 'placeholder="Set y position"' })() + ` class="input input-long">
-
-                </div>
-            </div>
-        </div>
-    </article>
-    `
-
-    // counter noriel ui
-    var newItemLive = `
-    <article class="card height-control live-card-` + sensor.sensorMeta.sensorId + `">
-
-    <div class="card-header">
-        <h3 class="card-title">
-            <i class='update-icon'></i>
-            Live Update
-        </h3>
-    </div>
-
-    <div class="card-body">
-        <div class="` + sensor.sensorMeta.sensorId + `-newItem">
-
-            <a href="#" class='spinner ` + sensor.sensorMeta.sensorId + `-newItem-spinner'>
-                <span>Loading...</span>
-            </a>
-
-            <div id="` + sensor.sensorMeta.sensorId + `-floatinBall" class="hidden-element"></div>
-
-        </div>
-    </div>`
-
-    var doorLive = `
-    <article class="card height-control `+ alertClass2 + ` live-card-` + sensor.sensorMeta.sensorId + `" sensorId="` + sensor.sensorMeta.sensorId + `" sensortype="` + sensor.sensorMeta.sensorType + `" battery="`+sensor.sensorMeta.battery+`">
-
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class='update-icon'></i>
-                Door live
-            </h3>
-            <span class='card-settings-button'>
-                <i class="far fa-sliders-h"></i>
-            </span>
-        </div>
-
-        <div class="card-body">
-           <div class="` + sensor.sensorMeta.sensorId + `-currentValue">
-                <div id="` + sensor.sensorMeta.sensorId + `-gauge" class="gauge-container two">
-                    <span class="doorState" state="unknown">
-                        <i class="fas fa-door-closed"></i>
-                        <i class="fas fa-door-open"></i>
-                    </span>
-                    `+ (() => { return ![null, 'NaN', undefined, 0, '0', ''].includes(sensor.sensorMeta.openTimer) ? '<span class=\'openTimer\' value=\' ' + sensor.sensorMeta.openTimer + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>open: ' + sensor.sensorMeta.openTimer + '</span> ' : '<span class=\'openTimer noAlertGauge\' value=\' ' + sensor.sensorMeta.openTimer + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>open: <i class="fas fa-infinity"></i></span> ' })() + `
-                    `+ (() => { return ![null, 'NaN', undefined, 0, '0', ''].includes(sensor.sensorMeta.closedTimer) ? '<span class=\'closedTimer\' value=\' ' + sensor.sensorMeta.closedTimer + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>closed: ' + sensor.sensorMeta.closedTimer + '</span> ' : '<span class=\'closedTimer noAlertGauge\' value=\' ' + sensor.sensorMeta.closedTimer + ' \' sensortype=\' ' + sensor.sensorMeta.sensorType + ' \'>closed: <i class="fas fa-infinity"></i></span> ' })() + `
-                </div>
-                <p class='update-time-gauge'><span class="not-live pulse"></span><span class="time">Waiting to be updated...</span></p>
-            </div>
-        </div>
-
-        <div class='card-alerts-settings alert-` + sensor.sensorMeta.sensorId + `'>
-            <span class='card-settings-button-alert tooltip_test'>
-                <i class="fas fa-bell"></i>
-                <span class="tooltiptext">New feature is coming!</span>
-            </span>
-            <span class='card-settings-button-update tooltip_test'>
-                <i class="fas fa-save"></i>
-                <span class="tooltiptext">By clicking you will update alerts and location!</span>
-            </span>
-            <span class='card-settings-button-inner'>
-                <i class="far fa-sliders-h"></i>
-            </span>
-            <div class='settings-wrapper'>
-                <div class="slidecontainer">
-
-                    <p class='label-input'>Open:</p>
-                    <input type="number" name="openAlert" `+ (() => { return sensor.sensorMeta.openTimer ? 'value="' + sensor.sensorMeta.openTimer + '"' : '' })() + `placeholder="Set open limit in seconds" class="input input-open">
-                    <p class='label-input'>Closed:</p>
-                    <input type="number" name="closedAlert" `+ (() => { return sensor.sensorMeta.closedTimer ? 'value="' + sensor.sensorMeta.closedTimer + '"' : '' })() + `placeholder="Set closed limit in seconds" class="input input-closed">
-
-                </div>
-            </div>
-        </div>
-    </article>
-    `
-
-    // graph view component
-    var graphView = `
-
-    <article class="card height-control ` + sensor.sensorMeta.sensorId + `-card graph-` + sensor.sensorMeta.sensorId + `" sensorType="` + sensor.sensorMeta.sensorType + `" sensorId="` + sensor.sensorMeta.sensorId + `" sensorData='` + sensorData + `'>
-    
-        <div class="card-header">
-
-            <h3 class="card-title">
-                <i class='update-icon'></i>
-                <div class='edit-sensor-name'><i class="far fa-edit"></i></div>
-                <span>` + sensor.sensorMeta.sensorName + `</span> |
-                <b>` + sensor.sensorMeta.sensorId + `</b>
-            </h3>
-    
-            <div class="card-tools">
-                <ul class="pagination pagination-sm">
-
-                    <li class="page-item">
-                        <div id="reportrange" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
-                            <i class="fa fa-calendar"></i>&nbsp;
-                            <span></span> <i class="fa fa-caret-down"></i>
-                        </div>
-                    </li>
-
-                    <li class="page-item">
-                        <div id="report" class="tooltip_test" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
-                            <i class="fas fa-file-csv"></i>
-                            <span class="tooltiptext">Download CSV</span>
-                        </div>
-                    </li>
-
-                </ul>
-            </div>
-    
-        </div>
-        
-    
-        <div class="card-body">
-            <a href="#" class='spinner ` + sensor.sensorMeta.sensorId + `-graph-spinner'>
-                <span>Loading...</span>
-            </a> 
-            <div class="` + sensor.sensorMeta.sensorId + `-graph-calendar graph-calendar">
-                Time interval for ` + sensor.sensorMeta.sensorId + ` 
-                <input name="dates" value="Button Change"> 
-            </div> 
-        </div>
-        
-    </article>`
-
     // stack the components
-    if (sensor.sensorMeta.sensorType == 'counter') {
-        return newItemLive + graphView
-    } else if (sensor.sensorMeta.sensorType == 'door') {
-        return doorLive + graphView
-    } else {
-        return currentValueView + graphView
+    if (['counter'].includes(sensor.sensorMeta.sensorType)) {
+        return newItemLive(sensor) + graphView(sensor, sensorData)
+    } else if (['door'].includes(sensor.sensorMeta.sensorType)) {
+        return doorLive(alertClass2, sensor) + graphView(sensor, sensorData)
+    } else if (['temperature'].includes(sensor.sensorMeta.sensorType)) {
+        return currentValueView(alertClass2, sensor) + graphView(sensor, sensorData)
+    } else if (['conveyor'].includes(sensor.sensorMeta.sensorType)) {
+        // $("body").addClass("conveyor-main-dashboard")
+        // console.log(sensor.sensorMeta.sensorId, sensor.sensorMeta.status)
+        return conveyor(sensor, sensorData)
     }
 
 }
+// ======================================================
 
-// Triggers
-function triggerSensorView(sensorId) {
+// Triggers [activate triggers when sensor are loading]
+// ======================================================
+function triggerSensorView(sensorId, sensor) {
 
     // Expand settings panel
     $(".live-card-" + sensorId + " .card-settings-button").on('click', function () {
@@ -255,8 +109,8 @@ function triggerSensorView(sensorId) {
     })
 
     // Edit sensor name
-    $('.graph-' + sensorId + ' .card-title .edit-sensor-name').on('click', function (event) {
-        let name = prompt('Type a new name for ' + sensorId, $('.graph-' + sensorId + ' .card-title span').text());
+    $('article[sensorid="' + sensorId + '"] .card-title .edit-sensor-name').on('click', function (event) {
+        let name = prompt('Type a new name for ' + sensorId, $('article[sensorid="' + sensorId + '"] .card-title span').text());
         if (name && sensorId) {
             const params = new URLSearchParams({ name, sensorId });
             let url = "/api/v3/set-sensor-name?" + params.toString()
@@ -267,7 +121,7 @@ function triggerSensorView(sensorId) {
             }).done((result) => {
                 // console.log(result.msg)
                 if (result.msg == "Update performed") {
-                    $('.graph-' + sensorId + ' .card-title span').html(name)
+                    $('article[sensorid="' + sensorId + '"] .card-title span').html(name)
                 }
                 // let res = result.json()
                 // console.log(res.msg)
@@ -316,15 +170,208 @@ function triggerSensorView(sensorId) {
         })
 
     })
+
+    // Event listener for attribute seconds on conveyor usageTotal and usageTotal
+    let usageToday = document.querySelector('.controller-' + sensorId + ' .usage-today');
+    let usageTotal = document.querySelector('.controller-' + sensorId + ' .usage-total');
+    let observer
+    if (usageTotal && usageToday) {
+        observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                if (mutation.type == "attributes" && mutation.attributeName == "seconds") {
+
+                    // TODAY
+                    let secondsToday = usageToday.getAttribute(mutation.attributeName)
+
+                    let resultToday = humanizeDuration(secondsToday * 1000, {
+                        language: "en",
+                        spacer: "",
+                        // units: ["h", "m", "s"],
+                        units: ["h", "m"],
+                        round: true
+                    })
+
+                    // console.log("resultToday",resultToday)
+
+                    resultToday = resultToday.replaceAll("hours", "h")
+                    resultToday = resultToday.replaceAll("hour", "h")
+                    resultToday = resultToday.replaceAll("minutes", "m")
+                    resultToday = resultToday.replaceAll("minute", "m")
+                    resultToday = resultToday.replaceAll("seconds", "s")
+                    resultToday = resultToday.replaceAll("second", "s")
+                    resultToday = resultToday.replaceAll(",", "")
+
+                    // console.log("resultToday",resultToday)
+                    $('.conveyor-info-message', usageToday).html(resultToday)
+
+                    // TOTAL
+                    let secondsTotal = usageTotal.getAttribute(mutation.attributeName)
+
+                    let resultTotal = humanizeDuration(secondsTotal * 1000, {
+                        language: "en",
+                        spacer: "",
+                        // units: ["h", "m", "s"],
+                        units: ["h", "m"],
+                        round: true
+                    })
+
+                    resultTotal = resultTotal.replaceAll("hours", "h")
+                    resultTotal = resultTotal.replaceAll("hour", "h")
+                    resultTotal = resultTotal.replaceAll("minutes", "m")
+                    resultTotal = resultTotal.replaceAll("minute", "m")
+                    resultTotal = resultTotal.replaceAll("seconds", "s")
+                    resultTotal = resultTotal.replaceAll("second", "s")
+                    resultTotal = resultTotal.replaceAll(",", "")
+
+
+                    $('.conveyor-info-message', usageTotal).html(resultTotal)
+                }
+            });
+        });
+
+        observer.observe(usageToday, {
+            attributes: true //configure it to listen to attribute changes
+        });
+
+        observer.observe(usageTotal, {
+            attributes: true //configure it to listen to attribute changes
+        });
+    }
+
+    // Switch conveyor
+    $('.controller-' + sensorId + ' .cb-value').on('click', function (event, isclick = 'active') {
+
+        var mainParent = $(this).parent('.state-btn-inner');
+        // console.log(isclick)
+
+        // if button is RED - conveyor stop
+        if ($(mainParent).hasClass('active') == false) {
+
+            $(mainParent).addClass('active'); // make button green
+
+            $('.conveyor-layout-inner > div.sensor-item').draggable("enable")
+
+            if (isclick == 'active') { // if button is pressed directly
+                
+                // send 1 to mqtt
+                sendMessage("socketChannel", {
+                    topic: 'anygo/conveyor',
+                    message: JSON.stringify({ username, sensorId, "status": 1 })
+                })
+            }
+
+            // update seconds
+            conveyorUsage(sensorId)
+
+        // if button is GREEN - conveyor run
+        } else {
+            $(mainParent).removeClass('active'); // make button red
+
+            $('.conveyor-layout-inner > div.sensor-item').draggable("disable")
+
+            if (isclick == 'active') { // if button is pressed directly
+
+                // send 0 to mqtt
+                sendMessage("socketChannel", {
+                    topic: 'anygo/conveyor',
+                    message: JSON.stringify({ username, sensorId, "status": 0 })
+                })
+            }
+
+            // stop update seconds
+            clearInterval(window.usageInterval);
+        }
+
+    })
+
+    // Make sensor draggable
+    $(`.draggable[sensor='` + sensorId + `']`).draggable({
+        grid: [5, 5],
+        create: function (event, ui) {
+
+          $(this).css('top', sensor.sensorMeta.y)
+          $(this).css('left', sensor.sensorMeta.x)
+
+        },
+        stop: function (event, ui) {
+          const sensorId = $(this).attr('sensor')
+          // Update position of sensor on map
+          fetch("/api/v3/save-position?x=" + ui.position.left + "&y=" + ui.position.top + "&sensor=" + sensorId).then(result => {
+            console.log("position saved",sensorId, ui.position)
+          })
+        },
+      });
+
+
+    // Append conveyor items to map
+    $(".new-items-conveyor .sensor-item[sensor='"+sensorId+"']").on('click',()=>{
+        // Clone & append
+        let sensorCloned = $(".new-items-conveyor .sensor-item[sensor=" + sensorId + "]").clone()
+        $(".conveyor-layout-inner").append(sensorCloned)
+        $(".new-items-conveyor .sensor-item[sensor=" + sensorId + "]").remove()
+        $(".conveyor-layout-inner .sensor-item[sensor=" + sensorId + "]").addClass("draggable")
+        $(`.draggable[sensor='` + sensorId + `']`).draggable({
+            grid: [5, 5],
+            create: function (event, ui) {
+    
+              $(this).css('top', sensor.sensorMeta.y)
+              $(this).css('left', sensor.sensorMeta.x)
+    
+            },
+            stop: function (event, ui) {
+              const sensorId = $(this).attr('sensor')
+              // Update position of sensor on map
+              fetch("/api/v3/save-position?x=" + ui.position.left + "&y=" + ui.position.top + "&sensor=" + sensorId).then(result => {
+                console.log("position saved",sensorId, ui.position)
+              })
+            },
+          });
+    })
+}
+// ======================================================
+
+// [ ] TODO: trebuie rezolvat cu timpul de folosire a conveiorului
+//           sa se updateze odata la un minut in mysql, dar nu din front-end
+
+// functia updateaza attributul seconds
+let conveyorUsage = (sensorId) => {
+
+    // Start counter
+    let usageToday = $('.controller-' + sensorId + ' .usage-today').attr("seconds")
+    let usageTotal = $('.controller-' + sensorId + ' .usage-total').attr("seconds")
+
+    usageToday = parseInt(usageToday)
+    usageTotal = parseInt(usageTotal)
+
+    // console.log(usageToday, usageTotal)
+
+    let makeUsage = () => {
+        usageToday += 1
+        usageTotal += 1
+
+        $('.controller-' + sensorId + ' .usage-today').attr("seconds", usageToday)
+        $('.controller-' + sensorId + ' .usage-total').attr("seconds", usageTotal)
+
+        console.log("usageToday:", humanizeDuration(usageToday * 1000, {
+            language: "en",
+            spacer: "",
+            units: ["h", "m", "s"],
+            // units: ["h", "m"],
+            round: true
+        }))
+    }
+
+    window.usageInterval = setInterval(makeUsage, 1 * 1000); // each 1 second usage is increased 
 }
 
 let reloadDataCustomCalendar = async (start, end, sensorId) => {
-    // [8] TODO: Get data for new date
+    // [*] TODO: Get data for new date
     // [*] TODO: Reload the chart with new data
     getSensorDataCustomInterval(sensorId, start, end)
 }
 
 // get and plot data by a specific interval
+// ======================================================
 let getSensorDataCustomInterval = async (sensor, start, end) => {
 
     if (!$("body").hasClass("calendar-active")) {
@@ -381,11 +428,14 @@ let getSensorDataCustomInterval = async (sensor, start, end) => {
     });
 
 }
+// ======================================================
 
+
+// Create chart
+// ======================================================
 // Global chart list
 let chartList = []
 
-// Plot data
 function plotData(sensorId, source = 'attr') {
 
     // [*] TODO: skip charts witch class .calendar-active
@@ -393,7 +443,7 @@ function plotData(sensorId, source = 'attr') {
     if ($("article.graph-" + sensorId).hasClass("calendar-active")) {
         return
     }
-    
+
     if ($(`article.graph-` + sensorId).length == 0) {
         return
     }
@@ -753,7 +803,10 @@ function plotData(sensorId, source = 'attr') {
     }
 
 }
+// ======================================================
 
+// Utility for info box
+// ======================================================
 function appendInfoBox(args) {
     var component = `<div class="small-box ` + args.class + ` bg-info box-shadow-5">
         <div class="inner">
@@ -780,7 +833,10 @@ function appendInfoBox(args) {
     $(".small-box-container").addClass("small-box-length-" + String(childs))
 
 }
+// ======================================================
 
+// Update Live Card
+// ======================================================
 function updateCurrentValue(sensorid, value, date = false) {
 
     // Check sensor type of this sensorid
@@ -826,8 +882,10 @@ function updateCurrentValue(sensorid, value, date = false) {
         timeEl.html(currentTime)
     }
 }
+// ======================================================
 
 // Alerts
+// ======================================================
 function saveSensorSettings(sensorid) {
 
     const min = $(".live-card-" + sensorid + " .settings-wrapper .input-min").val()
@@ -885,16 +943,19 @@ function saveSensorSettings(sensorid) {
 
     });
 }
+// ======================================================
 
 // Update current value - it runs each time a message is sent to the broker
 //MQTT Broker --mqtt--> NodeJS --socket.io--> Client
-var socketChannel = 'socketChannel'
+// ======================================================
+// ======================================================
+let socketChannel = 'socketChannel'
+let currentValueBox = $("article[class*='live-card']")
 socket.on(socketChannel, async (data) => {
-
-    let currentValueBox = $("article[class*='live-card']")
 
     // OLD WAY - @depracated
     // Loop through each current value box
+    // ======================================================
     currentValueBox.each((index, item) => {
 
         // get sensor id for each current value box 
@@ -906,26 +967,30 @@ socket.on(socketChannel, async (data) => {
         }
 
     })
+    // ======================================================
 
     // NEW TOPIC dataPub
     // dataPub {cId: "DAS001TCORA", value: 23.992979}
+    // ======================================================
     let msg, value
     if (data.topic == 'dataPub') {
         msg = JSON.parse(data.message)
         value = parseFloat(msg.value).toFixed(1)
-        if(value>-200)
+        if (value > -200)
             updateCurrentValue(msg.cId, value)
         else
-            console.warn("Device",msg.cId,"send weird value:",value)
+            console.warn("Device", msg.cId, "send weird value:", value)
     }
+    // ======================================================
 
     // Listen for no power state
+    // ======================================================
     if (data.topic == 'dataPub/power') {
         msg = JSON.parse(data.message)
         if (parseInt(msg.value)) {
             // add class no power to cId
             if (!$(".live-card-" + msg.cId).hasClass('no-power')) {
-                $(".live-card-" + msg.cId+"[battery='1']").removeClass("alert-active").removeClass("alarm-active").addClass("no-power")
+                $(".live-card-" + msg.cId + "[battery='1']").removeClass("alert-active").removeClass("alarm-active").addClass("no-power")
                 let currentPower = $(".battery-info h3").html().split('/')
                 currentPower[0] = Math.min(parseInt(currentPower[0]) + 1, currentPower[1])
                 $(".battery-info h3").html(currentPower[0] + ' / ' + currentPower[1])
@@ -939,26 +1004,65 @@ socket.on(socketChannel, async (data) => {
             }
         }
     }
+    // ======================================================
+
+    // Testing topic for conveyor start/stop
+    // ======================================================
+    if (data.topic == 'anygo/conveyor') {
+
+        msg = JSON.parse(data.message)
+        // msg = `{"username":"demo",sensorId":"TEST0001CONV0003SEG","status":"run"}`
+
+        if('status' in msg && 'sensorId' in msg) {
+
+            // Start/stop conveyor - from mqtt directly not from button
+            if([1,0,'1','0'].includes(msg['status'])) {
+                let isclick
+                if ($('.controller-' + msg["sensorId"] + ' .cb-value').parent('.state-btn-inner').hasClass("active") && msg["status"] == 0) {
+                    $('.controller-' + msg["sensorId"] + ' .cb-value').trigger('click', isclick = 'passive')
+                    $('.conveyor-layout-inner > div.sensor-item').draggable("disable")
+                } else if ($('.controller-' + msg["sensorId"] + ' .cb-value').parent('.state-btn-inner').hasClass("active") == false && msg["status"] == 1) {
+                    $('.controller-' + msg["sensorId"] + ' .cb-value').trigger('click', isclick = 'passive')
+                    $('.conveyor-layout-inner > div.sensor-item').draggable("enable")
+                } else {
+                    // console.log(msg["status"], $('.controller-' + msg["sensorId"] + ' .cb-value').parent('.state-btn-inner').hasClass("active"))
+                }
+            }
+            
+            // Segment - Gate - Safety
+            if(['run','energy','acc','error','open','closed','press','released','stop'].includes(msg['status'])) {
+                let sensorId = msg['sensorId']
+                let status = msg['status']
+                $(".sensor-item[sensor='"+sensorId+"']").attr('state',status)
+                $(".sensor-item[sensor='"+sensorId+"'] .tooltiptext state").html(states_dict[status])
+            }
+
+        }        
+        
+    }
+    // ======================================================
+
 
 })
+// ======================================================
+// ======================================================
 
 // This is the main loader that loads all the data on the dashboard
 // ======================================================
 // ======================================================
 let sensorMetaRaw // init variable globally
 let mainLoader = async () => {
-    // console.log(userData_raw)
-    // let zoneData = JSON.parse('{{{zoneData}}}')
 
     // Get zoneId from URL
+    // =============================================
     const url = new URL(location.href)
     const zoneId = url.searchParams.get('zoneid')
+    // =============================================
 
     // Preprocess data to extract sensors from current zone only
+    // =============================================
     sensorMetaRaw = []
     let sensorBuffer = [] // this buffer is use to prevent double inserting of sensors
-
-    // console.log(userData_raw)
     userData_raw.forEach(sensor => {
         // Iterate through each result and save unique sensorId rows
         if (sensorBuffer.indexOf(sensor.sensorId) == -1) {
@@ -966,120 +1070,136 @@ let mainLoader = async () => {
             sensorBuffer.push(sensor.sensorId)
         }
     })
+    // =============================================
 
     // Get data from influx for each sensor
+    // =============================================
     let sensorDataRaw = []
     let sensorsWithBattery = []
     let sensorCounter = 0
 
     for (const sensor of sensorMetaRaw) {
+
         // Get influx data for each sensor
+        // --------------------------------------------------
         let sensorData = await getSensorData(sensor.sensorId, sensor.sensorType)
         sensorDataRaw.push({ sensorMeta: sensor, sensorData })
+        // --------------------------------------------------
+        
+        // Add Conveyor Class + Append Conveyor Layout Map
+        // --------------------------------------------------
+        if(['gate','safety','segment', 'conveyor'].includes(sensor.sensorType)) {
+            if(!$("body").hasClass("conveyor-main-dashboard")) { // do this only once
+                $("body").addClass("conveyor-main-dashboard")
+                $(".conveyor-main-dashboard .card-container").append(conveyorLayout(sensor))
+            }
+        } 
+        // --------------------------------------------------
 
-        // Append the default sensor view (current value + graph) for each sensor
-        $(".card-container").append(defaultSensorView(sensorDataRaw[sensorDataRaw.length - 1]));
+        // Append Conveyor Items + Dashboard
+        // --------------------------------------------------
+        if( ['gate','safety','segment'].includes(sensor.sensorType) ){
+            // Append conveyor items on map created above
+            if(sensor.x && sensor.y)
+                $(".conveyor-main-dashboard .conveyor-layout .conveyor-layout-inner").append(conveyorItem(sensor,'draggable',{name: sensor.sensorName}))
+            else
+                $(".conveyor-main-dashboard .conveyor-layout .new-items-conveyor").append(conveyorItem(sensor,'',{name: sensor.sensorName}))
+        } else if( ['conveyor'].includes(sensor.sensorType) ) {
+            // Prepend conveyor controller
+            $(".card-container").prepend(defaultSensorView(sensorDataRaw[sensorDataRaw.length - 1]));
+        } else {
+            // Append the default sensor view (current value + graph) for each sensor
+            $(".card-container").append(defaultSensorView(sensorDataRaw[sensorDataRaw.length - 1]));
+        }
+        if (sensor.sensorType == 'conveyor' && sensor.status == 1)
+            conveyorUsage(sensor.sensorId)
+        // --------------------------------------------------
+
 
         // Enable trigger events on defaultSensorView components after append
-        triggerSensorView(sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.sensorId)
+        // --------------------------------------------------
+        triggerSensorView(sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.sensorId, sensorDataRaw[sensorDataRaw.length - 1])
+        // --------------------------------------------------
 
         // Plot data on graph based on sensorData attr
+        // --------------------------------------------------
         plotData(sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.sensorId)
+        // --------------------------------------------------
 
         // Sensors w/ battery functionality
+        // --------------------------------------------------
         if (sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.battery == 1)
             sensorsWithBattery.push(sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.sensorId)
 
-        if (sensorCounter == 0) {// Add info box - location
-            let location3 = sensorDataRaw[0].sensorMeta.location3
-            let location2 = sensorDataRaw[0].sensorMeta.location2
+        if (sensorCounter == 0) { // Add info box - location
+            
+            // Add info box BUT NOT on conveyor dashboard
+            // =============================================
+            if(['gate','safety','segment', 'conveyor'].includes(sensor.sensorType) == false) {
 
-            appendInfoBox({
-                title: location2,
-                message: location3,
-                icon: '<i class="fas fa-compass"></i>',
-                class: ''
-            })
+                appendInfoBox({
+                    title: sensorDataRaw[0].sensorMeta.location2,
+                    message: sensorDataRaw[0].sensorMeta.location3,
+                    icon: '<i class="fas fa-compass"></i>',
+                    class: ''
+                })
+
+                let alert = 0, alarm = 0, power = 0
+
+                sensorDataRaw.forEach(item => {
+                    if (item.sensorMeta.alerts == 1)
+                        alert++
+                    if (item.sensorMeta.alerts == 2)
+                        alarm++
+                    if ([3, 4].includes(item.sensorMeta.alerts))
+                        power++
+                })
+
+                appendInfoBox({
+                    title: 'Warning alert',
+                    message: alert + ' / ' + sensorDataRaw.length,
+                    icon: '<i class="fas fa-bell"></i>',
+                    class: ''
+                })
+
+                appendInfoBox({
+                    title: 'Limits exeeded',
+                    message: alarm + ' / ' + sensorDataRaw.length,
+                    icon: '<i class="fas fa-exclamation-triangle"></i>',
+                    class: ''
+                })
+
+                // Display battery info box only if there are sensors with this functionality
+                // console.log("sensorsWithBattery:",sensorsWithBattery)
+                if (sensorsWithBattery.length)
+                    appendInfoBox({
+                        title: 'On battery',
+                        message: power + ' / ' + sensorDataRaw.length,
+                        icon: '<i class="fas fa-battery-quarter"></i>',
+                        class: 'battery-info'
+                    })
+            }
+            // =============================================
 
             sensorCounter++
         }
+        // --------------------------------------------------
 
     }
+    // =============================================
+    // END Get data from influx for each sensor
 
-    // let sensorsWithBattery = []
 
-    // for (const sensor of sensorDataRaw) {
-    //     // Testing
-    //     // if(sensor.sensorMeta.sensorId=='DAS001TCORA') {[
-    //     //     sensor.sensorMeta.alerts = 3
-    //     // ]}
-    //     // if(sensor.sensorMeta.sensorId=='DAS003TCORA') {[
-    //     //     sensor.sensorMeta.alerts = 1
-    //     // ]}
-    //     // if(sensor.sensorMeta.sensorId=='DAS005TCORA') {[
-    //     //     sensor.sensorMeta.alerts = 2
-    //     // ]}
+    // Conveyor dashboard - remove new item bar if no sensor there
+    // =============================================
+    let newItems = $(".conveyor-main-dashboard .conveyor-layout .new-items-conveyor").children().length
+    if(newItems == 0) {
+        $(".conveyor-main-dashboard .conveyor-layout .new-items-conveyor").remove()
+    }
+    if($('.state-btn-inner').hasClass("active") == false)
+        $('.conveyor-layout-inner > div.sensor-item').draggable("disable")
+    // =============================================
 
-    //     // Append the default sensor view (current value + graph) for each sensor
-    //     $(".card-container").append(defaultSensorView(sensor));
-
-    //     // Enable trigger events on defaultSensorView components after append
-    //     triggerSensorView(sensor.sensorMeta.sensorId)
-
-    //     // Plot data on graph based on sensorData attr
-    //     plotData(sensor.sensorMeta.sensorId)
-
-    //     // Sensors w/ battery functionality
-    //     if (sensor.sensorMeta.battery == 1)
-    //         sensorsWithBattery.push(sensor.sensorMeta.sensorId)
-    // }
-
-    // Add info box
-
-    // let location3 = sensorDataRaw[0].sensorMeta.location3
-    // let location2 = sensorDataRaw[0].sensorMeta.location2
-
-    // appendInfoBox({
-    //     title: location2,
-    //     message: location3,
-    //     icon: '<i class="fas fa-compass"></i>',
-    //     class: ''
-    // })
-
-    let alert = 0, alarm = 0, power = 0
-
-    sensorDataRaw.forEach(item => {
-        if (item.sensorMeta.alerts == 1)
-            alert++
-        if (item.sensorMeta.alerts == 2)
-            alarm++
-        if ([3, 4].includes(item.sensorMeta.alerts))
-            power++
-    })
-
-    appendInfoBox({
-        title: 'Warning alert',
-        message: alert + ' / ' + sensorDataRaw.length,
-        icon: '<i class="fas fa-bell"></i>',
-        class: ''
-    })
-
-    appendInfoBox({
-        title: 'Limits exeeded',
-        message: alarm + ' / ' + sensorDataRaw.length,
-        icon: '<i class="fas fa-exclamation-triangle"></i>',
-        class: ''
-    })
-
-    // Display battery info box only if there are sensors with this functionality
-    // console.log("sensorsWithBattery:",sensorsWithBattery)
-    if (sensorsWithBattery.length)
-        appendInfoBox({
-            title: 'On battery',
-            message: power + ' / ' + sensorDataRaw.length,
-            icon: '<i class="fas fa-battery-quarter"></i>',
-            class: 'battery-info'
-        })
 
     // return sensorDataRaw
     return sensorMetaRaw
