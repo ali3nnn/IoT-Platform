@@ -11,6 +11,38 @@ var humanizeDuration = require("humanize-duration");
 
 var _ = require('lodash');
 
+var alertSound = new Audio('/sound/alert.wav');
+alertSound.loop = true;
+
+function playAlert() {
+  alertSound.play();
+}
+
+function stopAlert() {
+  alertSound.pause();
+  alertSound.currentTime = 0;
+} // let confirmationSound = new Audio('/sound/confirmation-sound.wav')
+
+
+var confirmationSound = new Audio('/sound/switch.wav');
+confirmationSound.loop = false;
+
+function playButtonSound() {
+  confirmationSound.play();
+  (0, _utils.timeoutAsync)(1000, stopButtonSound);
+}
+
+function stopButtonSound() {
+  confirmationSound.pause();
+  confirmationSound.currentTime = 0;
+}
+
+window.alertSound = alertSound;
+window.confirmationSound = confirmationSound;
+window.playButtonSound = playButtonSound; // ======================================================
+// Fetch sensor data
+// ======================================================
+
 var getSensorData = function getSensorData(id, type) {
   var response;
   return regeneratorRuntime.async(function getSensorData$(_context) {
@@ -210,6 +242,8 @@ function triggerSensorView(sensorId, sensor) {
 
   $('.controller-' + sensorId + ' .cb-value').on('click', function (event) {
     var isclick = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'active';
+    // UI confirmation sound
+    playButtonSound();
     var mainParent = $(this).parent('.state-btn-inner'); // console.log(isclick)
     // if button is RED - conveyor stop
 
@@ -229,8 +263,9 @@ function triggerSensorView(sensorId, sensor) {
             "status": 1
           })
         });
-      } // update seconds
+      }
 
+      $('.controller-' + sensorId + ' .state-button .conveyor-info-message').html("RUN"); // update seconds
 
       conveyorUsage(sensorId); // if button is GREEN - conveyor run
     } else {
@@ -249,8 +284,9 @@ function triggerSensorView(sensorId, sensor) {
             "status": 0
           })
         });
-      } // stop update seconds
+      }
 
+      $('.controller-' + sensorId + ' .state-button .conveyor-info-message').html("STOP"); // stop update seconds
 
       clearInterval(window.usageInterval);
     }
@@ -309,14 +345,13 @@ var conveyorUsage = function conveyorUsage(sensorId) {
     usageToday += 1;
     usageTotal += 1;
     $('.controller-' + sensorId + ' .usage-today').attr("seconds", usageToday);
-    $('.controller-' + sensorId + ' .usage-total').attr("seconds", usageTotal);
-    console.log("usageToday:", humanizeDuration(usageToday * 1000, {
-      language: "en",
-      spacer: "",
-      units: ["h", "m", "s"],
-      // units: ["h", "m"],
-      round: true
-    }));
+    $('.controller-' + sensorId + ' .usage-total').attr("seconds", usageTotal); // console.log("usageToday:", humanizeDuration(usageToday * 1000, {
+    //     language: "en",
+    //     spacer: "",
+    //     units: ["h", "m", "s"],
+    //     // units: ["h", "m"],
+    //     round: true
+    // }))
   };
 
   window.usageInterval = setInterval(makeUsage, 1 * 1000); // each 1 second usage is increased 
@@ -887,14 +922,48 @@ function saveSensorSettings(sensorid) {
     }
   });
 } // ======================================================
+// Send keep alive each minute
+// ======================================================
+
+
+setInterval(function () {
+  (0, _utils.sendMessage)("socketChannel", {
+    topic: 'keepalive',
+    message: JSON.stringify({
+      "user": username,
+      "status2": 'keepalive'
+    })
+  });
+}, 10 * 1000); // ======================================================
 // Update current value - it runs each time a message is sent to the broker
 //MQTT Broker --mqtt--> NodeJS --socket.io--> Client
 // ======================================================
 // ======================================================
 
-
 var socketChannel = 'socketChannel';
-var currentValueBox = $("article[class*='live-card']");
+var currentValueBox = $("article[class*='live-card']"); // TIGANEALA
+// =========================
+// if(username.toLowerCase()=="pharmafarm") {
+//     let alive = false
+//     setInterval(function(){
+//         if(alive==false) {
+//             sendMessage("socketChannel", {
+//                 topic: 'anygo/conveyor',
+//                 message: JSON.stringify({"user":username, "sensorId":"PHARMA0001CONV", "status": "0", "safety":"1" })
+//             })
+//             console.log("safety message send")
+//             $(".state-btn-inner > input").attr("disabled",true)
+//         } else {
+//             $(".state-btn-inner > input").attr("disabled",false)
+//             if($('.client-username-pharmaFarm .state-button .conveyor-info-message').html() == "E-STOP") {
+//                 $('.client-username-pharmaFarm .state-button .conveyor-info-message').html("READY TO RUN")
+//             }
+//         }
+//         alive = false
+//     },8*1000)
+// }
+// =========================
+
 socket.on(socketChannel, function _callee(data) {
   var msg, value, currentPower, _currentPower, isclick, sensorId, status;
 
@@ -902,8 +971,7 @@ socket.on(socketChannel, function _callee(data) {
     while (1) {
       switch (_context4.prev = _context4.next) {
         case 0:
-          // OLD WAY - @depracated
-          // Loop through each current value box
+          // Temperature - OLD @depracated
           // ======================================================
           currentValueBox.each(function (index, item) {
             // get sensor id for each current value box 
@@ -913,8 +981,7 @@ socket.on(socketChannel, function _callee(data) {
               updateCurrentValue(sensorid, parseFloat(data.message).toFixed(1));
             }
           }); // ======================================================
-          // NEW TOPIC dataPub
-          // dataPub {cId: "DAS001TCORA", value: 23.992979}
+          // Temperature
           // ======================================================
 
           if (data.topic == 'dataPub') {
@@ -922,7 +989,7 @@ socket.on(socketChannel, function _callee(data) {
             value = parseFloat(msg.value).toFixed(1);
             if (value > -200) updateCurrentValue(msg.cId, value);else console.warn("Device", msg.cId, "send weird value:", value);
           } // ======================================================
-          // Listen for no power state
+          // Power
           // ======================================================
 
 
@@ -946,7 +1013,7 @@ socket.on(socketChannel, function _callee(data) {
               }
             }
           } // ======================================================
-          // Testing topic for conveyor start/stop
+          // Conveyor
           // ======================================================
 
 
@@ -957,21 +1024,40 @@ socket.on(socketChannel, function _callee(data) {
               // Start/stop conveyor - from mqtt directly not from button
               if ([1, 0, '1', '0'].includes(msg['status'])) {
                 if ($('.controller-' + msg["sensorId"] + ' .cb-value').parent('.state-btn-inner').hasClass("active") && msg["status"] == 0) {
-                  $('.controller-' + msg["sensorId"] + ' .cb-value').trigger('click', isclick = 'passive');
+                  $('.controller-' + msg["sensorId"] + ' .cb-value').trigger('click', isclick = 'passive'); // $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("STOP")
+
                   $('.conveyor-layout-inner > div.sensor-item').draggable("disable");
                 } else if ($('.controller-' + msg["sensorId"] + ' .cb-value').parent('.state-btn-inner').hasClass("active") == false && msg["status"] == 1) {
-                  $('.controller-' + msg["sensorId"] + ' .cb-value').trigger('click', isclick = 'passive');
+                  $('.controller-' + msg["sensorId"] + ' .cb-value').trigger('click', isclick = 'passive'); // $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("RUN")
+
                   $('.conveyor-layout-inner > div.sensor-item').draggable("enable");
                 } else {// console.log(msg["status"], $('.controller-' + msg["sensorId"] + ' .cb-value').parent('.state-btn-inner').hasClass("active"))
                 }
               } // Segment - Gate - Safety
 
 
-              if (['run', 'energy', 'acc', 'error', 'open', 'closed', 'press', 'released', 'stop'].includes(msg['status'])) {
+              if (['run', 'energy', 'acc', 'error', 'open', 'closed', 'close', 'press', 'released', 'stop'].includes(msg['status'])) {
                 sensorId = msg['sensorId'];
                 status = msg['status'];
                 $(".sensor-item[sensor='" + sensorId + "']").attr('state', status);
                 $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext state").html(_dashboardComponents.states_dict[status]);
+              } // Conveyor Safety Released
+
+
+              if ("safety" in msg) {
+                if (['1', 1].includes(msg['safety'])) {
+                  // ciuperca apasata
+                  $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("E-STOP");
+                  $(".state-btn-inner > input").attr("disabled", true);
+                  playAlert();
+                  $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').attr("title", "emergency button is pressed");
+                } else if (['0', 0].includes(msg['safety'])) {
+                  // ciuperca ridicata
+                  $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("READY TO RUN");
+                  $(".state-btn-inner > input").attr("disabled", false);
+                  $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').attr("title", "emergency button is released");
+                  stopAlert();
+                }
               }
             }
           } // ======================================================
@@ -992,7 +1078,7 @@ socket.on(socketChannel, function _callee(data) {
 var sensorMetaRaw; // init variable globally
 
 var mainLoader = function mainLoader() {
-  var url, zoneId, sensorBuffer, sensorDataRaw, sensorsWithBattery, sensorCounter, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, sensor, sensorData, newItems;
+  var url, zoneId, sensorBuffer, sensorDataRaw, sensorsWithBattery, sensorCounter, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, sensor, sensorData, newItems, newItemsAppended;
 
   return regeneratorRuntime.async(function mainLoader$(_context5) {
     while (1) {
@@ -1047,6 +1133,7 @@ var mainLoader = function mainLoader() {
           // --------------------------------------------------
 
           if (['gate', 'safety', 'segment', 'conveyor'].includes(sensor.sensorType)) {
+            // console.log($("body").hasClass("conveyor-main-dashboard"), sensor.sensorType)
             if (!$("body").hasClass("conveyor-main-dashboard")) {
               // do this only once
               $("body").addClass("conveyor-main-dashboard");
@@ -1181,7 +1268,12 @@ var mainLoader = function mainLoader() {
           newItems = $(".conveyor-main-dashboard .conveyor-layout .new-items-conveyor").children().length;
 
           if (newItems == 0) {
-            $(".conveyor-main-dashboard .conveyor-layout .new-items-conveyor").remove();
+            $(".conveyor-main-dashboard .new-items-conveyor").remove();
+            newItemsAppended = $(".conveyor-main-dashboard .conveyor-layout").children().length;
+
+            if (newItemsAppended == 0) {
+              $(".conveyor-main-dashboard .conveyor-layout").remove();
+            }
           }
 
           if ($('.state-btn-inner').hasClass("active") == false) $('.conveyor-layout-inner > div.sensor-item').draggable("disable"); // =============================================

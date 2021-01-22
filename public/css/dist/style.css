@@ -44,7 +44,7 @@
   --conveyor-energy: #4ba0fa;
   --conveyor-acc: #ffc107;
   --conveyor-error: #dc3545;
-  --conveyor-open: #ffc107;
+  --conveyor-open: #ff9307;
   --conveyor-closed: #28a746d6;
   --conveyor-press: #dc3545;
   --conveyor-released: #28a746d6;
@@ -1627,6 +1627,9 @@ img.img-circle {
   border-bottom: 1px solid gray;
   -webkit-box-shadow: 0px 0px 10px #00000082;
   box-shadow: 0px 0px 10px #00000082;
+}
+#mySidenav .brand span {
+  text-transform: capitalize;
 }
 
 @media (min-width: 992px) {
@@ -4784,8 +4787,15 @@ div.conveyor-layout > div.conveyor-layout-inner {
   box-shadow: var(--neuro);
   min-width: 100%;
   min-height: 100%;
+  max-height: 700px;
   position: relative;
   background: #353b40;
+}
+div.conveyor-layout > div.conveyor-layout-inner img {
+  z-index: 0;
+  position: absolute;
+  top: 0px;
+  left: 0px;
 }
 div.conveyor-layout > div.new-items-conveyor {
   /* background: pink; */
@@ -4823,8 +4833,8 @@ div.conveyor-layout > div .sensor-item {
   transition: width 0.2s ease, height 0.2s ease, transform 0.2s ease;
   padding: 0px;
   border-radius: 5px;
-  width: 40px;
-  height: 40px;
+  width: 25px;
+  height: 25px;
   cursor: pointer;
 }
 div.conveyor-layout > div .sensor-item:hover {
@@ -4887,7 +4897,7 @@ div.conveyor-layout > div .sensor-item[state=open]:after {
   animation-delay: 1s;
   z-index: -99;
 }
-div.conveyor-layout > div .sensor-item[state=closed] {
+div.conveyor-layout > div .sensor-item[state=closed], div.conveyor-layout > div .sensor-item[state=close] {
   background: var(--conveyor-closed) !important;
 }
 div.conveyor-layout > div .sensor-item[type=safety] {
@@ -4965,10 +4975,10 @@ div.conveyor-layout > div .sensor-item.sensor-disabled {
 div.conveyor-layout > div .sensor-item i {
   display: block;
   text-align: center;
-  font-size: 25px;
+  font-size: 15px;
   display: block;
   text-align: center;
-  line-height: 40px;
+  line-height: 25px;
 }
 div.conveyor-layout > div .sensor-item span {
   display: block;
@@ -6773,10 +6783,29 @@ label.switch-label:active:after {
     opacity: 0;
   }
 }
+.client-username-pharmaFarm .tooltiptext {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+.client-username-pharmaFarm .sensor-item[type=segment] {
+  width: 100px !important;
+}
+.client-username-pharmaFarm .sensor-item[type=segment] .tooltiptext {
+  top: 10px !important;
+}
+.client-username-pharmaFarm .sensor-item[type=gate] {
+  height: 100px !important;
+}
+.client-username-pharmaFarm .sensor-item[type=gate] .tooltiptext {
+  top: -10px !important;
+  left: 61px !important;
+}
+
 .tooltip_test .tooltiptext {
   visibility: hidden;
+  opacity: 0;
   /* width: 120px; */
-  background-color: #d9a823;
+  background-color: var(--conveyor-acc) !important;
   color: black;
   text-align: center;
   border-radius: 6px;
@@ -6789,7 +6818,6 @@ label.switch-label:active:after {
   -moz-transform: translate(-50%, 50%);
   -o-transform: translate(-50%, 50%);
   transform: translate(-50%, 50%);
-  opacity: 0;
   -webkit-transition: opacity 0.3s ease-in;
   -o-transition: opacity 0.3s ease-in;
   transition: opacity 0.3s ease-in;

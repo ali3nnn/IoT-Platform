@@ -4,13 +4,10 @@
 var path = require('path');
 
 var href = window.location.pathname;
-console.log(href);
+console.log(href); // require('./svgGauge/gauge.min.js')
 
-require('./svgGauge/gauge.min.js');
+require('./scripts.js'); // require('./fetch3.1.0.js')
 
-require('./scripts.js');
-
-require('./fetch3.1.0.js');
 
 if ($(".scale-page").length) {
   console.log("scale.js added");

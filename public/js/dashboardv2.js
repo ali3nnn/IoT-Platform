@@ -29,6 +29,41 @@ import {
 } from './dashboard-components'
 // ======================================================
 
+// Sounds
+// ======================================================
+// FIREFOX: menu > preferinte > securitate > redare automata > permite
+// CHROME: menu > setari > securitate > setarile site-ului > setari continut > audio > permite 
+
+let alertSound = new Audio('/sound/alert.wav')
+alertSound.loop = true
+
+function playAlert() {
+    alertSound.play()
+}
+
+function stopAlert() {
+    alertSound.pause()
+    alertSound.currentTime = 0
+}
+
+// let confirmationSound = new Audio('/sound/confirmation-sound.wav')
+let confirmationSound = new Audio('/sound/switch.wav')
+confirmationSound.loop = false
+
+function playButtonSound() {
+    confirmationSound.play()
+    timeoutAsync(1000, stopButtonSound)
+}
+
+function stopButtonSound() {
+    confirmationSound.pause()
+    confirmationSound.currentTime = 0
+}
+
+window.alertSound = alertSound
+window.confirmationSound = confirmationSound
+window.playButtonSound = playButtonSound
+// ======================================================
 
 // Fetch sensor data
 // ======================================================
@@ -241,6 +276,9 @@ function triggerSensorView(sensorId, sensor) {
     // Switch conveyor
     $('.controller-' + sensorId + ' .cb-value').on('click', function (event, isclick = 'active') {
 
+        // UI confirmation sound
+        playButtonSound()
+
         var mainParent = $(this).parent('.state-btn-inner');
         // console.log(isclick)
 
@@ -252,7 +290,7 @@ function triggerSensorView(sensorId, sensor) {
             $('.conveyor-layout-inner > div.sensor-item').draggable("enable")
 
             if (isclick == 'active') { // if button is pressed directly
-                
+
                 // send 1 to mqtt
                 sendMessage("socketChannel", {
                     topic: 'anygo/conveyor',
@@ -260,10 +298,12 @@ function triggerSensorView(sensorId, sensor) {
                 })
             }
 
+            $('.controller-' + sensorId + ' .state-button .conveyor-info-message').html("RUN")
+
             // update seconds
             conveyorUsage(sensorId)
 
-        // if button is GREEN - conveyor run
+            // if button is GREEN - conveyor run
         } else {
             $(mainParent).removeClass('active'); // make button red
 
@@ -278,6 +318,8 @@ function triggerSensorView(sensorId, sensor) {
                 })
             }
 
+            $('.controller-' + sensorId + ' .state-button .conveyor-info-message').html("STOP")
+
             // stop update seconds
             clearInterval(window.usageInterval);
         }
@@ -289,22 +331,22 @@ function triggerSensorView(sensorId, sensor) {
         grid: [5, 5],
         create: function (event, ui) {
 
-          $(this).css('top', sensor.sensorMeta.y)
-          $(this).css('left', sensor.sensorMeta.x)
+            $(this).css('top', sensor.sensorMeta.y)
+            $(this).css('left', sensor.sensorMeta.x)
 
         },
         stop: function (event, ui) {
-          const sensorId = $(this).attr('sensor')
-          // Update position of sensor on map
-          fetch("/api/v3/save-position?x=" + ui.position.left + "&y=" + ui.position.top + "&sensor=" + sensorId).then(result => {
-            console.log("position saved",sensorId, ui.position)
-          })
+            const sensorId = $(this).attr('sensor')
+            // Update position of sensor on map
+            fetch("/api/v3/save-position?x=" + ui.position.left + "&y=" + ui.position.top + "&sensor=" + sensorId).then(result => {
+                console.log("position saved", sensorId, ui.position)
+            })
         },
-      });
+    });
 
 
     // Append conveyor items to map
-    $(".new-items-conveyor .sensor-item[sensor='"+sensorId+"']").on('click',()=>{
+    $(".new-items-conveyor .sensor-item[sensor='" + sensorId + "']").on('click', () => {
         // Clone & append
         let sensorCloned = $(".new-items-conveyor .sensor-item[sensor=" + sensorId + "]").clone()
         $(".conveyor-layout-inner").append(sensorCloned)
@@ -313,19 +355,19 @@ function triggerSensorView(sensorId, sensor) {
         $(`.draggable[sensor='` + sensorId + `']`).draggable({
             grid: [5, 5],
             create: function (event, ui) {
-    
-              $(this).css('top', sensor.sensorMeta.y)
-              $(this).css('left', sensor.sensorMeta.x)
-    
+
+                $(this).css('top', sensor.sensorMeta.y)
+                $(this).css('left', sensor.sensorMeta.x)
+
             },
             stop: function (event, ui) {
-              const sensorId = $(this).attr('sensor')
-              // Update position of sensor on map
-              fetch("/api/v3/save-position?x=" + ui.position.left + "&y=" + ui.position.top + "&sensor=" + sensorId).then(result => {
-                console.log("position saved",sensorId, ui.position)
-              })
+                const sensorId = $(this).attr('sensor')
+                // Update position of sensor on map
+                fetch("/api/v3/save-position?x=" + ui.position.left + "&y=" + ui.position.top + "&sensor=" + sensorId).then(result => {
+                    console.log("position saved", sensorId, ui.position)
+                })
             },
-          });
+        });
     })
 }
 // ======================================================
@@ -352,13 +394,13 @@ let conveyorUsage = (sensorId) => {
         $('.controller-' + sensorId + ' .usage-today').attr("seconds", usageToday)
         $('.controller-' + sensorId + ' .usage-total').attr("seconds", usageTotal)
 
-        console.log("usageToday:", humanizeDuration(usageToday * 1000, {
-            language: "en",
-            spacer: "",
-            units: ["h", "m", "s"],
-            // units: ["h", "m"],
-            round: true
-        }))
+        // console.log("usageToday:", humanizeDuration(usageToday * 1000, {
+        //     language: "en",
+        //     spacer: "",
+        //     units: ["h", "m", "s"],
+        //     // units: ["h", "m"],
+        //     round: true
+        // }))
     }
 
     window.usageInterval = setInterval(makeUsage, 1 * 1000); // each 1 second usage is increased 
@@ -945,16 +987,50 @@ function saveSensorSettings(sensorid) {
 }
 // ======================================================
 
+// Send keep alive each minute
+// ======================================================
+setInterval(function(){
+    sendMessage("socketChannel", {
+        topic: 'keepalive',
+        message: JSON.stringify({"user":username, "status2": 'keepalive' })
+    })
+}, 10*1000)
+// ======================================================
+
 // Update current value - it runs each time a message is sent to the broker
 //MQTT Broker --mqtt--> NodeJS --socket.io--> Client
 // ======================================================
 // ======================================================
 let socketChannel = 'socketChannel'
 let currentValueBox = $("article[class*='live-card']")
+
+// TIGANEALA
+// =========================
+// if(username.toLowerCase()=="pharmafarm") {
+//     let alive = false
+//     setInterval(function(){
+//         if(alive==false) {
+//             sendMessage("socketChannel", {
+//                 topic: 'anygo/conveyor',
+//                 message: JSON.stringify({"user":username, "sensorId":"PHARMA0001CONV", "status": "0", "safety":"1" })
+//             })
+//             console.log("safety message send")
+//             $(".state-btn-inner > input").attr("disabled",true)
+//         } else {
+//             $(".state-btn-inner > input").attr("disabled",false)
+//             if($('.client-username-pharmaFarm .state-button .conveyor-info-message').html() == "E-STOP") {
+//                 $('.client-username-pharmaFarm .state-button .conveyor-info-message').html("READY TO RUN")
+//             }
+            
+//         }
+//         alive = false
+//     },8*1000)
+// }
+// =========================
+
 socket.on(socketChannel, async (data) => {
 
-    // OLD WAY - @depracated
-    // Loop through each current value box
+    // Temperature - OLD @depracated
     // ======================================================
     currentValueBox.each((index, item) => {
 
@@ -969,8 +1045,7 @@ socket.on(socketChannel, async (data) => {
     })
     // ======================================================
 
-    // NEW TOPIC dataPub
-    // dataPub {cId: "DAS001TCORA", value: 23.992979}
+    // Temperature
     // ======================================================
     let msg, value
     if (data.topic == 'dataPub') {
@@ -983,7 +1058,7 @@ socket.on(socketChannel, async (data) => {
     }
     // ======================================================
 
-    // Listen for no power state
+    // Power
     // ======================================================
     if (data.topic == 'dataPub/power') {
         msg = JSON.parse(data.message)
@@ -1006,39 +1081,58 @@ socket.on(socketChannel, async (data) => {
     }
     // ======================================================
 
-    // Testing topic for conveyor start/stop
+    // Conveyor
     // ======================================================
     if (data.topic == 'anygo/conveyor') {
 
         msg = JSON.parse(data.message)
         // msg = `{"username":"demo",sensorId":"TEST0001CONV0003SEG","status":"run"}`
 
-        if('status' in msg && 'sensorId' in msg) {
+        if ('status' in msg && 'sensorId' in msg) {
 
             // Start/stop conveyor - from mqtt directly not from button
-            if([1,0,'1','0'].includes(msg['status'])) {
+            if ([1, 0, '1', '0'].includes(msg['status'])) {
                 let isclick
                 if ($('.controller-' + msg["sensorId"] + ' .cb-value').parent('.state-btn-inner').hasClass("active") && msg["status"] == 0) {
                     $('.controller-' + msg["sensorId"] + ' .cb-value').trigger('click', isclick = 'passive')
+                    // $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("STOP")
                     $('.conveyor-layout-inner > div.sensor-item').draggable("disable")
                 } else if ($('.controller-' + msg["sensorId"] + ' .cb-value').parent('.state-btn-inner').hasClass("active") == false && msg["status"] == 1) {
                     $('.controller-' + msg["sensorId"] + ' .cb-value').trigger('click', isclick = 'passive')
+                    // $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("RUN")
                     $('.conveyor-layout-inner > div.sensor-item').draggable("enable")
                 } else {
                     // console.log(msg["status"], $('.controller-' + msg["sensorId"] + ' .cb-value').parent('.state-btn-inner').hasClass("active"))
                 }
             }
-            
+
             // Segment - Gate - Safety
-            if(['run','energy','acc','error','open','closed','press','released','stop'].includes(msg['status'])) {
+            if (['run', 'energy', 'acc', 'error', 'open', 'closed', 'close', 'press', 'released', 'stop'].includes(msg['status'])) {
                 let sensorId = msg['sensorId']
                 let status = msg['status']
-                $(".sensor-item[sensor='"+sensorId+"']").attr('state',status)
-                $(".sensor-item[sensor='"+sensorId+"'] .tooltiptext state").html(states_dict[status])
+                $(".sensor-item[sensor='" + sensorId + "']").attr('state', status)
+                $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext state").html(states_dict[status])
             }
 
-        }        
-        
+            // Conveyor Safety Released
+            if("safety" in msg) {
+                if(['1',1].includes(msg['safety'])) {
+                    // ciuperca apasata
+                    $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("E-STOP")
+                    $(".state-btn-inner > input").attr("disabled",true)
+                    playAlert()
+                    $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').attr("title","emergency button is pressed")
+                } else if(['0',0].includes(msg['safety'])) {
+                    // ciuperca ridicata
+                    $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("READY TO RUN")
+                    $(".state-btn-inner > input").attr("disabled",false)
+                    $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').attr("title","emergency button is released")
+                    stopAlert()
+                }
+            }
+
+        }
+
     }
     // ======================================================
 
@@ -1085,26 +1179,27 @@ let mainLoader = async () => {
         let sensorData = await getSensorData(sensor.sensorId, sensor.sensorType)
         sensorDataRaw.push({ sensorMeta: sensor, sensorData })
         // --------------------------------------------------
-        
+
         // Add Conveyor Class + Append Conveyor Layout Map
         // --------------------------------------------------
-        if(['gate','safety','segment', 'conveyor'].includes(sensor.sensorType)) {
-            if(!$("body").hasClass("conveyor-main-dashboard")) { // do this only once
+        if (['gate', 'safety', 'segment', 'conveyor'].includes(sensor.sensorType)) {
+            // console.log($("body").hasClass("conveyor-main-dashboard"), sensor.sensorType)
+            if (!$("body").hasClass("conveyor-main-dashboard")) { // do this only once
                 $("body").addClass("conveyor-main-dashboard")
                 $(".conveyor-main-dashboard .card-container").append(conveyorLayout(sensor))
             }
-        } 
+        }
         // --------------------------------------------------
 
         // Append Conveyor Items + Dashboard
         // --------------------------------------------------
-        if( ['gate','safety','segment'].includes(sensor.sensorType) ){
+        if (['gate', 'safety', 'segment'].includes(sensor.sensorType)) {
             // Append conveyor items on map created above
-            if(sensor.x && sensor.y)
-                $(".conveyor-main-dashboard .conveyor-layout .conveyor-layout-inner").append(conveyorItem(sensor,'draggable',{name: sensor.sensorName}))
+            if (sensor.x && sensor.y)
+                $(".conveyor-main-dashboard .conveyor-layout .conveyor-layout-inner").append(conveyorItem(sensor, 'draggable', { name: sensor.sensorName }))
             else
-                $(".conveyor-main-dashboard .conveyor-layout .new-items-conveyor").append(conveyorItem(sensor,'',{name: sensor.sensorName}))
-        } else if( ['conveyor'].includes(sensor.sensorType) ) {
+                $(".conveyor-main-dashboard .conveyor-layout .new-items-conveyor").append(conveyorItem(sensor, '', { name: sensor.sensorName }))
+        } else if (['conveyor'].includes(sensor.sensorType)) {
             // Prepend conveyor controller
             $(".card-container").prepend(defaultSensorView(sensorDataRaw[sensorDataRaw.length - 1]));
         } else {
@@ -1132,10 +1227,10 @@ let mainLoader = async () => {
             sensorsWithBattery.push(sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.sensorId)
 
         if (sensorCounter == 0) { // Add info box - location
-            
+
             // Add info box BUT NOT on conveyor dashboard
             // =============================================
-            if(['gate','safety','segment', 'conveyor'].includes(sensor.sensorType) == false) {
+            if (['gate', 'safety', 'segment', 'conveyor'].includes(sensor.sensorType) == false) {
 
                 appendInfoBox({
                     title: sensorDataRaw[0].sensorMeta.location2,
@@ -1193,10 +1288,14 @@ let mainLoader = async () => {
     // Conveyor dashboard - remove new item bar if no sensor there
     // =============================================
     let newItems = $(".conveyor-main-dashboard .conveyor-layout .new-items-conveyor").children().length
-    if(newItems == 0) {
-        $(".conveyor-main-dashboard .conveyor-layout .new-items-conveyor").remove()
+    if (newItems == 0) {
+        $(".conveyor-main-dashboard .new-items-conveyor").remove()
+        let newItemsAppended = $(".conveyor-main-dashboard .conveyor-layout").children().length
+        if (newItemsAppended == 0) {
+            $(".conveyor-main-dashboard .conveyor-layout").remove()
+        }
     }
-    if($('.state-btn-inner').hasClass("active") == false)
+    if ($('.state-btn-inner').hasClass("active") == false)
         $('.conveyor-layout-inner > div.sensor-item').draggable("disable")
     // =============================================
 
