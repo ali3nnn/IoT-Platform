@@ -6797,8 +6797,8 @@ label.switch-label:active:after {
   height: 100px !important;
 }
 .client-username-pharmaFarm .sensor-item[type=gate] .tooltiptext {
-  top: -10px !important;
-  left: 61px !important;
+  top: -30px !important;
+  left: -79px !important;
 }
 
 .tooltip_test .tooltiptext {

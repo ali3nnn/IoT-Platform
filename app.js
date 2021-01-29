@@ -4839,8 +4839,9 @@ app.get('/api/v3/query-influx', (req, res) => {
 })
 
 const PORT = process.env.PORTANYSENSOR;
+// const PORT = 3008
 
-var server = app.listen(PORT, console.log(`NodeJS started on port ${PORT}`)).on('error', function (err) {
+let server = app.listen(PORT, console.log(`NodeJS started on port ${PORT}`)).on('error', function (err) {
     console.log(err)
 
     if (err) {

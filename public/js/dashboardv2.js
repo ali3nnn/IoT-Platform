@@ -12,7 +12,8 @@ import {
     downloadCSV,
     getKeyByValue,
     timeoutAsync,
-    sendMessage
+    sendMessage,
+    monthNames
 } from './utils.js'
 
 import {
@@ -27,6 +28,32 @@ import {
     newItemsConveyorLayout,
     states_dict
 } from './dashboard-components'
+// ======================================================
+
+// Check internet connection
+// ======================================================
+const checkOnlineStatus = async () => {
+    try {
+        const online = await fetch("/sound/alert.wav");
+        return online.status >= 200 && online.status < 300; // either true or false
+    } catch (err) {
+        return false; // definitely offline
+    }
+};
+// let internetConection = false
+// setInterval(async () => {
+//     const result = await checkOnlineStatus();
+//     // const statusDisplay = document.getElementById("status");
+//     let statusDisplay = result ? "Online" : "OFFline";
+//     if(statusDisplay=='OFFline') {
+//         alert("No internet connection")
+//         internetConection = true
+//     } else {
+//         if(internetConection) {
+//             alert("Internet connection established")
+//         }
+//     }
+// }, 30*1000);
 // ======================================================
 
 // Sounds
@@ -226,7 +253,7 @@ function triggerSensorView(sensorId, sensor) {
                         round: true
                     })
 
-                    // console.log("resultToday",resultToday)
+                    // console.log("resultToday", resultToday)
 
                     resultToday = resultToday.replaceAll("hours", "h")
                     resultToday = resultToday.replaceAll("hour", "h")
@@ -296,12 +323,32 @@ function triggerSensorView(sensorId, sensor) {
                     topic: 'anygo/conveyor',
                     message: JSON.stringify({ username, sensorId, "status": 1 })
                 })
+
+                // do not let conveyor run with gate open
+                // for (let item of userData_raw) {
+
+                    // // check if gate exist and is open
+                    // if (item.sensorType == 'gate' && item.status == 'open') {
+                    //     // do not start
+
+                    //     alert("Atentie! Poarta deschisa! Inchideti poarta inainte de pornire!")
+                    // } else {
+                    //     // start
+
+                    //     // send 1 to mqtt
+                    //     sendMessage("socketChannel", {
+                    //         topic: 'anygo/conveyor',
+                    //         message: JSON.stringify({ username, sensorId, "status": 1 })
+                    //     })
+
+                        // set info message
+                        $('.controller-' + sensorId + ' .state-button .conveyor-info-message').html("RUN")
+
+                    //     // update seconds
+                    //     conveyorUsage(sensorId)
+                    // }
+                // }
             }
-
-            $('.controller-' + sensorId + ' .state-button .conveyor-info-message').html("RUN")
-
-            // update seconds
-            conveyorUsage(sensorId)
 
             // if button is GREEN - conveyor run
         } else {
@@ -318,6 +365,7 @@ function triggerSensorView(sensorId, sensor) {
                 })
             }
 
+            // set info msg
             $('.controller-' + sensorId + ' .state-button .conveyor-info-message').html("STOP")
 
             // stop update seconds
@@ -989,12 +1037,12 @@ function saveSensorSettings(sensorid) {
 
 // Send keep alive each minute
 // ======================================================
-setInterval(function(){
+setInterval(function () {
     sendMessage("socketChannel", {
         topic: 'keepalive',
-        message: JSON.stringify({"user":username, "status2": 'keepalive' })
+        message: JSON.stringify({ "user": username, "status2": 'keepalive' })
     })
-}, 10*1000)
+}, 10 * 1000)
 // ======================================================
 
 // Update current value - it runs each time a message is sent to the broker
@@ -1021,7 +1069,7 @@ let currentValueBox = $("article[class*='live-card']")
 //             if($('.client-username-pharmaFarm .state-button .conveyor-info-message').html() == "E-STOP") {
 //                 $('.client-username-pharmaFarm .state-button .conveyor-info-message').html("READY TO RUN")
 //             }
-            
+
 //         }
 //         alive = false
 //     },8*1000)
@@ -1095,11 +1143,11 @@ socket.on(socketChannel, async (data) => {
                 let isclick
                 if ($('.controller-' + msg["sensorId"] + ' .cb-value').parent('.state-btn-inner').hasClass("active") && msg["status"] == 0) {
                     $('.controller-' + msg["sensorId"] + ' .cb-value').trigger('click', isclick = 'passive')
-                    // $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("STOP")
+                    $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("STOP")
                     $('.conveyor-layout-inner > div.sensor-item').draggable("disable")
                 } else if ($('.controller-' + msg["sensorId"] + ' .cb-value').parent('.state-btn-inner').hasClass("active") == false && msg["status"] == 1) {
                     $('.controller-' + msg["sensorId"] + ' .cb-value').trigger('click', isclick = 'passive')
-                    // $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("RUN")
+                    $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("RUN")
                     $('.conveyor-layout-inner > div.sensor-item').draggable("enable")
                 } else {
                     // console.log(msg["status"], $('.controller-' + msg["sensorId"] + ' .cb-value').parent('.state-btn-inner').hasClass("active"))
@@ -1109,24 +1157,68 @@ socket.on(socketChannel, async (data) => {
             // Segment - Gate - Safety
             if (['run', 'energy', 'acc', 'error', 'open', 'closed', 'close', 'press', 'released', 'stop'].includes(msg['status'])) {
                 let sensorId = msg['sensorId']
+
+                // update status
                 let status = msg['status']
                 $(".sensor-item[sensor='" + sensorId + "']").attr('state', status)
-                $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext state").html(states_dict[status])
+                $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext state").html("Status: " + states_dict[status])
+
+                // update usage
+                let timeEl = $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext date").html()
+                let len = timeEl.length
+
+                let oldTime = timeEl.slice(6)
+                let oldTimeObj = new Date()
+                oldTimeObj.setHours(parseInt(oldTime.slice(0, 2)))
+                oldTimeObj.setMinutes(parseInt(oldTime.slice(3)))
+                // [ ] TODO: setDate and setDay when try to sync with status time older than current day
+                // if (len > 11)
+                //     oldTimeObj.setDate()
+
+                // let nowObj = new Date()
+                // let diffSec = parseInt((nowObj - oldTimeObj)/1000)
+                // let diffM = parseInt(diffSec / 60)
+                // let diffH = parseInt(diffM / 60)
+                // let diffRest = parseInt(diffM % 60)
+
+                // let incrementH = diffH
+                // let incrementM = diffRest
+
+                // let usageInitialH = $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext usage").html().replace("Usage total: ","").split(' ')[0].replace("h","")
+                // let usageInitialM = $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext usage").html().replace("Usage total: ","").split(' ')[0].replace("m","")
+                // let usageFinal = "Usage total: "+(usageInitialH + incrementH)+"h "+(usageInitialM + incrementM)+"m"
+                // $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext usage").html(usageFinal)
+
+                // update time
+                let now = new Date()
+                now = now.toLocaleString().slice(12, 17)
+                $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext date").html("From: " + now)
+                let date = new Date()
+                let day = date.toLocaleString().slice(0, 2)
+                let month = date.toLocaleString().slice(3, 5)
+                $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext date").attr('title', date + " " + monthNames[parseInt(month - 1)].slice(0, 3))
+
             }
 
             // Conveyor Safety Released
-            if("safety" in msg) {
-                if(['1',1].includes(msg['safety'])) {
-                    // ciuperca apasata
+            if ("safety" in msg) {
+                if (['1', 1].includes(msg['safety'])) {
+                    // show info msg
                     $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("E-STOP")
-                    $(".state-btn-inner > input").attr("disabled",true)
+                    // disable button
+                    $(".state-btn-inner > input").attr("disabled", true)
+                    // play alert sound
                     playAlert()
-                    $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').attr("title","emergency button is pressed")
-                } else if(['0',0].includes(msg['safety'])) {
-                    // ciuperca ridicata
+                    // info title
+                    $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').attr("title", "emergency button is pressed")
+                } else if (['0', 0].includes(msg['safety'])) {
+                    // show info msg
                     $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("READY TO RUN")
-                    $(".state-btn-inner > input").attr("disabled",false)
-                    $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').attr("title","emergency button is released")
+                    // enable button
+                    $(".state-btn-inner > input").attr("disabled", false)
+                    // title info
+                    $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').attr("title", "emergency button is released")
+                    // stop alert sound
                     stopAlert()
                 }
             }

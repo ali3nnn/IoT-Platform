@@ -27,7 +27,7 @@ exports.getDaysInMonth = getDaysInMonth;
 exports.getKeyByValue = getKeyByValue;
 exports.arrayToJson = arrayToJson;
 exports.getRandomColor = getRandomColor;
-exports.getConveyorStatus = exports.insertStatus = exports.monthChanger = exports.timeoutAsync = exports._ = void 0;
+exports.monthNames = exports.getConveyorStatus = exports.insertStatus = exports.monthChanger = exports.timeoutAsync = exports._ = void 0;
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
 
@@ -856,3 +856,6 @@ function getRandomColor() {
 
   return color;
 }
+
+var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+exports.monthNames = monthNames;

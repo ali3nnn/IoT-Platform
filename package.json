@@ -6,7 +6,7 @@
   "scripts": {
     "init": "pm2 start app.js --name 'anysensor'",
     "dev": "concurrently 'npm run stop' 'pm2-dev app.js' 'npm run build:dev'",
-    "prod": "npm run build:prod && pm2 start anysensor --watch",
+    "prod": "npm run build:prod && pm2 start anysensor",
     "stop": "pm2 stop anysensor",
     "build:dev": "webpack --config webpack.config-dev.js --mode=development",
     "build:prod": "webpack --config webpack.config.js --mode=production"

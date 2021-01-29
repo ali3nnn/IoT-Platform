@@ -11,6 +11,52 @@ var humanizeDuration = require("humanize-duration");
 
 var _ = require('lodash');
 
+var checkOnlineStatus = function checkOnlineStatus() {
+  var online;
+  return regeneratorRuntime.async(function checkOnlineStatus$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          _context.prev = 0;
+          _context.next = 3;
+          return regeneratorRuntime.awrap(fetch("/sound/alert.wav"));
+
+        case 3:
+          online = _context.sent;
+          return _context.abrupt("return", online.status >= 200 && online.status < 300);
+
+        case 7:
+          _context.prev = 7;
+          _context.t0 = _context["catch"](0);
+          return _context.abrupt("return", false);
+
+        case 10:
+        case "end":
+          return _context.stop();
+      }
+    }
+  }, null, null, [[0, 7]]);
+}; // let internetConection = false
+// setInterval(async () => {
+//     const result = await checkOnlineStatus();
+//     // const statusDisplay = document.getElementById("status");
+//     let statusDisplay = result ? "Online" : "OFFline";
+//     if(statusDisplay=='OFFline') {
+//         alert("No internet connection")
+//         internetConection = true
+//     } else {
+//         if(internetConection) {
+//             alert("Internet connection established")
+//         }
+//     }
+// }, 30*1000);
+// ======================================================
+// Sounds
+// ======================================================
+// FIREFOX: menu > preferinte > securitate > redare automata > permite
+// CHROME: menu > setari > securitate > setarile site-ului > setari continut > audio > permite 
+
+
 var alertSound = new Audio('/sound/alert.wav');
 alertSound.loop = true;
 
@@ -45,20 +91,20 @@ window.playButtonSound = playButtonSound; // ===================================
 
 var getSensorData = function getSensorData(id, type) {
   var response;
-  return regeneratorRuntime.async(function getSensorData$(_context) {
+  return regeneratorRuntime.async(function getSensorData$(_context2) {
     while (1) {
-      switch (_context.prev = _context.next) {
+      switch (_context2.prev = _context2.next) {
         case 0:
-          _context.next = 2;
+          _context2.next = 2;
           return regeneratorRuntime.awrap(fetch("/api/v3/get-sensor-data?id=" + id + "&type=" + type));
 
         case 2:
-          response = _context.sent;
-          return _context.abrupt("return", response.json());
+          response = _context2.sent;
+          return _context2.abrupt("return", response.json());
 
         case 4:
         case "end":
-          return _context.stop();
+          return _context2.stop();
       }
     }
   });
@@ -198,7 +244,7 @@ function triggerSensorView(sensorId, sensor) {
             // units: ["h", "m", "s"],
             units: ["h", "m"],
             round: true
-          }); // console.log("resultToday",resultToday)
+          }); // console.log("resultToday", resultToday)
 
           resultToday = resultToday.replaceAll("hours", "h");
           resultToday = resultToday.replaceAll("hour", "h");
@@ -262,12 +308,27 @@ function triggerSensorView(sensorId, sensor) {
             sensorId: sensorId,
             "status": 1
           })
-        });
-      }
+        }); // do not let conveyor run with gate open
+        // for (let item of userData_raw) {
+        // // check if gate exist and is open
+        // if (item.sensorType == 'gate' && item.status == 'open') {
+        //     // do not start
+        //     alert("Atentie! Poarta deschisa! Inchideti poarta inainte de pornire!")
+        // } else {
+        //     // start
+        //     // send 1 to mqtt
+        //     sendMessage("socketChannel", {
+        //         topic: 'anygo/conveyor',
+        //         message: JSON.stringify({ username, sensorId, "status": 1 })
+        //     })
+        // set info message
 
-      $('.controller-' + sensorId + ' .state-button .conveyor-info-message').html("RUN"); // update seconds
+        $('.controller-' + sensorId + ' .state-button .conveyor-info-message').html("RUN"); //     // update seconds
+        //     conveyorUsage(sensorId)
+        // }
+        // }
+      } // if button is GREEN - conveyor run
 
-      conveyorUsage(sensorId); // if button is GREEN - conveyor run
     } else {
       $(mainParent).removeClass('active'); // make button red
 
@@ -284,7 +345,8 @@ function triggerSensorView(sensorId, sensor) {
             "status": 0
           })
         });
-      }
+      } // set info msg
+
 
       $('.controller-' + sensorId + ' .state-button .conveyor-info-message').html("STOP"); // stop update seconds
 
@@ -358,9 +420,9 @@ var conveyorUsage = function conveyorUsage(sensorId) {
 };
 
 var reloadDataCustomCalendar = function reloadDataCustomCalendar(start, end, sensorId) {
-  return regeneratorRuntime.async(function reloadDataCustomCalendar$(_context2) {
+  return regeneratorRuntime.async(function reloadDataCustomCalendar$(_context3) {
     while (1) {
-      switch (_context2.prev = _context2.next) {
+      switch (_context3.prev = _context3.next) {
         case 0:
           // [*] TODO: Get data for new date
           // [*] TODO: Reload the chart with new data
@@ -368,7 +430,7 @@ var reloadDataCustomCalendar = function reloadDataCustomCalendar(start, end, sen
 
         case 1:
         case "end":
-          return _context2.stop();
+          return _context3.stop();
       }
     }
   });
@@ -378,9 +440,9 @@ var reloadDataCustomCalendar = function reloadDataCustomCalendar(start, end, sen
 
 var getSensorDataCustomInterval = function getSensorDataCustomInterval(sensor, start, end) {
   var url;
-  return regeneratorRuntime.async(function getSensorDataCustomInterval$(_context3) {
+  return regeneratorRuntime.async(function getSensorDataCustomInterval$(_context4) {
     while (1) {
-      switch (_context3.prev = _context3.next) {
+      switch (_context4.prev = _context4.next) {
         case 0:
           if (!$("body").hasClass("calendar-active")) {
             $("body").addClass("calendar-active");
@@ -428,7 +490,7 @@ var getSensorDataCustomInterval = function getSensorDataCustomInterval(sensor, s
 
         case 4:
         case "end":
-          return _context3.stop();
+          return _context4.stop();
       }
     }
   });
@@ -965,11 +1027,11 @@ var currentValueBox = $("article[class*='live-card']"); // TIGANEALA
 // =========================
 
 socket.on(socketChannel, function _callee(data) {
-  var msg, value, currentPower, _currentPower, isclick, sensorId, status;
+  var msg, value, currentPower, _currentPower, isclick, sensorId, status, timeEl, len, oldTime, oldTimeObj, now, date, day, month;
 
-  return regeneratorRuntime.async(function _callee$(_context4) {
+  return regeneratorRuntime.async(function _callee$(_context5) {
     while (1) {
-      switch (_context4.prev = _context4.next) {
+      switch (_context5.prev = _context5.next) {
         case 0:
           // Temperature - OLD @depracated
           // ======================================================
@@ -1024,12 +1086,12 @@ socket.on(socketChannel, function _callee(data) {
               // Start/stop conveyor - from mqtt directly not from button
               if ([1, 0, '1', '0'].includes(msg['status'])) {
                 if ($('.controller-' + msg["sensorId"] + ' .cb-value').parent('.state-btn-inner').hasClass("active") && msg["status"] == 0) {
-                  $('.controller-' + msg["sensorId"] + ' .cb-value').trigger('click', isclick = 'passive'); // $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("STOP")
-
+                  $('.controller-' + msg["sensorId"] + ' .cb-value').trigger('click', isclick = 'passive');
+                  $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("STOP");
                   $('.conveyor-layout-inner > div.sensor-item').draggable("disable");
                 } else if ($('.controller-' + msg["sensorId"] + ' .cb-value').parent('.state-btn-inner').hasClass("active") == false && msg["status"] == 1) {
-                  $('.controller-' + msg["sensorId"] + ' .cb-value').trigger('click', isclick = 'passive'); // $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("RUN")
-
+                  $('.controller-' + msg["sensorId"] + ' .cb-value').trigger('click', isclick = 'passive');
+                  $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("RUN");
                   $('.conveyor-layout-inner > div.sensor-item').draggable("enable");
                 } else {// console.log(msg["status"], $('.controller-' + msg["sensorId"] + ' .cb-value').parent('.state-btn-inner').hasClass("active"))
                 }
@@ -1037,25 +1099,61 @@ socket.on(socketChannel, function _callee(data) {
 
 
               if (['run', 'energy', 'acc', 'error', 'open', 'closed', 'close', 'press', 'released', 'stop'].includes(msg['status'])) {
-                sensorId = msg['sensorId'];
+                sensorId = msg['sensorId']; // update status
+
                 status = msg['status'];
                 $(".sensor-item[sensor='" + sensorId + "']").attr('state', status);
-                $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext state").html(_dashboardComponents.states_dict[status]);
+                $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext state").html("Status: " + _dashboardComponents.states_dict[status]); // update usage
+
+                timeEl = $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext date").html();
+                len = timeEl.length;
+                oldTime = timeEl.slice(6);
+                oldTimeObj = new Date();
+                oldTimeObj.setHours(parseInt(oldTime.slice(0, 2)));
+                oldTimeObj.setMinutes(parseInt(oldTime.slice(3))); // [ ] TODO: setDate and setDay when try to sync with status time older than current day
+                // if (len > 11)
+                //     oldTimeObj.setDate()
+                // let nowObj = new Date()
+                // let diffSec = parseInt((nowObj - oldTimeObj)/1000)
+                // let diffM = parseInt(diffSec / 60)
+                // let diffH = parseInt(diffM / 60)
+                // let diffRest = parseInt(diffM % 60)
+                // let incrementH = diffH
+                // let incrementM = diffRest
+                // let usageInitialH = $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext usage").html().replace("Usage total: ","").split(' ')[0].replace("h","")
+                // let usageInitialM = $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext usage").html().replace("Usage total: ","").split(' ')[0].replace("m","")
+                // let usageFinal = "Usage total: "+(usageInitialH + incrementH)+"h "+(usageInitialM + incrementM)+"m"
+                // $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext usage").html(usageFinal)
+                // update time
+
+                now = new Date();
+                now = now.toLocaleString().slice(12, 17);
+                $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext date").html("From: " + now);
+                date = new Date();
+                day = date.toLocaleString().slice(0, 2);
+                month = date.toLocaleString().slice(3, 5);
+                $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext date").attr('title', date + " " + _utils.monthNames[parseInt(month - 1)].slice(0, 3));
               } // Conveyor Safety Released
 
 
               if ("safety" in msg) {
                 if (['1', 1].includes(msg['safety'])) {
-                  // ciuperca apasata
-                  $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("E-STOP");
-                  $(".state-btn-inner > input").attr("disabled", true);
-                  playAlert();
+                  // show info msg
+                  $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("E-STOP"); // disable button
+
+                  $(".state-btn-inner > input").attr("disabled", true); // play alert sound
+
+                  playAlert(); // info title
+
                   $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').attr("title", "emergency button is pressed");
                 } else if (['0', 0].includes(msg['safety'])) {
-                  // ciuperca ridicata
-                  $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("READY TO RUN");
-                  $(".state-btn-inner > input").attr("disabled", false);
-                  $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').attr("title", "emergency button is released");
+                  // show info msg
+                  $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').html("READY TO RUN"); // enable button
+
+                  $(".state-btn-inner > input").attr("disabled", false); // title info
+
+                  $('.controller-' + msg["sensorId"] + ' .state-button .conveyor-info-message').attr("title", "emergency button is released"); // stop alert sound
+
                   stopAlert();
                 }
               }
@@ -1065,7 +1163,7 @@ socket.on(socketChannel, function _callee(data) {
 
         case 4:
         case "end":
-          return _context4.stop();
+          return _context5.stop();
       }
     }
   });
@@ -1080,9 +1178,9 @@ var sensorMetaRaw; // init variable globally
 var mainLoader = function mainLoader() {
   var url, zoneId, sensorBuffer, sensorDataRaw, sensorsWithBattery, sensorCounter, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, sensor, sensorData, newItems, newItemsAppended;
 
-  return regeneratorRuntime.async(function mainLoader$(_context5) {
+  return regeneratorRuntime.async(function mainLoader$(_context6) {
     while (1) {
-      switch (_context5.prev = _context5.next) {
+      switch (_context6.prev = _context6.next) {
         case 0:
           // Get zoneId from URL
           // =============================================
@@ -1110,21 +1208,21 @@ var mainLoader = function mainLoader() {
           _iteratorNormalCompletion = true;
           _didIteratorError = false;
           _iteratorError = undefined;
-          _context5.prev = 11;
+          _context6.prev = 11;
           _iterator = sensorMetaRaw[Symbol.iterator]();
 
         case 13:
           if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-            _context5.next = 29;
+            _context6.next = 29;
             break;
           }
 
           sensor = _step.value;
-          _context5.next = 17;
+          _context6.next = 17;
           return regeneratorRuntime.awrap(getSensorData(sensor.sensorId, sensor.sensorType));
 
         case 17:
-          sensorData = _context5.sent;
+          sensorData = _context6.sent;
           sensorDataRaw.push({
             sensorMeta: sensor,
             sensorData: sensorData
@@ -1223,42 +1321,42 @@ var mainLoader = function mainLoader() {
 
         case 26:
           _iteratorNormalCompletion = true;
-          _context5.next = 13;
+          _context6.next = 13;
           break;
 
         case 29:
-          _context5.next = 35;
+          _context6.next = 35;
           break;
 
         case 31:
-          _context5.prev = 31;
-          _context5.t0 = _context5["catch"](11);
+          _context6.prev = 31;
+          _context6.t0 = _context6["catch"](11);
           _didIteratorError = true;
-          _iteratorError = _context5.t0;
+          _iteratorError = _context6.t0;
 
         case 35:
-          _context5.prev = 35;
-          _context5.prev = 36;
+          _context6.prev = 35;
+          _context6.prev = 36;
 
           if (!_iteratorNormalCompletion && _iterator.return != null) {
             _iterator.return();
           }
 
         case 38:
-          _context5.prev = 38;
+          _context6.prev = 38;
 
           if (!_didIteratorError) {
-            _context5.next = 41;
+            _context6.next = 41;
             break;
           }
 
           throw _iteratorError;
 
         case 41:
-          return _context5.finish(38);
+          return _context6.finish(38);
 
         case 42:
-          return _context5.finish(35);
+          return _context6.finish(35);
 
         case 43:
           // =============================================
@@ -1279,11 +1377,11 @@ var mainLoader = function mainLoader() {
           if ($('.state-btn-inner').hasClass("active") == false) $('.conveyor-layout-inner > div.sensor-item').draggable("disable"); // =============================================
           // return sensorDataRaw
 
-          return _context5.abrupt("return", sensorMetaRaw);
+          return _context6.abrupt("return", sensorMetaRaw);
 
         case 47:
         case "end":
-          return _context5.stop();
+          return _context6.stop();
       }
     }
   }, null, null, [[11, 31, 35, 43], [36,, 38, 42]]);
@@ -1291,20 +1389,20 @@ var mainLoader = function mainLoader() {
 
 var influxQuery = function influxQuery(query) {
   var response;
-  return regeneratorRuntime.async(function influxQuery$(_context6) {
+  return regeneratorRuntime.async(function influxQuery$(_context7) {
     while (1) {
-      switch (_context6.prev = _context6.next) {
+      switch (_context7.prev = _context7.next) {
         case 0:
-          _context6.next = 2;
+          _context7.next = 2;
           return regeneratorRuntime.awrap(fetch("/api/v3/query-influx?query=" + query));
 
         case 2:
-          response = _context6.sent;
-          return _context6.abrupt("return", response.json());
+          response = _context7.sent;
+          return _context7.abrupt("return", response.json());
 
         case 4:
         case "end":
-          return _context6.stop();
+          return _context7.stop();
       }
     }
   });
@@ -1312,22 +1410,22 @@ var influxQuery = function influxQuery(query) {
 
 var initLiveData = function initLiveData() {
   var sensorsMetaRaw, sensorsList, query, influxResult;
-  return regeneratorRuntime.async(function initLiveData$(_context7) {
+  return regeneratorRuntime.async(function initLiveData$(_context8) {
     while (1) {
-      switch (_context7.prev = _context7.next) {
+      switch (_context8.prev = _context8.next) {
         case 0:
-          _context7.next = 2;
+          _context8.next = 2;
           return regeneratorRuntime.awrap(mainLoader());
 
         case 2:
-          sensorsMetaRaw = _context7.sent;
+          sensorsMetaRaw = _context8.sent;
           sensorsList = (0, _utils.getValuesFromObject)('sensorId', sensorsMetaRaw);
           query = "SELECT value FROM sensors WHERE sensorId =~ /" + sensorsList.join('|') + "/ group by sensorId order by time desc limit 1";
-          _context7.next = 7;
+          _context8.next = 7;
           return regeneratorRuntime.awrap(influxQuery(query));
 
         case 7:
-          influxResult = _context7.sent;
+          influxResult = _context8.sent;
           // console.log("sensorsMetaRaw", sensorsMetaRaw)
           influxResult.forEach(function (item, index) {
             var sensorId = item.sensorId;
@@ -1347,7 +1445,7 @@ var initLiveData = function initLiveData() {
 
         case 9:
         case "end":
-          return _context7.stop();
+          return _context8.stop();
       }
     }
   });
@@ -1358,29 +1456,29 @@ initLiveData(); // Update charts continously
 var liveChart = function liveChart() {
   var sensorDataRaw, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, sensor, sensorData, _i, _sensorDataRaw, _sensor;
 
-  return regeneratorRuntime.async(function liveChart$(_context8) {
+  return regeneratorRuntime.async(function liveChart$(_context9) {
     while (1) {
-      switch (_context8.prev = _context8.next) {
+      switch (_context9.prev = _context9.next) {
         case 0:
           sensorDataRaw = [];
           _iteratorNormalCompletion2 = true;
           _didIteratorError2 = false;
           _iteratorError2 = undefined;
-          _context8.prev = 4;
+          _context9.prev = 4;
           _iterator2 = sensorMetaRaw[Symbol.iterator]();
 
         case 6:
           if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
-            _context8.next = 15;
+            _context9.next = 15;
             break;
           }
 
           sensor = _step2.value;
-          _context8.next = 10;
+          _context9.next = 10;
           return regeneratorRuntime.awrap(getSensorData(sensor.sensorId, sensor.sensorType));
 
         case 10:
-          sensorData = _context8.sent;
+          sensorData = _context9.sent;
           sensorDataRaw.push({
             sensorMeta: sensor,
             sensorData: sensorData
@@ -1388,42 +1486,42 @@ var liveChart = function liveChart() {
 
         case 12:
           _iteratorNormalCompletion2 = true;
-          _context8.next = 6;
+          _context9.next = 6;
           break;
 
         case 15:
-          _context8.next = 21;
+          _context9.next = 21;
           break;
 
         case 17:
-          _context8.prev = 17;
-          _context8.t0 = _context8["catch"](4);
+          _context9.prev = 17;
+          _context9.t0 = _context9["catch"](4);
           _didIteratorError2 = true;
-          _iteratorError2 = _context8.t0;
+          _iteratorError2 = _context9.t0;
 
         case 21:
-          _context8.prev = 21;
-          _context8.prev = 22;
+          _context9.prev = 21;
+          _context9.prev = 22;
 
           if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
             _iterator2.return();
           }
 
         case 24:
-          _context8.prev = 24;
+          _context9.prev = 24;
 
           if (!_didIteratorError2) {
-            _context8.next = 27;
+            _context9.next = 27;
             break;
           }
 
           throw _iteratorError2;
 
         case 27:
-          return _context8.finish(24);
+          return _context9.finish(24);
 
         case 28:
-          return _context8.finish(21);
+          return _context9.finish(21);
 
         case 29:
           for (_i = 0, _sensorDataRaw = sensorDataRaw; _i < _sensorDataRaw.length; _i++) {
@@ -1437,54 +1535,54 @@ var liveChart = function liveChart() {
 
         case 30:
         case "end":
-          return _context8.stop();
+          return _context9.stop();
       }
     }
   }, null, null, [[4, 17, 21, 29], [22,, 24, 28]]);
 };
 
 function delay(ms) {
-  return regeneratorRuntime.async(function delay$(_context9) {
+  return regeneratorRuntime.async(function delay$(_context10) {
     while (1) {
-      switch (_context9.prev = _context9.next) {
+      switch (_context10.prev = _context10.next) {
         case 0:
-          _context9.next = 2;
+          _context10.next = 2;
           return regeneratorRuntime.awrap(new Promise(function (resolve) {
             return setTimeout(resolve, ms);
           }));
 
         case 2:
-          return _context9.abrupt("return", _context9.sent);
+          return _context10.abrupt("return", _context10.sent);
 
         case 3:
         case "end":
-          return _context9.stop();
+          return _context10.stop();
       }
     }
   });
 }
 
 var run = function run() {
-  return regeneratorRuntime.async(function run$(_context10) {
+  return regeneratorRuntime.async(function run$(_context11) {
     while (1) {
-      switch (_context10.prev = _context10.next) {
+      switch (_context11.prev = _context11.next) {
         case 0:
           if (!1) {
-            _context10.next = 6;
+            _context11.next = 6;
             break;
           }
 
           liveChart();
-          _context10.next = 4;
+          _context11.next = 4;
           return regeneratorRuntime.awrap(delay(60 * 1000));
 
         case 4:
-          _context10.next = 0;
+          _context11.next = 0;
           break;
 
         case 6:
         case "end":
-          return _context10.stop();
+          return _context11.stop();
       }
     }
   });

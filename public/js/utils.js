@@ -546,9 +546,9 @@ export function downloadCSVMulti(args) {
 
     // function to append unit in header
     const unit = (idx) => {
-        if(args.types[idx] == 'door')
+        if (args.types[idx] == 'door')
             return ' (min open)'
-        else if(args.types[idx] == 'temperature')
+        else if (args.types[idx] == 'temperature')
             return ' (°C)'
     }
 
@@ -806,7 +806,9 @@ export function getRandomColor() {
     var letters = '0123456789ABCDEF';
     var color = '#';
     for (var i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
+        color += letters[Math.floor(Math.random() * 16)];
     }
     return color;
-  }
+}
+
+export const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
