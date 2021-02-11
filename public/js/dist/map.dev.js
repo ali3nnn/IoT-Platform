@@ -55,9 +55,12 @@ function getSensorName() {
 function getSensorValue() {
   var sensorFeature = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
   var sensorValue = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+  var unitMeasure = '';
+  var type = sensorFeature.customData.sensorType;
+  if (type == 'door') unitMeasure = '';else if (type == 'temperature') unitMeasure = '℃';else if (type == 'voltage') unitMeasure = 'V';
 
   if (sensorValue) {
-    return sensorValue;
+    return sensorValue + ' ' + unitMeasure;
   } else {
     return '';
   } // value = props.customData.last
@@ -242,7 +245,7 @@ var icon = {
 }; // Everything happens if custom-map is present
 
 if ($("#map .custom-map")) {
-  // undefinedSensorsTemplate
+  // Build undefined sensors
   var undefinedSensorsTemplate = function undefinedSensorsTemplate(sensorList) {
     var sensorToDisplay = '';
     var _iteratorNormalCompletion = true;
@@ -253,8 +256,9 @@ if ($("#map .custom-map")) {
       for (var _iterator = sensorList[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
         var sensor = _step.value;
         var iconToShow = void 0;
-        if (sensor.sensorType == 'door') iconToShow = icon[sensor.sensorType][1];else iconToShow = icon[sensor.sensorType];
-        sensorToDisplay += "<span class='sensor-disabled sensor-item' type=\"" + sensor.sensorType + "\" sensor='" + sensor.sensorId + "'>\n                            " + iconToShow + "\n                            <span class='sensorName'>" + sensor.sensorName + "</span>\n                            <span class='sensorValue'>No data</span>\n                            <span class=\"not-live pulse\"></span>\n                          </span>";
+        if (sensor.sensorType == 'door') iconToShow = icon[sensor.sensorType][1];else iconToShow = icon[sensor.sensorType]; // console.log(sensor.sensorId, sensor.sensorType, iconToShow)
+
+        sensorToDisplay += "<span class='sensor-disabled sensor-item' name=\"" + sensor.sensorName + "\" type=\"" + sensor.sensorType + "\" sensor='" + sensor.sensorId + "' title=\"Click aici pentru a adauga senzorul pe harta\">\n\n                            <div class='medium-view'>\n                              " + iconToShow + "\n                              <span class='sensorName'>" + sensor.sensorName + "</span>\n                              <span class='sensorValue'>No data</span>\n                              <span class=\"not-live pulse\"></span>\n                            </div>\n\n                          </span>";
       }
     } catch (err) {
       _didIteratorError = true;
@@ -292,34 +296,25 @@ if ($("#map .custom-map")) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            // if (sensor.zoneId == zoneId) {
-            // sensorsInThisZone.push(sensor)
-            // console.log(sensor, index, userDataFinal.length-1)
             // if NO POSITION was set then put then in corner
             if (!sensor.x || !sensor.y) {
-              // Push all the sensors without a location
               sensorsWithUndefinedLocation.push(sensor); // @ last itteration append the sensors
-              // console.log(sensor,index, userDataFinal.length-1)
             } else {
               // if POSITION was set append them on the map
               // Get location of sensor
               position = {
                 top: parseInt(sensor.y),
                 left: parseInt(sensor.x)
-              }; // let icon = {
-              //   'door': '<i class="fas fa-door-closed"></i>',
-              //   'temperature':'<i class="fas fa-thermometer-three-quarters"></i>',
-              //   'voltage':'<i class="fas fa-bolt"></i>'
-              // }
-              // console.log(sensor.sensorName, sensor.sensorType, icon[sensor.sensorType])
+              }; // Icon
 
               if (sensor.sensorType == 'door') iconToShow = icon[sensor.sensorType][0];else iconToShow = icon[sensor.sensorType]; // Info
-              // console.log(sensor.alerts)
 
               infoClass = '';
-              if (sensor.alerts == 1) infoClass = 'alert-active';else if (sensor.alerts == 2) infoClass = 'alarm-active';else if ([3, 4].includes(sensor.alerts)) infoClass = 'no-power'; // Sensor on map
+              if (sensor.alerts == 1) infoClass = 'alert-active';else if (sensor.alerts == 2) infoClass = 'alarm-active';else if ([3, 4].includes(sensor.alerts)) infoClass = 'no-power'; // infoClass = 'alarm-active'
+              // console.log(sensor)
+              // Append sensor item on map
 
-              $(".custom-map").append("\n            <div sensor=\"" + sensor.sensorId + "\" type=\"" + sensor.sensorType + "\" class=\"" + infoClass + " sensor-disabled sensor-item draggable ui-widget-content\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"" + sensor.sensorId + "\">\n              " + iconToShow + "\n              <span class='sensorName'>" + sensor.sensorName + "</span>\n              <span class='sensorValue'>No data</span>\n              <span class=\"not-live pulse\"></span>\n            </div>"); // Make sensor on map draggable
+              $(".custom-map").append("\n            <div name=\"" + sensor.sensorName + "\" sensor=\"" + sensor.sensorId + "\" type=\"" + sensor.sensorType + "\" class=\"" + infoClass + " sensor-disabled sensor-item draggable ui-widget-content\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"" + sensor.sensorId + "\">\n              <!-- medium view -->\n              <div class='medium-view'>\n                " + iconToShow + "\n                <span class='sensorName'>" + sensor.sensorName + "</span>\n                <span class='sensorValue'>No data</span>\n                <span class=\"not-live pulse\"></span>\n              </div>\n              <!-- end medium view -->\n\n              <!-- small view -->\n              <div class='small-view'>\n                <span class='sensorName'>" + sensor.sensorName + "</span>\n              </div>\n              <!-- end small view -->\n            </div>"); // Make sensor draggable
 
               $(".draggable[sensor='" + sensor.sensorId + "']").draggable({
                 grid: [1, 1],
@@ -338,31 +333,28 @@ if ($("#map .custom-map")) {
 
 
             if (index == userDataFinal.length - 1 && sensorsWithUndefinedLocation.length) {
-              // Append undefined sensors to their box
+              // Append undefined sensors
               $("#map .custom-map").append(undefinedSensorsTemplate(sensorsWithUndefinedLocation)); // Toggle sensors box
 
               $(".undefinedButton").on('click', function (e) {
                 $(".undefinedSensorsInner").toggleClass("hidden");
-              }); // When you click on a sensor it should be removed from current location and appended to custom-map
+              }); // Define sensor location
 
               $(".undefinedSensorsInner").on('click', function (e) {
-                var sensorElement = e.target.parentElement;
+                var sensorElement = e.target.parentElement.parentElement;
                 var sensorId = sensorElement.getAttribute("sensor");
                 var sensorType = sensorElement.getAttribute("type");
-                var sensorName = $(sensorElement).children(".sensorName")[0].innerText;
-                var iconToShow;
-                if (sensor.sensorType == 'door') iconToShow = icon[sensorType][0];else iconToShow = icon[sensorType]; // console.log(".custom-map .undefinedSensorsInner .sensor-item[sensor='"+sensorId+"']")
+                var sensorName = sensorElement.getAttribute("name");
+                var sensorClasses = sensorElement.getAttribute("class"); // Clone & append
+                // console.log(sensorElement,sensorId,sensorType,sensorName)
 
-                var sensorCloned = $(".custom-map .undefinedSensorsInner .sensor-item[sensor=" + sensorId + "]").clone(); // $(".custom-map").append(`
-                //         <div sensor="` + sensorId + `" class="sensor-disabled sensor-item draggable ui-widget-content" data-toggle="tooltip" data-placement="top"  title="` + sensorId + `">
-                //           <i class="fad fa-signal-stream"></i>
-                //           <span class='sensorName'>`+ sensorName + `</span>
-                //           <span class='sensorValue'>No data</span>
-                //         </div>`)
+                var sensorCloned = $(".custom-map .undefinedSensorsInner .sensor-item[sensor=" + sensorId + "] .medium-view").clone(); // console.log(sensorCloned)
 
-                $(".custom-map").append(sensorCloned); // Make it draggable
+                $(".custom-map").append("<div name=\"" + sensorName + "\" sensor=\"" + sensorId + "\" type=\"" + sensorType + "\" class=\"" + sensorClasses + "\"><div class=\"medium-view\">" + sensorCloned[0].innerHTML + "</div><div class=\"small-view\"><span class=\"sensorName\">" + sensorName + "</span></div></div>"); // console.log(sensorCloned)
+                // Make it draggable
+                // sensorCloned.addClass("draggable")
 
-                sensorCloned.addClass("draggable");
+                $(".sensor-item[sensor='" + sensorId + "']").addClass("draggable");
                 $(".draggable[sensor='" + sensorId + "']").draggable({
                   grid: [1, 1],
                   create: function create(event, ui) {
@@ -381,11 +373,12 @@ if ($("#map .custom-map")) {
                   stop: function stop(event, ui) {
                     var sensorId = $(this).attr('sensor');
                     fetch("/api/v3/save-position?x=" + ui.position.left + "&y=" + ui.position.top + "&sensor=" + sensorId).then(function (result) {
-                      console.log(result);
+                      // console.log(result)
+                      sensorElement.remove();
                     });
                   }
-                });
-                sensorElement.remove();
+                }); // Remove it from undefined group
+                // sensorElement.remove()
               });
             } // }
 
@@ -401,7 +394,8 @@ if ($("#map .custom-map")) {
 
   var listOfSensorsId = (0, _utils.getValuesFromObject)('sensorId', userDataFinal);
   var listOfSensorsType = (0, _utils.getValuesFromObject)('sensorType', userDataFinal);
-  var sensorsTypeJson = (0, _utils.arrayToJson)(listOfSensorsId, listOfSensorsType);
+  var sensorsTypeJson = (0, _utils.arrayToJson)(listOfSensorsId, listOfSensorsType); // Update all doors at once at runtime
+
   fetch('/api/v3/query-influx?query=' + 'select value from sensors where sensorId =~ /' + listOfSensorsId.join("|") + '/ group by sensorId order by time desc limit 1').then(function _callee2(result) {
     return regeneratorRuntime.async(function _callee2$(_context2) {
       while (1) {
@@ -412,10 +406,8 @@ if ($("#map .custom-map")) {
 
           case 2:
             result = _context2.sent;
-            // console.log(result, sensorsTypeJson)
             result.forEach(function (item) {
-              // console.log(item.sensorId, parseFloat(item.value).toFixed(1))
-              updateCurrentValueOnMap(item.sensorId, parseFloat(item.value).toFixed(1), item.time);
+              updateCurrentValueOnMap(item.sensorId, parseFloat(item.value).toFixed(1), item.time); // console.log(item.sensorId, parseFloat(item.value).toFixed(1), item.time)
             }); // showNotification("Test notification", 0)
             // showNotification("Test notification", 1)
             // showNotification("Test notification", 2)
@@ -437,7 +429,7 @@ if ($("#map .custom-map")) {
 
 var socketChannel = 'socketChannel';
 socket.on(socketChannel, function _callee3(data) {
-  var currentValueBox, msg, _msg, layers, _i, _Object$entries, _Object$entries$_i, ol_index, sensor;
+  var currentValueBox, msg, _msg, layers, _i, _Object$entries, _Object$entries$_i, ol_index, sensor, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, feature;
 
   return regeneratorRuntime.async(function _callee3$(_context3) {
     while (1) {
@@ -469,49 +461,105 @@ socket.on(socketChannel, function _callee3(data) {
           } // OL MAP REFRESH
 
 
-          if (mapOption == 'ol' && data.topic == 'dataPub') {
-            _msg = JSON.parse(data.message);
-            console.log(_msg);
-            layers = map.map.getLayers();
-            window.layers = layers; // console.log(layers)
-            // array_[1].style_[0].text_.text_
-
-            for (_i = 0, _Object$entries = Object.entries(layers.array_[1].values_.source.uidIndex_); _i < _Object$entries.length; _i++) {
-              _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2), ol_index = _Object$entries$_i[0], sensor = _Object$entries$_i[1];
-
-              if (sensor.customData.sensorId == _msg.cId) {
-                // console.log(msg.cId, msg.value)
-                // sensor.setStyle(sensorStyle(sensorFeature = sensor, sensorValue = msg.value))
-                sensor.setStyle(new _style.Style({
-                  text: new _style.Text({
-                    scale: 1,
-                    text: _msg.cId,
-                    font: 'normal 16px Calibri',
-                    offsetY: -5
-                  })
-                }));
-              }
-            } // layers.values_.source.uidIndex_.setStyle([
-            //   new Style({
-            //     text: new Text({
-            //       scale: 1.3,
-            //       text: msg.cId + "\n" + msg.value,
-            //     })
-            //   })
-            // ])
-
+          if (!(mapOption == 'ol' && data.topic == 'dataPub')) {
+            _context3.next = 32;
+            break;
           }
 
-        case 4:
+          _msg = JSON.parse(data.message); // console.log(msg)
+          // console.log(vectorLayerFeature)
+
+          layers = map.map.getLayers(); // window.layers = layers
+          // console.log(layers)
+          // array_[1].style_[0].text_.text_
+
+          _i = 0, _Object$entries = Object.entries(layers.array_[1].values_.source.uidIndex_);
+
+        case 7:
+          if (!(_i < _Object$entries.length)) {
+            _context3.next = 32;
+            break;
+          }
+
+          _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2), ol_index = _Object$entries$_i[0], sensor = _Object$entries$_i[1];
+
+          if (!(sensor.customData.sensorId == _msg.cId)) {
+            _context3.next = 29;
+            break;
+          }
+
+          // console.log(msg.cId, msg.value)
+          // console.log(vectorLayerFeature)
+          // sensor.setStyle(sensorStyle(sensorFeature = sensor, sensorValue = msg.value))
+          _iteratorNormalCompletion2 = true;
+          _didIteratorError2 = false;
+          _iteratorError2 = undefined;
+          _context3.prev = 13;
+
+          for (_iterator2 = window.vectorLayerFeature[Symbol.iterator](); !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            feature = _step2.value;
+            // console.log(feature)
+            if (feature.customData.sensorId == _msg.cId) sensor.setStyle(sensorStyle(sensorFeature = feature, sensorValue = _msg.value.toFixed(2)));
+          } // sensor.setStyle([new Style({
+          //   text: new Text({
+          //     scale: 1,
+          //     text: msg.cId + '\n' + msg.value.toFixed(2),
+          //     font: 'normal 16px Calibri',
+          //     offsetY: -5
+          //   })
+          // })])
+
+
+          _context3.next = 21;
+          break;
+
+        case 17:
+          _context3.prev = 17;
+          _context3.t0 = _context3["catch"](13);
+          _didIteratorError2 = true;
+          _iteratorError2 = _context3.t0;
+
+        case 21:
+          _context3.prev = 21;
+          _context3.prev = 22;
+
+          if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+            _iterator2.return();
+          }
+
+        case 24:
+          _context3.prev = 24;
+
+          if (!_didIteratorError2) {
+            _context3.next = 27;
+            break;
+          }
+
+          throw _iteratorError2;
+
+        case 27:
+          return _context3.finish(24);
+
+        case 28:
+          return _context3.finish(21);
+
+        case 29:
+          _i++;
+          _context3.next = 7;
+          break;
+
+        case 32:
         case "end":
           return _context3.stop();
       }
     }
-  });
-});
+  }, null, null, [[13, 17, 21, 29], [22,, 24, 28]]);
+}); // END Connect sensor to MQTT
+// ============================
 
 var updateCurrentValueOnMap = function updateCurrentValueOnMap(id, value) {
   var date = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+  // console.log("updateCurrentValueOnMap", id, value)
   var type = $("#map .sensor-item[sensor='" + id + "']").attr("type");
 
   var symbol = function symbol(type) {
@@ -521,8 +569,16 @@ var updateCurrentValueOnMap = function updateCurrentValueOnMap(id, value) {
   if (date) {
     var currentDate = new Date();
     var oldDate = new Date(date.replace("Z", ""));
-    var diff = (currentDate.getTime() - oldDate.getTime()) / 1000;
-    if (diff > 3600) $("#map .sensor-item[sensor='" + id + "'] .pulse").addClass("not-live");else $("#map .sensor-item[sensor='" + id + "'] .pulse").removeClass("not-live");
+    var diff = (currentDate.getTime() - oldDate.getTime()) / 1000; // if last value is 1 hour old then, sensor is offline
+
+    if (diff > 3600) {
+      $("#map .sensor-item[sensor='" + id + "'] .pulse").addClass("not-live");
+      $("#map .sensor-item[sensor='" + id + "'][type='temperature']").addClass("sensor-offline");
+    } else {
+      console.log(id);
+      $("#map .sensor-item[sensor='" + id + "'] .pulse").removeClass("not-live");
+      $("#map .sensor-item[sensor='" + id + "'][type='temperature']").removeClass("sensor-offline");
+    }
   }
 
   if ($("#map .sensor-disabled.sensor-item[sensor='" + id + "']").length) $("#map .sensor-disabled.sensor-item[sensor='" + id + "']").removeClass('sensor-disabled');
@@ -530,8 +586,19 @@ var updateCurrentValueOnMap = function updateCurrentValueOnMap(id, value) {
   if (type == 'door') {
     // console.log(id, value, icon[type][parseInt(value)])
     $("#map .sensor-item[sensor='" + id + "'] i").remove();
-    $("#map .sensor-item[sensor='" + id + "']").prepend(icon[type][parseInt(value)]);
-    $("#map .sensor-item[sensor='" + id + "'] .sensorValue").html(value == 1 ? 'closed' : 'open');
+    $("#map .sensor-item[sensor='" + id + "'] .medium-view").prepend(icon[type][parseInt(value)]);
+    $("#map .sensor-item[sensor='" + id + "'] .sensorValue").html(value == 1 ? 'closed' : 'open'); // change color whep open/closed
+
+    if (value == 1) {
+      // green
+      // $("#map .sensor-item[sensor='" + id + "']").attr("state","closed")
+      $("#map .sensor-item[sensor='" + id + "']").removeClass("state-open").addClass("state-closed");
+    } else if (value == 0) {
+      // yellow
+      // $("#map .sensor-item[sensor='" + id + "']").attr("state","open")
+      $("#map .sensor-item[sensor='" + id + "']").removeClass("state-closed").addClass("state-open");
+    } else {// alarm - red
+    }
   } else {
     $("#map .sensor-item[sensor='" + id + "'] .sensorValue").html(value + symbol(type));
   }
@@ -802,7 +869,8 @@ function getCenterOfMap() {
 function createMap() {
   var coordinates = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
   var sensorValuesJson = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-  var result = {}; // var features = new Array();
+  var result = {};
+  window.vectorLayerFeature = []; // var features = new Array();
   // for (var i = 0; i < coordinates.length; ++i) {
   //   // features.push(new ol.Feature(new ol.geom.Point(coordinates[i])));
   //   appendCoordToHTML(coordinates[i][2], [coordinates[i][0], coordinates[i][1]])
@@ -868,13 +936,13 @@ function createMap() {
   var features = new Array();
   var undefinedX = 0,
       undefinedY = 0;
-  var _iteratorNormalCompletion2 = true;
-  var _didIteratorError2 = false;
-  var _iteratorError2 = undefined;
+  var _iteratorNormalCompletion3 = true;
+  var _didIteratorError3 = false;
+  var _iteratorError3 = undefined;
 
   try {
-    for (var _iterator2 = sensors[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-      var sensor = _step2.value;
+    for (var _iterator3 = sensors[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+      var sensor = _step3.value;
 
       // console.log(sensor.x, sensor.y)
       if (sensor.x == 0 && sensor.y == 0) {
@@ -901,16 +969,16 @@ function createMap() {
     } // End get sensor to feature
 
   } catch (err) {
-    _didIteratorError2 = true;
-    _iteratorError2 = err;
+    _didIteratorError3 = true;
+    _iteratorError3 = err;
   } finally {
     try {
-      if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
-        _iterator2.return();
+      if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+        _iterator3.return();
       }
     } finally {
-      if (_didIteratorError2) {
-        throw _iteratorError2;
+      if (_didIteratorError3) {
+        throw _iteratorError3;
       }
     }
   }
@@ -932,6 +1000,10 @@ function createMap() {
     source: source,
     style: function style(feature) {
       // console.log(feature.get('name'))
+      if (!vectorLayerFeature.includes(feature)) {
+        vectorLayerFeature.push(feature);
+      }
+
       return sensorStyle(sensorFeature = feature);
     }
   }); // End exmaple map layer
@@ -974,13 +1046,13 @@ function createMap() {
 
   modify.on('modifyend', function (event) {
     var sensors = event.features.array_;
-    var _iteratorNormalCompletion3 = true;
-    var _didIteratorError3 = false;
-    var _iteratorError3 = undefined;
+    var _iteratorNormalCompletion4 = true;
+    var _didIteratorError4 = false;
+    var _iteratorError4 = undefined;
 
     try {
       var _loop = function _loop() {
-        var sensor = _step3.value;
+        var sensor = _step4.value;
         var sensorId = sensor.customData.sensorId;
         var x = sensor.geometryChangeKey_.target.flatCoordinates[0];
         var y = sensor.geometryChangeKey_.target.flatCoordinates[1];
@@ -989,20 +1061,20 @@ function createMap() {
         }); // console.log(sensor)
       };
 
-      for (var _iterator3 = sensors[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+      for (var _iterator4 = sensors[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
         _loop();
       }
     } catch (err) {
-      _didIteratorError3 = true;
-      _iteratorError3 = err;
+      _didIteratorError4 = true;
+      _iteratorError4 = err;
     } finally {
       try {
-        if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
-          _iterator3.return();
+        if (!_iteratorNormalCompletion4 && _iterator4.return != null) {
+          _iterator4.return();
         }
       } finally {
-        if (_didIteratorError3) {
-          throw _iteratorError3;
+        if (_didIteratorError4) {
+          throw _iteratorError4;
         }
       }
     }

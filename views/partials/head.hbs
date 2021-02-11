@@ -110,6 +110,7 @@
 
     if('{{{json userData}}}') {
         var userData_raw = JSON.parse('{{{json userData}}}');
+        window.userData_raw = userData_raw
     }
 
     var socket = io.connect("https://anysensor.dasstec.ro:1920")

@@ -374,8 +374,8 @@ app.get('/', function (req, res) {
 }); // getCounties, getSensorLocation, isScaleAvailable, isConveyorAvailable, isScannerAvailable,
 
 app.get("/map", cookieChecker, authDashboard, getUserData, mqttOverSocketIoBridge, function (req, res) {
-  sess = req.session; // console.log(sess)
-
+  sess = req.session;
+  console.log("sess:", sess);
   res.render("map", {
     username: sess.username,
     role: sess.role,

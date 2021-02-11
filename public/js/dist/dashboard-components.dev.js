@@ -82,7 +82,7 @@ var conveyor = function conveyor(sensor, sensorData) {
       var day = sensor.sensorMeta.statusTime.split("T")[0].slice(5).split('-')[1];
       var month = sensor.sensorMeta.statusTime.split("T")[0].slice(5).split('-')[0];
       var today = new Date();
-      var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      var monthNames = ["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
       today = today.toLocaleDateString().slice(0, 2); // console.log(today, day)
 
       if (today == day) return time;
@@ -175,6 +175,11 @@ exports.conveyor = conveyor;
 
 var conveyorLayout = function conveyorLayout(sensor) {
   return "\n<div class='conveyor-layout'>\n    <div class='conveyor-layout-inner'>\n    <!-- TIGANEALA -->\n        " + function () {
+    if (username.toLowerCase() == 'pharmafarm') {
+      // add an image
+      return '<img src="/images/custom-maps/pharmafarm.jpg"/>';
+    }
+
     if (username.toLowerCase() == 'pharmafarm') {
       // add an image
       return '<img src="/images/custom-maps/pharmafarm.jpg"/>';

@@ -367,7 +367,7 @@ if ($("#map .custom-map")) {
 
       // console.log(sensor.sensorId, sensor.sensorType, iconToShow)
 
-      sensorToDisplay += `<span class='sensor-disabled sensor-item' name="`+sensor.sensorName+`" type="` + sensor.sensorType + `" sensor='` + sensor.sensorId + `' title="Click aici pentru a adauga senzorul pe harta">
+      sensorToDisplay += `<span class='sensor-disabled sensor-item' name="` + sensor.sensorName + `" type="` + sensor.sensorType + `" sensor='` + sensor.sensorId + `' title="Click aici pentru a adauga senzorul pe harta">
 
                             <div class='medium-view'>
                               `+ iconToShow + `
@@ -409,7 +409,7 @@ if ($("#map .custom-map")) {
     // if NO POSITION was set then put then in corner
     if (!sensor.x || !sensor.y) {
       sensorsWithUndefinedLocation.push(sensor) // @ last itteration append the sensors
-    } else { 
+    } else {
       // if POSITION was set append them on the map
 
       // Get location of sensor
@@ -440,7 +440,7 @@ if ($("#map .custom-map")) {
 
       // Append sensor item on map
       $(".custom-map").append(`
-            <div name="`+sensor.sensorName+`" sensor="` + sensor.sensorId + `" type="` + sensor.sensorType + `" class="` + infoClass + ` sensor-disabled sensor-item draggable ui-widget-content" data-toggle="tooltip" data-placement="top" title="` + sensor.sensorId + `">
+            <div name="`+ sensor.sensorName + `" sensor="` + sensor.sensorId + `" type="` + sensor.sensorType + `" class="` + infoClass + ` sensor-disabled sensor-item draggable ui-widget-content" data-toggle="tooltip" data-placement="top" title="` + sensor.sensorId + `">
               <!-- medium view -->
               <div class='medium-view'>
                 `+ iconToShow + `
@@ -500,12 +500,12 @@ if ($("#map .custom-map")) {
         // console.log(sensorElement,sensorId,sensorType,sensorName)
         let sensorCloned = $(".custom-map .undefinedSensorsInner .sensor-item[sensor=" + sensorId + "] .medium-view").clone()
         // console.log(sensorCloned)
-        $(".custom-map").append(`<div name="`+sensorName+`" sensor="`+sensorId+`" type="`+sensorType+`" class="`+sensorClasses+`"><div class="medium-view">`+sensorCloned[0].innerHTML+`</div><div class="small-view"><span class="sensorName">`+sensorName+`</span></div></div>`)
+        $(".custom-map").append(`<div name="` + sensorName + `" sensor="` + sensorId + `" type="` + sensorType + `" class="` + sensorClasses + `"><div class="medium-view">` + sensorCloned[0].innerHTML + `</div><div class="small-view"><span class="sensorName">` + sensorName + `</span></div></div>`)
         // console.log(sensorCloned)
 
         // Make it draggable
         // sensorCloned.addClass("draggable")
-        $(".sensor-item[sensor='"+sensorId+"']").addClass("draggable")
+        $(".sensor-item[sensor='" + sensorId + "']").addClass("draggable")
         $(`.draggable[sensor='` + sensorId + `']`).draggable({
           grid: [1, 1],
           create: function (event, ui) {
@@ -551,6 +551,7 @@ if ($("#map .custom-map")) {
       result = await result.json()
       result.forEach((item) => {
         updateCurrentValueOnMap(item.sensorId, parseFloat(item.value).toFixed(1), item.time)
+        // console.log(item.sensorId, parseFloat(item.value).toFixed(1), item.time)
       })
 
       // showNotification("Test notification", 0)
@@ -658,10 +659,16 @@ let updateCurrentValueOnMap = (id, value, date = false) => {
     let currentDate = new Date()
     let oldDate = new Date(date.replace("Z", ""))
     let diff = (currentDate.getTime() - oldDate.getTime()) / 1000
-    if (diff > 3600)
+    // if last value is 1 hour old then, sensor is offline
+    if (diff > 3600) {
       $("#map .sensor-item[sensor='" + id + "'] .pulse").addClass("not-live")
-    else
+      $("#map .sensor-item[sensor='" + id + "'][type='temperature']").addClass("sensor-offline")
+    }
+    else {
+      console.log(id)
       $("#map .sensor-item[sensor='" + id + "'] .pulse").removeClass("not-live")
+      $("#map .sensor-item[sensor='" + id + "'][type='temperature']").removeClass("sensor-offline")
+    }
   }
 
 
@@ -674,7 +681,7 @@ let updateCurrentValueOnMap = (id, value, date = false) => {
     $("#map .sensor-item[sensor='" + id + "'] .medium-view").prepend(icon[type][parseInt(value)])
     $("#map .sensor-item[sensor='" + id + "'] .sensorValue").html(value == 1 ? 'closed' : 'open')
     // change color whep open/closed
-    if(value == 1) {
+    if (value == 1) {
       // green
       // $("#map .sensor-item[sensor='" + id + "']").attr("state","closed")
       $("#map .sensor-item[sensor='" + id + "']").removeClass("state-open").addClass("state-closed")

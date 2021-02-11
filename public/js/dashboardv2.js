@@ -1,5 +1,4 @@
 
-
 // Imports
 // ======================================================
 // import { deprecationHandler } from 'moment'
@@ -1165,7 +1164,7 @@ socket.on(socketChannel, async (data) => {
 
                 // update usage
                 let timeEl = $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext date").html()
-                let len = timeEl.length
+                // let len = timeEl.length
 
                 let oldTime = timeEl.slice(6)
                 let oldTimeObj = new Date()
@@ -1318,11 +1317,15 @@ let mainLoader = async () => {
         if (sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.battery == 1)
             sensorsWithBattery.push(sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.sensorId)
 
+        // console.log(sensorMetaRaw)
+
         if (sensorCounter == 0) { // Add info box - location
 
             // Add info box BUT NOT on conveyor dashboard
             // =============================================
             if (['gate', 'safety', 'segment', 'conveyor'].includes(sensor.sensorType) == false) {
+
+                let sensorsCounter = sensorMetaRaw.length
 
                 appendInfoBox({
                     title: sensorDataRaw[0].sensorMeta.location2,
@@ -1344,14 +1347,14 @@ let mainLoader = async () => {
 
                 appendInfoBox({
                     title: 'Warning alert',
-                    message: alert + ' / ' + sensorDataRaw.length,
+                    message: alert + ' / ' + sensorsCounter,
                     icon: '<i class="fas fa-bell"></i>',
                     class: ''
                 })
 
                 appendInfoBox({
                     title: 'Limits exeeded',
-                    message: alarm + ' / ' + sensorDataRaw.length,
+                    message: alarm + ' / ' + sensorsCounter,
                     icon: '<i class="fas fa-exclamation-triangle"></i>',
                     class: ''
                 })
@@ -1361,7 +1364,7 @@ let mainLoader = async () => {
                 if (sensorsWithBattery.length)
                     appendInfoBox({
                         title: 'On battery',
-                        message: power + ' / ' + sensorDataRaw.length,
+                        message: power + ' / ' + sensorsCounter,
                         icon: '<i class="fas fa-battery-quarter"></i>',
                         class: 'battery-info'
                     })

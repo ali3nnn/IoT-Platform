@@ -292,7 +292,7 @@ export let conveyor = (sensor, sensorData) => `
                 let day = sensor.sensorMeta.statusTime.split("T")[0].slice(5).split('-')[1]
                 let month = sensor.sensorMeta.statusTime.split("T")[0].slice(5).split('-')[0]
                 let today = new Date()
-                const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                const monthNames = ["","January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
                 today = today.toLocaleDateString().slice(0,2)
                 // console.log(today, day)
                 if(today==day) 
@@ -425,6 +425,10 @@ export let conveyorLayout = (sensor) => `
     <div class='conveyor-layout-inner'>
     <!-- TIGANEALA -->
         `+(function(){
+            if(username.toLowerCase() == 'pharmafarm') {
+                // add an image
+                return '<img src="/images/custom-maps/pharmafarm.jpg"/>'
+            }
             if(username.toLowerCase() == 'pharmafarm') {
                 // add an image
                 return '<img src="/images/custom-maps/pharmafarm.jpg"/>'

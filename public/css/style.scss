@@ -37,6 +37,7 @@
   --danger2: #dc3545d6;
   --light: #f8f9fa;
   --dark: #343a40;
+  --offline: #d0d0d0;
 
   --conveyor-run: #28a746d6;
   --conveyor-stop: #989898;
@@ -1716,7 +1717,7 @@ img.img-circle {
     -webkit-box-shadow: 0px 0px 10px #00000082;
     box-shadow: 0px 0px 10px #00000082;
     span {
-      text-transform:capitalize;
+      text-transform: capitalize;
     }
   }
 }
@@ -4868,7 +4869,7 @@ margin-top: -30px; */
   }
 
   .switch-context {
-    display:none;
+    display: none;
   }
 
   article[class*="graph-"]:not([class*="live"]),
@@ -5019,7 +5020,6 @@ margin-top: -30px; */
 
 // Conveyor Layout Map
 div.conveyor-layout {
-
   height: calc(500px - 0px - 0rem);
   width: 100%;
   position: relative;
@@ -5063,7 +5063,7 @@ div.conveyor-layout {
         left: 10px;
       }
       .sensor-item {
-        position:relative;
+        position: relative;
       }
     }
 
@@ -5074,10 +5074,9 @@ div.conveyor-layout {
     // &.custom-map {
     // both undefined and on map
     .sensor-item {
-
       white-space: nowrap;
       position: absolute;
-      display:inline-block;
+      display: inline-block;
       background: var(--success);
       margin: 5px;
       top: 0;
@@ -5091,24 +5090,24 @@ div.conveyor-layout {
       cursor: pointer;
 
       &:hover {
-        z-index:999;
+        z-index: 999;
       }
 
       // segment
       &[state="run"] {
-        background:var(--conveyor-run) !important;
+        background: var(--conveyor-run) !important;
       }
       &[state="stop"] {
-        background:var(--conveyor-stop) !important;
+        background: var(--conveyor-stop) !important;
       }
       &[state="energy"] {
-        background:var(--conveyor-energy) !important;
+        background: var(--conveyor-energy) !important;
       }
       &[state="acc"] {
-        background:var(--conveyor-acc) !important;
+        background: var(--conveyor-acc) !important;
         &:before,
         &:after {
-          content: "";    
+          content: "";
           width: 40px;
           height: 40px;
           border-radius: 3px;
@@ -5123,21 +5122,21 @@ div.conveyor-layout {
           transform: scale(1);
           transform-origin: center center;
           animation: pulse-me-small 1s linear infinite;
-          z-index:-99;
+          z-index: -99;
         }
         &:after {
           animation-delay: 1s;
-          z-index:-99;
+          z-index: -99;
         }
       }
       // end segment
 
-      // gate 
+      // gate
       &[state="open"] {
-        background:var(--conveyor-open) !important;
+        background: var(--conveyor-open) !important;
         &:before,
         &:after {
-          content: "";    
+          content: "";
           width: 40px;
           height: 40px;
           border-radius: 3px;
@@ -5152,16 +5151,16 @@ div.conveyor-layout {
           transform: scale(1);
           transform-origin: center center;
           animation: pulse-me-small 1s linear infinite;
-          z-index:-99;
+          z-index: -99;
         }
         &:after {
           animation-delay: 1s;
-          z-index:-99;
+          z-index: -99;
         }
       }
       &[state="closed"],
       &[state="close"] {
-        background:var(--conveyor-closed) !important;
+        background: var(--conveyor-closed) !important;
       }
       // end gate
 
@@ -5171,10 +5170,10 @@ div.conveyor-layout {
         border-top-right-radius: 100%;
       }
       &[state="press"] {
-        background:var(--conveyor-press) !important;
+        background: var(--conveyor-press) !important;
         &:before,
         &:after {
-          content: "";    
+          content: "";
           width: 40px;
           height: 40px;
           border-radius: 3px;
@@ -5189,31 +5188,31 @@ div.conveyor-layout {
           transform: scale(1);
           transform-origin: center center;
           animation: pulse-me-small 1s linear infinite;
-          z-index:-99;
+          z-index: -99;
         }
         &:after {
           animation-delay: 1s;
-          z-index:-99;
+          z-index: -99;
         }
       }
       &[state="released"] {
-        background:var(--conveyor-released) !important;
+        background: var(--conveyor-released) !important;
       }
       // end safety
 
       // null
       &[state="null"] {
-        background:var(--conveyor-stop) !important;
+        background: var(--conveyor-stop) !important;
       }
       // end null
 
       // error
       &[state="error"] {
-        background:var(--conveyor-error) !important;
+        background: var(--conveyor-error) !important;
         // @include conveyorItemPulse(var(--conveyor-error));
         &:before,
         &:after {
-          content: "";    
+          content: "";
           width: 40px;
           height: 40px;
           border-radius: 3px;
@@ -5228,15 +5227,15 @@ div.conveyor-layout {
           transform: scale(1);
           transform-origin: center center;
           animation: pulse-me-small 1s linear infinite;
-          z-index:-99;
+          z-index: -99;
         }
         &:after {
           animation-delay: 1s;
-          z-index:-99;
+          z-index: -99;
         }
       }
       // end error
-    
+
       // pulse conveyor item
 
       // end pulse conveyor item
@@ -5246,20 +5245,30 @@ div.conveyor-layout {
       }
 
       & > .small-view {
-        
         text-align: center;
 
         & > .sensorName {
           padding-top: 0;
-          // line-height: 70px;  
+          // line-height: 70px;
           font-size: 13px;
-          display:none;
+          display: none;
         }
-
       }
 
-      &.sensor-disabled {
-        background: #d0d0d0;
+      &.sensor-disabled,
+      &.sensor-offline {
+        background: var(--offline);
+      }
+
+      &.sensor-offline:after {
+        content: "offline";
+        position: absolute;
+        bottom: 6px;
+        background: var(--offline);
+        left: 0;
+        text-align: center;
+        border-radius: 100%;
+        width:100%;
       }
 
       i {
@@ -5270,30 +5279,26 @@ div.conveyor-layout {
         text-align: center;
         line-height: 25px;
       }
-      
+
       span {
         display: block;
         text-align: center;
       }
-
     }
-    
   }
 }
-
 
 // Test dot over map
 div.conveyor-layout > div.conveyor-layout-inner > .sensor-item:after {
   // display: none !important;
 }
 
-// div.conveyor-layout > div.conveyor-layout-inner > 
+// div.conveyor-layout > div.conveyor-layout-inner >
 
 div.conveyor-layout > div.conveyor-layout-inner > .sensor-item {
 }
 
 div.conveyor-layout > div.conveyor-layout-inner > .sensor-item:hover {
-  
 }
 
 div.conveyor-layout > div.conveyor-layout-inner > .sensor-item:hover:after {
@@ -5369,9 +5374,22 @@ div#map {
         min-width: 70px;
         // transform: scale(1);
         // transition: all 0.2s ease;
-        &.sensor-disabled {
-          background: #d0d0d0;
+        &.sensor-disabled,
+        &.sensor-offline {
+          background: var(--offline);
         }
+
+        &.sensor-offline:after {
+          content: "offline";
+          position: absolute;
+          bottom: 6px;
+          background: var(--offline);
+          left: 0;
+          text-align: center;
+          border-radius: 100%;
+          width:100%;
+        }
+
         &:hover {
           cursor: pointer;
           // transform: scale(0.95);
@@ -5417,10 +5435,10 @@ div#map {
         // No power
         &.no-power {
           // color: #80808070;
-          background: #d0d0d0;
+          background: var(--offline);
           &:after {
             content: "No power";
-            background: #d0d0d0;
+            background: var(--offline);
             // color: #ffffff;
           }
           &:before {
@@ -5984,7 +6002,7 @@ div#gauge {
 @mixin conveyorItemPulse($color) {
   &:before,
   &:after {
-    content: "";    
+    content: "";
     width: 40px;
     height: 40px;
     border-radius: 3px;
@@ -5999,11 +6017,11 @@ div#gauge {
     transform: scale(1);
     transform-origin: center center;
     animation: pulse-me-small 1s linear infinite;
-    z-index:-99;
+    z-index: -99;
   }
   &:after {
     animation-delay: 1s;
-    z-index:-99;
+    z-index: -99;
   }
 }
 
@@ -6067,7 +6085,6 @@ div#gauge {
     opacity: 0;
   }
 }
-
 
 @keyframes pulse-me-small {
   0% {
@@ -7514,44 +7531,54 @@ border-bottom: 1px dotted black; */
 }
 
 @-webkit-keyframes tooltipHideAnimation {
-  0%   { opacity: 1; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 @-moz-keyframes tooltipHideAnimation {
-  0%   { opacity: 1; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 @keyframes tooltipHideAnimation {
-  0%   { opacity: 1; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 // TIGANEALA PHARMAFARM
 // ================================
 .client-username-pharmaFarm {
-
   .tooltiptext {
     visibility: visible !important;
     opacity: 1 !important;
   }
 
   .sensor-item[type="segment"] {
-    width:100px !important;
+    width: 100px !important;
     .tooltiptext {
       top: 10px !important;
     }
   }
 
   .sensor-item[type="gate"] {
-    height:100px !important;
+    height: 100px !important;
     .tooltiptext {
       top: -30px !important;
       left: -79px !important;
     }
   }
-
 }
 // ================================
 
@@ -7574,17 +7601,17 @@ border-bottom: 1px dotted black; */
   -moz-transform: translate(-50%, 50%);
   -o-transform: translate(-50%, 50%);
   transform: translate(-50%, 50%);
-  
+
   -webkit-transition: opacity 0.3s ease-in;
   -o-transition: opacity 0.3s ease-in;
   transition: opacity 0.3s ease-in;
   display: table;
   padding: 0px 10px;
-  font-size: 14px;  
+  font-size: 14px;
 }
 
 .tooltip_test .tooltiptext::after {
-  display:none;
+  display: none;
   content: "";
   position: absolute;
   top: -10px;
@@ -7597,13 +7624,13 @@ border-bottom: 1px dotted black; */
 
 .tooltip_test:hover .tooltiptext {
   visibility: visible;
-  opacity: 1;  
+  opacity: 1;
   // transition: opacity 0s;
 }
 
 .tooltip_test:active .tooltiptext {
   visibility: hidden;
-  opacity: 0;  
+  opacity: 0;
 }
 
 /* Scanner Page */

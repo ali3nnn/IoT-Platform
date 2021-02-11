@@ -195,7 +195,7 @@ const getUserData = async (req, res, next) => {
         }).then(() => {
             // Set sess.company variable
             mysqlReader("SELECT company, role FROM users where username='" + sess.username + "'").then((result) => {
-                // console.log(result, userData)
+                console.log(result)
                 // sess.company = result[0].company
                 // sess.role = result[0].role
                 if(!("error" in userData)) {

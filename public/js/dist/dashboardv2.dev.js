@@ -1027,7 +1027,7 @@ var currentValueBox = $("article[class*='live-card']"); // TIGANEALA
 // =========================
 
 socket.on(socketChannel, function _callee(data) {
-  var msg, value, currentPower, _currentPower, isclick, sensorId, status, timeEl, len, oldTime, oldTimeObj, now, date, day, month;
+  var msg, value, currentPower, _currentPower, isclick, sensorId, status, timeEl, oldTime, oldTimeObj, now, date, day, month;
 
   return regeneratorRuntime.async(function _callee$(_context5) {
     while (1) {
@@ -1105,8 +1105,8 @@ socket.on(socketChannel, function _callee(data) {
                 $(".sensor-item[sensor='" + sensorId + "']").attr('state', status);
                 $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext state").html("Status: " + _dashboardComponents.states_dict[status]); // update usage
 
-                timeEl = $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext date").html();
-                len = timeEl.length;
+                timeEl = $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext date").html(); // let len = timeEl.length
+
                 oldTime = timeEl.slice(6);
                 oldTimeObj = new Date();
                 oldTimeObj.setHours(parseInt(oldTime.slice(0, 2)));
@@ -1269,7 +1269,7 @@ var mainLoader = function mainLoader() {
           // Sensors w/ battery functionality
           // --------------------------------------------------
 
-          if (sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.battery == 1) sensorsWithBattery.push(sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.sensorId);
+          if (sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.battery == 1) sensorsWithBattery.push(sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.sensorId); // console.log(sensorMetaRaw)
 
           if (sensorCounter == 0) {
             // Add info box - location
@@ -1277,6 +1277,7 @@ var mainLoader = function mainLoader() {
             // =============================================
             if (['gate', 'safety', 'segment', 'conveyor'].includes(sensor.sensorType) == false) {
               (function () {
+                var sensorsCounter = sensorMetaRaw.length;
                 appendInfoBox({
                   title: sensorDataRaw[0].sensorMeta.location2,
                   message: sensorDataRaw[0].sensorMeta.location3,
@@ -1293,13 +1294,13 @@ var mainLoader = function mainLoader() {
                 });
                 appendInfoBox({
                   title: 'Warning alert',
-                  message: alert + ' / ' + sensorDataRaw.length,
+                  message: alert + ' / ' + sensorsCounter,
                   icon: '<i class="fas fa-bell"></i>',
                   class: ''
                 });
                 appendInfoBox({
                   title: 'Limits exeeded',
-                  message: alarm + ' / ' + sensorDataRaw.length,
+                  message: alarm + ' / ' + sensorsCounter,
                   icon: '<i class="fas fa-exclamation-triangle"></i>',
                   class: ''
                 }); // Display battery info box only if there are sensors with this functionality
@@ -1307,7 +1308,7 @@ var mainLoader = function mainLoader() {
 
                 if (sensorsWithBattery.length) appendInfoBox({
                   title: 'On battery',
-                  message: power + ' / ' + sensorDataRaw.length,
+                  message: power + ' / ' + sensorsCounter,
                   icon: '<i class="fas fa-battery-quarter"></i>',
                   class: 'battery-info'
                 });

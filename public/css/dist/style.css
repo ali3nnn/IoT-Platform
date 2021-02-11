@@ -39,6 +39,7 @@
   --danger2: #dc3545d6;
   --light: #f8f9fa;
   --dark: #343a40;
+  --offline: #d0d0d0;
   --conveyor-run: #28a746d6;
   --conveyor-stop: #989898;
   --conveyor-energy: #4ba0fa;
@@ -4969,8 +4970,18 @@ div.conveyor-layout > div .sensor-item > .small-view > .sensorName {
   font-size: 13px;
   display: none;
 }
-div.conveyor-layout > div .sensor-item.sensor-disabled {
-  background: #d0d0d0;
+div.conveyor-layout > div .sensor-item.sensor-disabled, div.conveyor-layout > div .sensor-item.sensor-offline {
+  background: var(--offline);
+}
+div.conveyor-layout > div .sensor-item.sensor-offline:after {
+  content: "offline";
+  position: absolute;
+  bottom: 6px;
+  background: var(--offline);
+  left: 0;
+  text-align: center;
+  border-radius: 100%;
+  width: 100%;
 }
 div.conveyor-layout > div .sensor-item i {
   display: block;
@@ -5032,8 +5043,18 @@ div#map > div.custom-map > .sensor-item {
   max-width: 150px;
   min-width: 70px;
 }
-div#map > div.custom-map > .sensor-item.sensor-disabled {
-  background: #d0d0d0;
+div#map > div.custom-map > .sensor-item.sensor-disabled, div#map > div.custom-map > .sensor-item.sensor-offline {
+  background: var(--offline);
+}
+div#map > div.custom-map > .sensor-item.sensor-offline:after {
+  content: "offline";
+  position: absolute;
+  bottom: 6px;
+  background: var(--offline);
+  left: 0;
+  text-align: center;
+  border-radius: 100%;
+  width: 100%;
 }
 div#map > div.custom-map > .sensor-item:hover {
   cursor: pointer;
@@ -5070,11 +5091,11 @@ div#map > div.custom-map > .sensor-item.no-power:after, div#map > div.custom-map
   border-radius: 13px;
 }
 div#map > div.custom-map > .sensor-item.no-power {
-  background: #d0d0d0;
+  background: var(--offline);
 }
 div#map > div.custom-map > .sensor-item.no-power:after {
   content: "No power";
-  background: #d0d0d0;
+  background: var(--offline);
 }
 div#map > div.custom-map > .sensor-item.no-power:before {
   border-bottom-color: black;
