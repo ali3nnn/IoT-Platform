@@ -1,4 +1,5 @@
 const humanizeDuration = require("humanize-duration");
+import { imageExists } from './utils.js'
 
 export let currentValueView = (alertClass2, sensor) => `
 <article class="card height-control ` + alertClass2 + ` live-card-` + sensor.sensorMeta.sensorId + `" sensorId="` + sensor.sensorMeta.sensorId + `" sensortype="` + sensor.sensorMeta.sensorType + `" battery="` + sensor.sensorMeta.battery + `">
@@ -428,11 +429,12 @@ export let conveyorLayout = (sensor) => `
             if(username.toLowerCase() == 'pharmafarm') {
                 // add an image
                 return '<img src="/images/custom-maps/pharmafarm.jpg"/>'
+            } else {
+                if(imageExists("/images/custom-maps/"+username.toLowerCase()+".jpg")) {
+                    return '<img src="/images/custom-maps/'+username.toLowerCase()+'.jpg"/>'
+                }
             }
-            if(username.toLowerCase() == 'pharmafarm') {
-                // add an image
-                return '<img src="/images/custom-maps/pharmafarm.jpg"/>'
-            }
+            return ''
         })()+`
     <!-- END TIGANEALA -->
     </div>
@@ -475,13 +477,13 @@ export let conveyorItem = (sensor, draggable, info = { name }) => `
 
     <!-- small view -->
     <div class='small-view'>
-        <span class='sensorName'>Name: `+ sensor.sensorName + `</span>
+        <span class='sensorName'>Nume: `+ sensor.sensorName + `</span>
     </div>
-        <!-- end small view -->
+    <!-- end small view -->
         
   <!-- tooltip -->
   <span class="tooltiptext">
-    <name>Name: `+ info.name + `</name>
+    <name>Nume: `+ info.name + `</name>
     `+ (sensor.status ? '<br><state>Status: '+states_dict[sensor.status]+'</state>' : '') + `
     `+ (function(){
 
@@ -496,10 +498,11 @@ export let conveyorItem = (sensor, draggable, info = { name }) => `
             const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
             today = today.toLocaleDateString().slice(0,2)
             if(today==day) 
-                return '<br><date>From: '+time+'</date>'
-            return '<br><date>From: '+time + "<br>" + day + " " + " " + monthNames[parseInt(month)].slice(0,3)+'</date>'
+                return '<br><date>De la: '+time+'</date>'
+            return '<br><date>De la: '+time + "<br>" + day + " " + " " + monthNames[parseInt(month)].slice(0,3)+'</date>'
+        } else {
+            return '<br><date></date>'
         }
-        
 
     })() + `
     `+
@@ -522,7 +525,9 @@ export let conveyorItem = (sensor, draggable, info = { name }) => `
             } else {
                 usage = sensor.usageTotal
             }
-            return '<br><usage>Usage total: '+usage+'</usage>'
+            return '<br><usage>Folosire: '+usage+'</usage>'
+        } else {
+            return '<br><usage></usage>'
         }
     })()
     +`
@@ -531,15 +536,28 @@ export let conveyorItem = (sensor, draggable, info = { name }) => `
 
 </div>`
 
+// export let states_dict = {
+//     "run": "is running",
+//     "stop": "is stopped",
+//     "energy": "stand by",
+//     "acc": "in accumulation",
+//     "error": "error",
+//     "open": "is open",
+//     "closed": "is closed",
+//     "close": "is closed",
+//     "press": "emergency button pressed",
+//     "released": "emergency button ok"
+// }
+
 export let states_dict = {
-    "run": "is running",
-    "stop": "is stopped",
-    "energy": "energy saving mode",
-    "acc": "in accumulation",
-    "error": "error",
-    "open": "is open",
-    "closed": "is closed",
-    "close": "is closed",
-    "press": "emergency button pressed",
-    "released": "emergency button ok"
+    "run": "pornit",
+    "stop": "oprit",
+    "energy": "standby",
+    "acc": "acumulare",
+    "error": "eroare",
+    "open": "deschis",
+    "closed": "inchis",
+    "close": "inchis",
+    "press": "apasata",
+    "released": "ridicata"
 }

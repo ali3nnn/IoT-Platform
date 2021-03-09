@@ -170,7 +170,11 @@ let zoneModal = (id, zoneid, location1, location2, location3, custommap, olmap, 
 
     // } else {
     // There are some users for some zones
+    // console.log("zone",listOfZoneAccess)
+    // console.log(listOfZoneAccess[0])
+
     listOfZoneAccess[1].forEach((location, index) => {
+        // console.log(location.zoneId, zoneid)
         if (location.zoneId == zoneid) {
 
             // Get row with this zone id from list of locations and users
@@ -178,7 +182,17 @@ let zoneModal = (id, zoneid, location1, location2, location3, custommap, olmap, 
                 return location.zoneId == zoneid ? location : false
             })
 
-            // console.log(zone[0])
+            // let zone = listOfZoneAccess.filter((location_, idx) => {
+            //     console.log("filter:", location_[0].zoneId, zoneid)
+            //     if(location_[0].zoneId == zoneid)
+            //         return listOfZoneAccess[idx]
+            //     return false
+            //     // return location_.zoneId == zoneid ? location_ : false
+            //     // return false
+            // })
+
+            // console.log(location)
+            // console.log("zone",zone)
 
             // If current zone has usersList
             if (zone[0]) {
@@ -186,7 +200,7 @@ let zoneModal = (id, zoneid, location1, location2, location3, custommap, olmap, 
                 let userAssignated = zone[0].usersList.split(',')
                 userAssignated = new Set(userAssignated)
 
-                // console.log(userAssignated)
+                // console.log(zone[0].location2, zone[0].usersList)
 
                 // Loop through each user and check who is assignated and who is not
                 listOfUsers.forEach((user, index) => {
@@ -306,6 +320,7 @@ fetchAdminsPromise.then(() => {
         // ==============================
 
         if (userRole.superadmin) {
+            // console.log(result[0])
             zonesAndUserList = result[0]
             zonesRaw = result[1]
         } else if (userRole.admin) {
@@ -321,7 +336,7 @@ fetchAdminsPromise.then(() => {
 
         // console.log(userRole, result)
 
-        // console.log(result)
+        console.log(result)
         // console.log(userData_raw)
 
         if (!zonesRaw.length) {
@@ -515,12 +530,6 @@ fetchAdminsPromise.then(() => {
         // ==============================
     })
 })
-
-
-
-
-
-
 
 // Check inputs of form before submit
 const isPassword = () => {

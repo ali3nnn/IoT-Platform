@@ -134,13 +134,13 @@ const { constants } = require('buffer');
 
 // Connect to InfluxDB and set the SCHEMA
 const influx = new Influx.InfluxDB({
-    host: 'localhost',
+    host: process.env.IP_HOST,
     database: 'anysensor3',
 })
 
 // Influx Write - ASYNC
 function influxWriter(measurement, country, county, city, location, zone, username, type, sensorId, value, database = 'anysensor3', precision = 's') {
-    // console.log('Influx Write')
+    // // /*it was uncommented*/ console.log('Influx Write')
     influx.writePoints([{
         measurement,
         tags: {
@@ -168,7 +168,7 @@ function influxWriter(measurement, country, county, city, location, zone, userna
 // Influx Query - PROMISE
 function influxReader(query) {
     return new Promise((resolve, reject) => {
-        // console.log(query)
+        // // /*it was uncommented*/ console.log(query)
         influx.query(query)
             .then(result => {
                 return resolve(result)
@@ -190,7 +190,7 @@ function influxReader(query) {
 
 // DB Configuration
 config_db = {
-    host: process.env.DATABASE_HOST,
+    host: process.env.IP_HOST,
     user: process.env.DATABASE_USER,
     password: process.env.DATABASE_PASSWORD,
     database: process.env.DATABASE
@@ -208,15 +208,15 @@ config_verne = {
 
 // Connect to DB - Async
 // db.connect((err) => {
-//     if (err) console.log("Connecting to mysql failed")
-//     else console.log("First connection to MySQL", '\r\n')
+//     if (err) // /*it was uncommented*/ console.log("Connecting to mysql failed")
+//     else // /*it was uncommented*/ console.log("First connection to MySQL", '\r\n')
 // })
 
 // Database Connection In Promise
 class Database {
     constructor(config) {
         this.connection = mysql.createConnection(config);
-        // console.log("Second connection to MySQL in promise")
+        // // /*it was uncommented*/ console.log("Second connection to MySQL in promise")
     }
     query(sql, args) {
         return new Promise((resolve, reject) => {
@@ -247,7 +247,7 @@ const db = mysql.createConnection(config_db)
 
 function mysqlReader(query) {
     return new Promise((resolve, reject) => {
-        // console.log(query)
+        // // /*it was uncommented*/ console.log(query)
         database.query(query)
             .then(result => {
                 return resolve(result)
@@ -258,9 +258,12 @@ function mysqlReader(query) {
     })
 }
 
+// Fix problem with groupconcat length <= 1024 characters
+mysqlReader("SET SESSION group_concat_max_len = 1000000;")
+
 function addUserVerne(query) {
     return new Promise((resolve, reject) => {
-        // console.log(query)
+        // // /*it was uncommented*/ console.log(query)
         verne.query(query)
             .then(result => {
                 return resolve(result)
@@ -273,7 +276,7 @@ function addUserVerne(query) {
 
 function mysqlWriter(query) {
     return new Promise((resolve, reject) => {
-        // console.log(query)
+        // // /*it was uncommented*/ console.log(query)
         database.query(query)
             .then(result => {
                 return resolve(result)
@@ -370,11 +373,12 @@ app.get('/', (req, res) => {
 // getCounties, getSensorLocation, isScaleAvailable, isConveyorAvailable, isScannerAvailable,
 app.get("/map", cookieChecker, authDashboard, getUserData, mqttOverSocketIoBridge, (req, res) => {
     sess = req.session;
-    console.log("sess:",sess)
+    // /*it was uncommented*/ console.log("sess:",sess)
     res.render("map", {
         username: sess.username,
         role: sess.role,
-        userData: sess.userData
+        userData: sess.userData,
+        name: sess.name.split(' ').length > 1 ? sess.name.split(' ')[0] : sess.name
     })
 })
 
@@ -387,7 +391,7 @@ app.get("/map/zone", cookieChecker, authDashboard, getUserData, mqttOverSocketIo
         // let data = []
         // let sensorBuffer = [] // this buffer is use to prevent double inserting of sensors
         // sess.userData.forEach(sensor => {
-        //     console.log(sensor.sensorId, sensorBuffer.indexOf(sensor.sensorId))
+        //     // /*it was uncommented*/ console.log(sensor.sensorId, sensorBuffer.indexOf(sensor.sensorId))
         //     if (sensorBuffer.indexOf(sensor.sensorId) == -1) {
         //         sensor.zoneId == req.query.zoneid ? data.push(sensor) : null
         //         sensorBuffer.push(sensor.sensorId)
@@ -400,7 +404,8 @@ app.get("/map/zone", cookieChecker, authDashboard, getUserData, mqttOverSocketIo
                 // zoneData: data,
                 username: sess.username,
                 role: sess.role,
-                userData: sess.userData
+                userData: sess.userData,
+                name: sess.name.split(' ').length > 1 ? sess.name.split(' ')[0] : sess.name
                 // county: req.params.county,
                 // username: sess.username,
                 // user_role: sess.user_role,
@@ -440,15 +445,16 @@ app.get('/map/:county', cookieChecker, authDashboard, getCounties, getSensorLoca
 
     sess = req.session
     sess.county = req.params.county
-    // console.log(sess.username, sess.counties)
+    // // /*it was uncommented*/ console.log(sess.username, sess.counties)
 
-    // console.log("/map/" + sess.county)
-    // console.log("User:", sess.username)
+    // // /*it was uncommented*/ console.log("/map/" + sess.county)
+    // // /*it was uncommented*/ console.log("User:", sess.username)
 
     if (sess.username)
         res.status(200).render('dashboard', {
             county: req.params.county,
             username: sess.username,
+            name: sess.name.split(' ').length > 1 ? sess.name.split(' ')[0] : sess.name,
             user_role: sess.user_role,
             sensorId: sess.sensorId, //this needs to be replaced or removed
             sensors: sess.sensors, //this contain a list of sensorsId the user has access to - generated by getSensorLocation
@@ -471,6 +477,7 @@ app.get('/scale-dashboard', cookieChecker, authDashboard, getCounties, isScaleAv
     sess = req.session
     res.render("scale-dashboard", {
         username: sess.username,
+        name: sess.name.split(' ').length > 1 ? sess.name.split(' ')[0] : sess.name,
         user_role: sess.user_role,
         sensorId: sess.sensorAccess, //this needs to be replaced or removed
         // sensors: sess.sensors, //this contains a list of sensorsId the user has access to - generated by getSensorLocation
@@ -486,6 +493,7 @@ app.get('/conveyor-dashboard', cookieChecker, authDashboard, getCounties, isScal
     sess = req.session
     res.render("conveyor-dashboard", {
         username: sess.username,
+        name: sess.name.split(' ').length > 1 ? sess.name.split(' ')[0] : sess.name,
         user_role: sess.user_role,
         sensorId: sess.sensorAccess, //this needs to be replaced or removed
         // sensors: sess.sensors, //this contains a list of sensorsId the user has access to - generated by getSensorLocation
@@ -502,6 +510,7 @@ app.get('/scanner-dashboard', cookieChecker, authDashboard, getCounties, isScale
     sess = req.session
     res.render("scanner-dashboard", {
         username: sess.username,
+        name: sess.name.split(' ').length > 1 ? sess.name.split(' ')[0] : sess.name,
         user_role: sess.user_role,
         sensorId: sess.sensorAccess, //this needs to be replaced or removed
         // sensors: sess.sensors, //this contains a list of sensorsId the user has access to - generated by getSensorLocation
@@ -522,6 +531,7 @@ app.get('/settings', cookieChecker, authDashboard, getUserData, (req, res) => {
     sess = req.session
     res.render('settings', {
         username: sess.username,
+        name: sess.name.split(' ').length > 1 ? sess.name.split(' ')[0] : sess.name,
         role: sess.role,
         userData: sess.userData
     })
@@ -590,7 +600,7 @@ app.get('/users', authDashboard, getCounties, authSuperAdmin, showAllUsers, func
                 message: "Notification test message"
             }
 
-            // console.log(dataRender)
+            // // /*it was uncommented*/ console.log(dataRender)
 
             res.render("admin_allusers", dataRender)
         });
@@ -612,13 +622,13 @@ app.get('/users', authDashboard, getCounties, authSuperAdmin, showAllUsers, func
     //             message: "Notification test message"
     //         }
 
-    //         // console.log(data)
+    //         // // /*it was uncommented*/ console.log(data)
 
     //         res.render("admin_allusers", data)
 
     //     })
     // } catch (err) {
-    //     console.log("db query users error:", err)
+    //     // /*it was uncommented*/ console.log("db query users error:", err)
     // }
 
 });
@@ -628,7 +638,7 @@ app.post('/update', async (req, res) => {
 
     //UPDATE into db
     if (!req.body.password.length) {
-        // console.log("Query:", req.body)
+        // // /*it was uncommented*/ console.log("Query:", req.body)
         db.query("UPDATE users SET Name='" + req.body.name + "', Username='" + req.body.username + "', Email='" + req.body.email + "', User_role='" + req.body.role + "' WHERE Id='" + req.body.id + "'", (err, result) => {
             if (err) console.error(err)
             else {
@@ -642,9 +652,9 @@ app.post('/update', async (req, res) => {
             }
         })
     } else {
-        // console.log("password changed")
+        // // /*it was uncommented*/ console.log("password changed")
         let hashedPassword = await bcrypt.hash(req.body.password, 10)
-        // console.log(hashedPassword)
+        // // /*it was uncommented*/ console.log(hashedPassword)
         db.query("UPDATE users SET Name='" + req.body.name + "', Username='" + req.body.username + "', Email='" + req.body.email + "', User_role='" + req.body.role + "', Password='" + hashedPassword + "' WHERE Id='" + req.body.id + "'", (err, result) => {
             if (err) console.error(err)
             else {
@@ -676,7 +686,7 @@ app.get('/api/v3/get-user-data', cookieChecker, authDashboard, getUserData, (req
     sess = req.session;
     var userData = {}
     userData = sess.userData
-    // console.log(userData)
+    // // /*it was uncommented*/ console.log(userData)
     if (userData['error']) {
         res.status(403).send(userData);
     } else {
@@ -694,11 +704,11 @@ app.get('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, asy
     // [*] TODO 2: set a new location or pick an old one from other sensors that users has access to
     // [*] TODO 3: insert into sensors and userAccess
 
-    // console.log(sess)
+    // // /*it was uncommented*/ console.log(sess)
 
     if (sess.username) {
         const userData = sess.userData
-        // console.log(userData)
+        // // /*it was uncommented*/ console.log(userData)
         const sensorExist = await mysqlReader("select * from sensors where sensorId='" + getQuery.sensorid + "';")
         if (!sensorExist.length) {
             // Get locations
@@ -706,7 +716,7 @@ app.get('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, asy
             const query = "select locations.* from locations where createdBy = (select company from users where username='" + sess.username + "');"
             mysqlReader(query)
                 .then(locations => {
-                    // console.log("locations",locations)
+                    // // /*it was uncommented*/ console.log("locations",locations)
                     res.render('initsensor-qr', {
                         username: sess.username,
                         sensorid: getQuery.sensorid,
@@ -738,7 +748,7 @@ app.get('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, asy
 app.post('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, (req, res) => {
     sess = req.session
     const postQuery = req.body
-    // console.log(postQuery)
+    // // /*it was uncommented*/ console.log(postQuery)
     if (postQuery.location1 && postQuery.location2 && postQuery.location2 && postQuery.location3 && postQuery.sensorName) {
         // Location from dropdown
         if (postQuery.zone == "Nothing selected") {
@@ -780,7 +790,7 @@ app.post('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, (r
             //     })
             // } else {
             // Insert into locations
-            // console.log("INSERT INTO locations (location1, location2, location3, createdBy) values ('" + postQuery.location1 + "','" + postQuery.location2 + "','" + postQuery.location3 + "', '"+sess.company+"')")
+            // // /*it was uncommented*/ console.log("INSERT INTO locations (location1, location2, location3, createdBy) values ('" + postQuery.location1 + "','" + postQuery.location2 + "','" + postQuery.location3 + "', '"+sess.company+"')")
             mysqlReader("INSERT INTO locations (location1, location2, location3, createdBy) values ('" + postQuery.location1 + "','" + postQuery.location2 + "','" + postQuery.location3 + "', '" + sess.company + "')")
                 .then(() => {
                     // Get zoneId
@@ -863,11 +873,11 @@ app.get('/api/v3/get-sensor-data', (req, res) => {
         influxQuery = "SELECT mean(value) as value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQueryGeneral + "' and time<now() group by time(5m) order by time desc;"
     }
 
-    // console.log(influxQuery)
+    // // /*it was uncommented*/ console.log(influxQuery)
 
     if (req.query.type == 'door') {
 
-        // console.log(req.query.type, influxQuery)
+        // // /*it was uncommented*/ console.log(req.query.type, influxQuery)
 
         influxReader(influxQuery).then(result => {
 
@@ -933,10 +943,10 @@ app.get('/api/v3/get-sensor-data', (req, res) => {
                             let time = item.time._nanoISO
                             day = time.split('T')[0].split('-')[2]
                         }
-                        // console.log(typeof item.time, day, thisDay, day==thisDay)
+                        // // /*it was uncommented*/ console.log(typeof item.time, day, thisDay, day==thisDay)
                         return day == thisDay
                     } catch (e) {
-                        console.log(e)
+                        // /*it was uncommented*/ console.log(e)
                         return false
                     }
                 }
@@ -950,10 +960,10 @@ app.get('/api/v3/get-sensor-data', (req, res) => {
                             let time = item.time._nanoISO
                             day = time.split('T')[0].split('-')[2]
                         }
-                        // console.log(typeof item.time, day, thisDay, day==thisDay)
+                        // // /*it was uncommented*/ console.log(typeof item.time, day, thisDay, day==thisDay)
                         return day == thisDay - 1
                     } catch (e) {
-                        console.log(e)
+                        // /*it was uncommented*/ console.log(e)
                         return false
                     }
                 }
@@ -966,16 +976,16 @@ app.get('/api/v3/get-sensor-data', (req, res) => {
                 let oldestValue
                 if (finalResultFilteredYesterday.length) {
                     oldestValue = finalResultFilteredYesterday[0].value // last value recorded yesterday
-                    // console.log(oldestValue, oldestValue == 1, oldestValue == 0)
+                    // // /*it was uncommented*/ console.log(oldestValue, oldestValue == 1, oldestValue == 0)
                     if (oldestValue == 1) {
                         let midnight = new Date()
                         midnight = midnight.toISOString().split("T")[0] + 'T00:00:00.000Z'
-                        // console.log(midnight)
+                        // // /*it was uncommented*/ console.log(midnight)
                         finalResultFiltered.push({ "time": midnight, "value": 1, "info": "end with midnight" })
                     } else {
                         let midnight = new Date()
                         midnight = midnight.toISOString().split("T")[0] + 'T00:00:00.000Z'
-                        // console.log(midnight)
+                        // // /*it was uncommented*/ console.log(midnight)
                         finalResultFiltered.push({ "time": midnight, "value": 0, "info": "end with midnight" })
                     }
                 }
@@ -1075,10 +1085,10 @@ app.get('/api/v3/get-sensor-data', (req, res) => {
                             let time = item.time._nanoISO
                             day = time.split('T')[0].split('-')[2]
                         }
-                        // console.log(typeof item.time, day, thisDay, day==thisDay)
+                        // // /*it was uncommented*/ console.log(typeof item.time, day, thisDay, day==thisDay)
                         return day == thisDay
                     } catch (e) {
-                        console.log(e)
+                        // /*it was uncommented*/ console.log(e)
                         return false
                     }
                 }
@@ -1137,10 +1147,10 @@ app.get('/api/v3/get-sensor-data', (req, res) => {
                             let time = item.time._nanoISO
                             day = time.split('T')[0].split('-')[2]
                         }
-                        // console.log(typeof item.time, day, thisDay, day==thisDay)
+                        // // /*it was uncommented*/ console.log(typeof item.time, day, thisDay, day==thisDay)
                         return day == thisDay
                     } catch (e) {
-                        console.log(e)
+                        // /*it was uncommented*/ console.log(e)
                         return false
                     }
                 }
@@ -1154,31 +1164,31 @@ app.get('/api/v3/get-sensor-data', (req, res) => {
                             let time = item.time._nanoISO
                             day = time.split('T')[0].split('-')[2]
                         }
-                        // console.log(typeof item.time, day, thisDay, day==thisDay)
+                        // // /*it was uncommented*/ console.log(typeof item.time, day, thisDay, day==thisDay)
                         return day == thisDay - 1
                     } catch (e) {
-                        console.log(e)
+                        // /*it was uncommented*/ console.log(e)
                         return false
                     }
                 }
 
                 finalResultFiltered = finalResult.filter(checkIfToday)
                 finalResultFilteredYesterday = finalResult.filter(checkIfYesterday)
-                // console.log(finalResult)
+                // // /*it was uncommented*/ console.log(finalResult)
                 // END Filter only today's data
 
                 // last value - midnight
                 let oldestValue = finalResultFilteredYesterday[0].value // last value recorded yesterday
-                // console.log(oldestValue, oldestValue == 1, oldestValue == 0)
+                // // /*it was uncommented*/ console.log(oldestValue, oldestValue == 1, oldestValue == 0)
                 if (oldestValue == 1) {
                     let midnight = new Date()
                     midnight = midnight.toISOString().split("T")[0] + '00:00:00.000Z'
-                    // console.log(midnight)
+                    // // /*it was uncommented*/ console.log(midnight)
                     finalResultFiltered.push({ "time": midnight, "value": 1 })
                 } else {
                     let midnight = new Date()
                     midnight = midnight.toISOString().split("T")[0] + '00:00:00.000Z'
-                    // console.log(midnight)
+                    // // /*it was uncommented*/ console.log(midnight)
                     finalResultFiltered.push({ "time": midnight, "value": 0 })
                 }
             }
@@ -1227,7 +1237,7 @@ app.get('/api/v3/save-settings', (req, res) => {
         (() => { return req.query.ylong ? ' y=\'' + req.query.ylong + '\'' : ' y=NULL' })() +
         " WHERE sensorId=" + req.query.sensorId + ';'
 
-    // console.log(query)
+    // // /*it was uncommented*/ console.log(query)
 
     mysqlReader(query)
         .then((res) => {
@@ -1270,7 +1280,7 @@ app.get('/api/v3/get-interval', async (req, res) => {
     //             sensorType = item.sensorType
     //     })
 
-    // console.log(sensorId, sensorType)
+    // // /*it was uncommented*/ console.log(sensorId, sensorType)
 
     let start = new Date(req.query.start)
     let end = new Date(req.query.end)
@@ -1301,7 +1311,7 @@ app.get('/api/v3/get-interval', async (req, res) => {
     // } else if (sensorType=='temperature') {
     query = "select mean(value) as value from sensors where sensorId='" + sensorId + "' and time<='" + req.query.end + "' and time>='" + req.query.start + "' group by time(" + averageTimeInterval(diff) + ") order by time desc"
     // }
-    // console.log(query)
+    // // /*it was uncommented*/ console.log(query)
 
     if (sess.username) {
         influxReader(query).then(result => {
@@ -1332,7 +1342,7 @@ app.get("/api/v3/save-position", (req, res) => {
 app.get('/api/v3/set-sensor-name', (req, res) => {
     sess = req.session
     if (sess.username) {
-        // console.log(req.query)
+        // // /*it was uncommented*/ console.log(req.query)
         // Build query
         const query = "UPDATE sensors SET sensorName='" + req.query.name + "' WHERE sensorId='" + req.query.sensorId + "';"
         // Check string
@@ -1340,7 +1350,7 @@ app.get('/api/v3/set-sensor-name', (req, res) => {
         if (req.query.name.length == spaceCount) {
             res.status(200).send({ msg: "Enter a proper name" });
         } else {
-            // console.log(query)
+            // // /*it was uncommented*/ console.log(query)
             mysqlReader(query).then((result) => {
                 res.status(200).send({ msg: "Update performed" });
             }).catch(err => {
@@ -1368,7 +1378,7 @@ function onlyUnique(value, index, self) {
 app.get('/api/get-data', (req, res) => {
 
     var time = new Date()
-    // console.log("GET DATA", new Date() - time)
+    // // /*it was uncommented*/ console.log("GET DATA", new Date() - time)
 
     sess = req.session;
 
@@ -1422,12 +1432,12 @@ app.get('/api/get-data', (req, res) => {
             // var queryCities = "select distinct(city) as city from (select city, value from sensors where username='"+sess.username+"')"
             // let cities = influxReader(queryCities).then(async (result) => {
 
-            //     // console.log("GET cities", new Date() - time)
+            //     // // /*it was uncommented*/ console.log("GET cities", new Date() - time)
             //     let cities = []
             //     for (var i = 0; i < result.length; i++) {
             //         cities.push(result[i].city)
             //     }
-            //     // console.log("GET cities", new Date() - time)
+            //     // // /*it was uncommented*/ console.log("GET cities", new Date() - time)
             //     return await cities
             // })
 
@@ -1436,13 +1446,13 @@ app.get('/api/get-data', (req, res) => {
             // var queryLocation = "select distinct(location) as location from (select location, value from sensors where username='"+sess.username+"')"
             // let locations = influxReader(queryLocation).then(async (result) => {
 
-            //     // console.log("GET locations", new Date() - time)
+            //     // // /*it was uncommented*/ console.log("GET locations", new Date() - time)
             //     let locations = []
             //     for (var i = 0; i < result.length; i++) {
             //         locations.push(result[i].location)
             //     }
 
-            //     // console.log("GET locations", new Date() - time)
+            //     // // /*it was uncommented*/ console.log("GET locations", new Date() - time)
             //     return await locations
             // })
 
@@ -1451,12 +1461,12 @@ app.get('/api/get-data', (req, res) => {
             // // get zones
             // var queryZone = "select distinct(zone) as zone from (select zone, value from sensors where username='"+sess.username+"')"
             // let zones = influxReader(queryZone).then(async (result) => {
-            //     // console.log("GET zones", new Date() - time)
+            //     // // /*it was uncommented*/ console.log("GET zones", new Date() - time)
             //     let zones = []
             //     for (var i = 0; i < result.length; i++) {
             //         zones.push(result[i].zone)
             //     }
-            //     // console.log("GET zones", new Date() - time)
+            //     // // /*it was uncommented*/ console.log("GET zones", new Date() - time)
             //     return await zones
             // })
 
@@ -1468,11 +1478,11 @@ app.get('/api/get-data', (req, res) => {
 
             Promise.all([counties, cities, locations, zones]).then((result) => {
 
-                // console.log("promise all", new Date() - time)
+                // // /*it was uncommented*/ console.log("promise all", new Date() - time)
 
                 // build the output
                 if (result[0].length && result[1].length && result[2].length && result[3].length) {
-                    // console.log("promise all push", new Date() - time)
+                    // // /*it was uncommented*/ console.log("promise all push", new Date() - time)
                     data.push({
                         error: false,
                         message: "Data found",
@@ -1482,7 +1492,7 @@ app.get('/api/get-data', (req, res) => {
                         query: queryCounties,
                         responseTime: new Date() - time + "ms",
                     })
-                    // console.log("promise all push done", new Date() - time)
+                    // // /*it was uncommented*/ console.log("promise all push done", new Date() - time)
                 } else {
                     data.push({
                         error: true,
@@ -1491,7 +1501,7 @@ app.get('/api/get-data', (req, res) => {
                     })
                 }
 
-                // console.log("GET all", new Date() - time)
+                // // /*it was uncommented*/ console.log("GET all", new Date() - time)
 
                 // send the data
                 res.status(200).send(data)
@@ -1507,7 +1517,7 @@ app.get('/api/get-data', (req, res) => {
         res.status(403).send(data)
     }
 
-    // console.log("done", new Date() - time)
+    // // /*it was uncommented*/ console.log("done", new Date() - time)
 })
 
 // No longer used - instead I use /api/get-data/last/:county/:sensorQuery
@@ -1515,7 +1525,7 @@ app.get('/api/get-data/type/:sensorId', (req, res) => {
     sess = req.session
     let data = []
     var time = new Date()
-    // console.log(req.originalUrl)
+    // // /*it was uncommented*/ console.log(req.originalUrl)
 
     if (sess.username) {
 
@@ -1523,7 +1533,7 @@ app.get('/api/get-data/type/:sensorId', (req, res) => {
         var query = `select zone, type from (select zone, type, value from sensors where sensorId='` + req.params.sensorId + `') LIMIT 1`
 
         let type = influxReader(query).then((result) => {
-            // console.log(influxQuery)
+            // // /*it was uncommented*/ console.log(influxQuery)
             if (result.length)
                 data.push({
                     error: false,
@@ -1598,12 +1608,12 @@ app.get('/api/v2/get-data/sensorId/:county', (req, res) => {
 
             }
 
-            // console.log(influxQuery)
+            // // /*it was uncommented*/ console.log(influxQuery)
 
             // Get all types of sensors of logged in user and from requested county
             let sensorsData = influxReader(influxQuery).then((result) => {
 
-                // console.log("after fetch", new Date() - time)
+                // // /*it was uncommented*/ console.log("after fetch", new Date() - time)
 
                 // get sensor type
                 var sensorIdList = []
@@ -1676,21 +1686,21 @@ app.get('/api/get-data/sensorId/:county', (req, res) => {
 
     // get params
     // const queryObject = url.parse(req.url,true).query;
-    // console.log(queryObject);
-    // console.log(queryObject);
+    // // /*it was uncommented*/ console.log(queryObject);
+    // // /*it was uncommented*/ console.log(queryObject);
 
-    // console.log(sess.username)
+    // // /*it was uncommented*/ console.log(sess.username)
 
     let data = []
 
     // Who ask for the data
     if (sess.username) {
 
-        // console.log("if",new Date()-time)
+        // // /*it was uncommented*/ console.log("if",new Date()-time)
 
         // req.params.county = req.params.county.toLowerCase()
-        // console.log(req.originalUrl)
-        // console.log("User:", sess.username);
+        // // /*it was uncommented*/ console.log(req.originalUrl)
+        // // /*it was uncommented*/ console.log("User:", sess.username);
 
         // Create the query based on user type
         if (sess.sensorAccess != -1) {
@@ -1709,7 +1719,7 @@ app.get('/api/get-data/sensorId/:county', (req, res) => {
             // var influxQuery = `select mean(value) as value, last(type) as type from sensors ` + whereQuery + ` GROUP BY time(1h) ORDER BY time DESC`
             // // check what sensor type for the user
             // var influxQuery = `select * from sensors ` + whereQuery + ` ORDER BY time DESC`
-            // // console.log(influxQuery)
+            // // // /*it was uncommented*/ console.log(influxQuery)
         }
 
         // select (distinct sensorId), type from ( select sensorId, type, value from sensors where username='demo' and county='bucuresti') group by sensorId
@@ -1747,12 +1757,12 @@ app.get('/api/get-data/sensorId/:county', (req, res) => {
 
             }
 
-            // console.log(influxQuery)
+            // // /*it was uncommented*/ console.log(influxQuery)
 
             // Get all types of sensors of logged in user and from requested county
             let sensorsData = influxReader(influxQuery).then((result) => {
 
-                // console.log("after fetch", new Date() - time)
+                // // /*it was uncommented*/ console.log("after fetch", new Date() - time)
 
                 // get sensor type
                 // var sensorTypeList = []
@@ -1826,11 +1836,11 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', (req, res) => {
         // we decide about sensorId template
         var isCounter = (req.params.sensorQuery.split('-')[1] == 'c' ? true : false)
 
-        // console.log(req.originalUrl)
-        // console.log('/api/get-data/' + req.params.county + '/' + req.params.sensorQuery)
-        // console.log("User:", sess.username);
-        // console.log("Access to sensorId:", sess.sensorAccess);
-        // console.log(req.params)
+        // // /*it was uncommented*/ console.log(req.originalUrl)
+        // // /*it was uncommented*/ console.log('/api/get-data/' + req.params.county + '/' + req.params.sensorQuery)
+        // // /*it was uncommented*/ console.log("User:", sess.username);
+        // // /*it was uncommented*/ console.log("Access to sensorId:", sess.sensorAccess);
+        // // /*it was uncommented*/ console.log(req.params)
 
         // Get the date for influx query - this day 0 to currentHour
         var today = new Date();
@@ -1842,7 +1852,7 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', (req, res) => {
         var yyyy = today.getFullYear();
         today = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
 
-        // console.log(">> TODAY start:", today)
+        // // /*it was uncommented*/ console.log(">> TODAY start:", today)
 
         // Mean of last week - experiment
         // ==========================================
@@ -1853,7 +1863,7 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', (req, res) => {
         var yyyy = lastweekTodayStart.getFullYear();
         lastweekTodayStart = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
 
-        // console.log(">> lastweekTodayStart start:", lastweekTodayStart)
+        // // /*it was uncommented*/ console.log(">> lastweekTodayStart start:", lastweekTodayStart)
 
         var lastweekTodayStop = new Date();
         lastweekTodayStop.setDate(lastweekTodayStop.getDate() - 7)
@@ -1862,11 +1872,11 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', (req, res) => {
         var yyyy = lastweekTodayStop.getFullYear();
         lastweekTodayStop = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
 
-        // console.log(">> lastweekTodayStop start:", lastweekTodayStop)
+        // // /*it was uncommented*/ console.log(">> lastweekTodayStop start:", lastweekTodayStop)
         // ==========================================
         // END Mean of last week - experiment
 
-        // console.log("api req date:", today)
+        // // /*it was uncommented*/ console.log("api req date:", today)
 
         if (sess.sensorAccess != -1) {
 
@@ -1898,26 +1908,26 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', (req, res) => {
             // var influxQuery = `select mean(value) as value, last(type) as type from sensors ` + whereQuery + ` GROUP BY time(1h) ORDER BY time DESC`
             // // check what sensor type for the user
             // var influxQuery = `select * from sensors ` + whereQuery + ` ORDER BY time DESC`
-            // // console.log(influxQuery)
+            // // // /*it was uncommented*/ console.log(influxQuery)
         }
 
         // get sensor zone
         // var query = "select type, zone from (select type, zone, value from sensors where sensorId='" + req.params.sensorQuery + "') limit 1"
         var query = `SHOW TAG VALUES WITH KEY IN ("type", "zone") WHERE sensorId='` + req.params.sensorQuery + `'`
         let sensorZoneAndType = influxReader(query).then((res) => {
-            // console.log(res)
+            // // /*it was uncommented*/ console.log(res)
             return res
         })
 
-        // console.log(query, res[0])
-        // console.log(influxQuery)
+        // // /*it was uncommented*/ console.log(query, res[0])
+        // // /*it was uncommented*/ console.log(influxQuery)
 
         let resultInfluxDb = influxReader(influxQueryExperiment).then(async (result) => {
 
             let sensorZoneAndType_ = await sensorZoneAndType
-            // console.log(sensorZoneAndType_)
-            // console.log(sensorZoneAndType_[0].value)
-            // console.log(sensorZoneAndType_[1].value)
+            // // /*it was uncommented*/ console.log(sensorZoneAndType_)
+            // // /*it was uncommented*/ console.log(sensorZoneAndType_[0].value)
+            // // /*it was uncommented*/ console.log(sensorZoneAndType_[1].value)
 
             if (result.length) {
                 data.push({
@@ -1980,7 +1990,7 @@ app.get('/api/get-data/:county/:sensorQuery', (req, res) => {
     let data = []
     var time = new Date()
 
-    // console.log(sess.username, req.params)
+    // // /*it was uncommented*/ console.log(sess.username, req.params)
 
     if (sess.username) {
 
@@ -1992,11 +2002,11 @@ app.get('/api/get-data/:county/:sensorQuery', (req, res) => {
         // we decide about sensorId template
         var isCounter = (req.params.sensorQuery.split('-')[1] == 'c' ? true : false)
 
-        // console.log(req.originalUrl)
-        // console.log('/api/get-data/' + req.params.county + '/' + req.params.sensorQuery)
-        // console.log("User:", sess.username);
-        // console.log("Access to sensorId:", sess.sensorAccess);
-        // console.log(req.params)
+        // // /*it was uncommented*/ console.log(req.originalUrl)
+        // // /*it was uncommented*/ console.log('/api/get-data/' + req.params.county + '/' + req.params.sensorQuery)
+        // // /*it was uncommented*/ console.log("User:", sess.username);
+        // // /*it was uncommented*/ console.log("Access to sensorId:", sess.sensorAccess);
+        // // /*it was uncommented*/ console.log(req.params)
 
         // Get the date for influx query - this day 0 to currentHour
         var today = new Date();
@@ -2008,7 +2018,7 @@ app.get('/api/get-data/:county/:sensorQuery', (req, res) => {
         var yyyy = today.getFullYear();
         today = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
 
-        // console.log(">> TODAY start:",today)
+        // // /*it was uncommented*/ console.log(">> TODAY start:",today)
 
         // Mean of last week - experiment
         // ==========================================
@@ -2019,7 +2029,7 @@ app.get('/api/get-data/:county/:sensorQuery', (req, res) => {
         // var yyyy = lastweekTodayStart.getFullYear();
         // lastweekTodayStart = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
 
-        // console.log(">> lastweekTodayStart start:",lastweekTodayStart)
+        // // /*it was uncommented*/ console.log(">> lastweekTodayStart start:",lastweekTodayStart)
 
         // var lastweekTodayStop = new Date();
         // lastweekTodayStop.setDate(lastweekTodayStop.getDate() - 7)
@@ -2028,11 +2038,11 @@ app.get('/api/get-data/:county/:sensorQuery', (req, res) => {
         // var yyyy = lastweekTodayStop.getFullYear();
         // lastweekTodayStop = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
 
-        // console.log(">> lastweekTodayStop start:",lastweekTodayStop)
+        // // /*it was uncommented*/ console.log(">> lastweekTodayStop start:",lastweekTodayStop)
         // ==========================================
         // END Mean of last week - experiment
 
-        // console.log("api req date:", today)
+        // // /*it was uncommented*/ console.log("api req date:", today)
 
         if (sess.sensorAccess != -1) {
 
@@ -2064,26 +2074,26 @@ app.get('/api/get-data/:county/:sensorQuery', (req, res) => {
             // var influxQuery = `select mean(value) as value, last(type) as type from sensors ` + whereQuery + ` GROUP BY time(1h) ORDER BY time DESC`
             // // check what sensor type for the user
             // var influxQuery = `select * from sensors ` + whereQuery + ` ORDER BY time DESC`
-            // // console.log(influxQuery)
+            // // // /*it was uncommented*/ console.log(influxQuery)
         }
 
         // get sensor zone
         // var query = "select type, zone from (select type, zone, value from sensors where sensorId='" + req.params.sensorQuery + "') limit 1"
         var query = `SHOW TAG VALUES WITH KEY IN ("type", "zone") WHERE sensorId='` + req.params.sensorQuery + `'`
         let sensorZoneAndType = influxReader(query).then((res) => {
-            // console.log(res)
+            // // /*it was uncommented*/ console.log(res)
             return res
         })
 
-        // console.log(query, res[0])
-        // console.log(influxQuery)
+        // // /*it was uncommented*/ console.log(query, res[0])
+        // // /*it was uncommented*/ console.log(influxQuery)
 
         let resultInfluxDb = influxReader(influxQuery).then(async (result) => {
 
             let sensorZoneAndType_ = await sensorZoneAndType
-            // console.log(sensorZoneAndType_)
-            // console.log(sensorZoneAndType_[0].value)
-            // console.log(sensorZoneAndType_[1].value)
+            // // /*it was uncommented*/ console.log(sensorZoneAndType_)
+            // // /*it was uncommented*/ console.log(sensorZoneAndType_[0].value)
+            // // /*it was uncommented*/ console.log(sensorZoneAndType_[1].value)
 
             if (result.length) {
                 data.push({
@@ -2146,7 +2156,7 @@ app.get('/api/v2/get-data/:county/:sensorQuery', (req, res) => {
     let data = []
     var time = new Date()
 
-    // console.log(sess.username, req.params)
+    // // /*it was uncommented*/ console.log(sess.username, req.params)
 
     if (sess.username) {
 
@@ -2158,16 +2168,16 @@ app.get('/api/v2/get-data/:county/:sensorQuery', (req, res) => {
         // we decide about sensorId template
         var isCounter = (req.params.sensorQuery.split('-')[1] == 'c' ? true : false)
 
-        // console.log(req.originalUrl)
-        // console.log('/api/get-data/' + req.params.county + '/' + req.params.sensorQuery)
-        // console.log("User:", sess.username);
-        // console.log("Access to sensorId:", sess.sensorAccess);
-        // console.log(req.params)
+        // // /*it was uncommented*/ console.log(req.originalUrl)
+        // // /*it was uncommented*/ console.log('/api/get-data/' + req.params.county + '/' + req.params.sensorQuery)
+        // // /*it was uncommented*/ console.log("User:", sess.username);
+        // // /*it was uncommented*/ console.log("Access to sensorId:", sess.sensorAccess);
+        // // /*it was uncommented*/ console.log(req.params)
 
         // Get the date for influx query - this day 0 to currentHour
         var today__raw = new Date(); // this is -1h romanian timezone
         var today__raw_2 = new Date(); // this is -1h romanian timezone
-        // console.log("today__raw", today__raw);
+        // // /*it was uncommented*/ console.log("today__raw", today__raw);
 
         // cannot query for today date starting at 00:00 because influx tz is -1h than romanian tz
         // set today 00:00 as yesterday 23:00
@@ -2186,8 +2196,8 @@ app.get('/api/v2/get-data/:county/:sensorQuery', (req, res) => {
         todayEnd = "'" + yyyy + '-' + mm + '-' + dd + 'T23:00:00Z' + "'";
         // todayEnd = "now()"
 
-        // console.log(">> TODAY start:", today)
-        // console.log(">> TODAY end:", todayEnd)
+        // // /*it was uncommented*/ console.log(">> TODAY start:", today)
+        // // /*it was uncommented*/ console.log(">> TODAY end:", todayEnd)
 
         // Mean of last week - experiment
         // ==========================================
@@ -2198,7 +2208,7 @@ app.get('/api/v2/get-data/:county/:sensorQuery', (req, res) => {
         // var yyyy = lastweekTodayStart.getFullYear();
         // lastweekTodayStart = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
 
-        // console.log(">> lastweekTodayStart start:",lastweekTodayStart)
+        // // /*it was uncommented*/ console.log(">> lastweekTodayStart start:",lastweekTodayStart)
 
         // var lastweekTodayStop = new Date();
         // lastweekTodayStop.setDate(lastweekTodayStop.getDate() - 7)
@@ -2207,11 +2217,11 @@ app.get('/api/v2/get-data/:county/:sensorQuery', (req, res) => {
         // var yyyy = lastweekTodayStop.getFullYear();
         // lastweekTodayStop = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
 
-        // console.log(">> lastweekTodayStop start:",lastweekTodayStop)
+        // // /*it was uncommented*/ console.log(">> lastweekTodayStop start:",lastweekTodayStop)
         // ==========================================
         // END Mean of last week - experiment
 
-        // console.log("api req date:", today)
+        // // /*it was uncommented*/ console.log("api req date:", today)
 
         if (sess.sensorAccess != -1) {
 
@@ -2242,26 +2252,26 @@ app.get('/api/v2/get-data/:county/:sensorQuery', (req, res) => {
             // var influxQuery = `select mean(value) as value, last(type) as type from sensors ` + whereQuery + ` GROUP BY time(1h) ORDER BY time DESC`
             // // check what sensor type for the user
             // var influxQuery = `select * from sensors ` + whereQuery + ` ORDER BY time DESC`
-            // // console.log(influxQuery)
+            // // // /*it was uncommented*/ console.log(influxQuery)
         }
 
         // get sensor zone
         // var query = "select type, zone from (select type, zone, value from sensors where sensorId='" + req.params.sensorQuery + "') limit 1"
         var query = `SHOW TAG VALUES WITH KEY IN ("type", "zone") WHERE sensorId='` + req.params.sensorQuery + `'`
         let sensorZoneAndType = influxReader(query).then((res) => {
-            // console.log(res)
+            // // /*it was uncommented*/ console.log(res)
             return res
         })
 
-        // console.log(query, res[0])
-        // console.log(influxQuery)
+        // // /*it was uncommented*/ console.log(query, res[0])
+        // // /*it was uncommented*/ console.log(influxQuery)
 
         let resultInfluxDb = influxReader(influxQuery).then(async (result) => {
 
             let sensorZoneAndType_ = await sensorZoneAndType
-            // console.log(sensorZoneAndType_)
-            // console.log(sensorZoneAndType_[0].value)
-            // console.log(sensorZoneAndType_[1].value)
+            // // /*it was uncommented*/ console.log(sensorZoneAndType_)
+            // // /*it was uncommented*/ console.log(sensorZoneAndType_[0].value)
+            // // /*it was uncommented*/ console.log(sensorZoneAndType_[1].value)
 
             if (result.length) {
                 data.push({
@@ -2332,10 +2342,10 @@ app.get('/api/get-data/last/:county/:sensorQuery', (req, res) => {
         // Server side log
         req.params.county = req.params.county.toLowerCase()
         // req.params.sensorQuery = req.params.sensorQuery.toLowerCase()
-        // console.log(req.originalUrl)
-        // console.log("User:", sess.username);
-        // console.log("Access to sensorId:", sess.sensorAccess);
-        // console.log(req.params)
+        // // /*it was uncommented*/ console.log(req.originalUrl)
+        // // /*it was uncommented*/ console.log("User:", sess.username);
+        // // /*it was uncommented*/ console.log("Access to sensorId:", sess.sensorAccess);
+        // // /*it was uncommented*/ console.log(req.params)
 
         // Get the date for influx query - this day 0 to currentHour
         var today = new Date();
@@ -2361,12 +2371,12 @@ app.get('/api/get-data/last/:county/:sensorQuery', (req, res) => {
             // var influxQuery = `select mean(value) as value, last(type) as type from sensors ` + whereQuery + ` GROUP BY time(1h) ORDER BY time DESC`
             // // check what sensor type for the user
             // var influxQuery = `select * from sensors ` + whereQuery + ` ORDER BY time DESC`
-            // // console.log(influxQuery)
+            // // // /*it was uncommented*/ console.log(influxQuery)
         }
-        // console.log("---->",influxQuery)
+        // // /*it was uncommented*/ console.log("---->",influxQuery)
         let resultInfluxDb = influxReader(influxQuery).then((result) => {
 
-            // console.log(result)
+            // // /*it was uncommented*/ console.log(result)
 
             if (result.length) {
                 data.push({
@@ -2421,14 +2431,14 @@ app.get('/api/get-data/last/:county/:sensorQuery', (req, res) => {
 app.get('/api/get-interval/:step', (req, res) => {
     sess = req.session
     let data = []
-    // console.log("--->",req.params.step)
+    // // /*it was uncommented*/ console.log("--->",req.params.step)
     var time = new Date()
-    // console.log('/api/get-interval/...')
-    // console.log("---")
-    // console.log(req.params)
-    // console.log(req.query.county)
-    // console.log(req.query.sensorQuery)
-    // console.log("---")
+    // // /*it was uncommented*/ console.log('/api/get-interval/...')
+    // // /*it was uncommented*/ console.log("---")
+    // // /*it was uncommented*/ console.log(req.params)
+    // // /*it was uncommented*/ console.log(req.query.county)
+    // // /*it was uncommented*/ console.log(req.query.sensorQuery)
+    // // /*it was uncommented*/ console.log("---")
     // sess.username = "1"
 
     if (sess.username) {
@@ -2439,7 +2449,7 @@ app.get('/api/get-interval/:step', (req, res) => {
             var whereQuery = `where county='` + req.query.county + `' and sensorId='` + req.query.sensorQuery + `' and time>='` + req.query.start + `' and time<'` + req.query.end + `'`
 
             // group by
-            // console.log(req.params.step)
+            // // /*it was uncommented*/ console.log(req.params.step)
             switch (req.params.step) {
                 case '30mins':
                     var groupBy = `GROUP BY time(30m) ORDER BY time DESC`
@@ -2472,7 +2482,7 @@ app.get('/api/get-interval/:step', (req, res) => {
             // check what sensor type for the user
             var influxQuery = `select mean(value) as value from sensors ` + whereQuery + ` ` + groupBy + ` `
 
-            // console.log(influxQuery)
+            // // /*it was uncommented*/ console.log(influxQuery)
 
         } else {
 
@@ -2481,10 +2491,10 @@ app.get('/api/get-interval/:step', (req, res) => {
             // var influxQuery = `select mean(value) as value, last(type) as type, last(value) as live from sensors ` + whereQuery + ` GROUP BY time(1h) ORDER BY time DESC`
             // // check what sensor type for the user
             // var influxQuery = `select * from sensors ` + whereQuery + ` ORDER BY time DESC`
-            // console.log(influxQuery)
+            // // /*it was uncommented*/ console.log(influxQuery)
         }
 
-        // console.log(influxQuery)
+        // // /*it was uncommented*/ console.log(influxQuery)
         let resultInfluxDb = influxReader(influxQuery).then((result) => {
             if (result.length) {
                 data.push({
@@ -2561,7 +2571,7 @@ app.get("/graficMail", (req, res) => {
             res.writeHead(400, {
                 'Content-type': 'text/html'
             })
-            // console.log(err);
+            // // /*it was uncommented*/ console.log(err);
             res.end("No such image");
         } else {
             //specify the content type in the response will be an image
@@ -2599,11 +2609,11 @@ app.get('/api/:username/get-counties', (req, res) => {
 
     Promise.all([counties, cities, locations, zones]).then((result) => {
 
-        // console.log("promise all", new Date() - time)
+        // // /*it was uncommented*/ console.log("promise all", new Date() - time)
 
         // build the output
         if (result[0].length && result[1].length && result[2].length && result[3].length) {
-            // console.log("promise all push", new Date() - time)
+            // // /*it was uncommented*/ console.log("promise all push", new Date() - time)
             data.push({
                 error: false,
                 message: "Data found",
@@ -2612,7 +2622,7 @@ app.get('/api/:username/get-counties', (req, res) => {
                 counties: result[0].length ? result[0] : "No county found",
                 responseTime: new Date() - time + "ms"
             })
-            // console.log("promise all push done", new Date() - time)
+            // // /*it was uncommented*/ console.log("promise all push done", new Date() - time)
         } else {
             data.push({
                 error: true,
@@ -2640,7 +2650,7 @@ app.get('/api/:username/:county/get-sensors', (req, res) => {
 
     let sensorsData = influxReader(influxQuery).then((result) => {
 
-        // console.log("after fetch", new Date() - time)
+        // // /*it was uncommented*/ console.log("after fetch", new Date() - time)
 
         // get sensor type
         // var sensorTypeList = []
@@ -2693,11 +2703,11 @@ app.get('/api/:sensor/get-value', (req, res) => {
     var whereQuery = `where sensorId='` + req.params.sensor + `'`
     var influxQuery = `select last(value) as value, username, country, county, city, zone from sensors ` + whereQuery + ` ORDER BY time DESC LIMIT 1`
 
-    // console.log(influxQuery)
+    // // /*it was uncommented*/ console.log(influxQuery)
 
     let resultInfluxDb = influxReader(influxQuery).then((result) => {
 
-        // console.log(result)
+        // // /*it was uncommented*/ console.log(result)
 
         if (result.length) {
             data.push({
@@ -2806,7 +2816,7 @@ app.get('/api/get-last-value', (req, res) => {
 // get avg on last 10 min and compare with limits
 app.get('/api/v2/sensors-alert', async (req, res) => {
 
-    // console.log(req.url)
+    // // /*it was uncommented*/ console.log(req.url)
 
     var time = new Date()
     // var data = []
@@ -2839,11 +2849,11 @@ app.get('/api/v2/sensors-alert', async (req, res) => {
     var timeStart = new Date(today.getTime() - 10 * 60000);
     // var timeStart = String(timeStart).split(" ")
     var timeStart = timeStart.valueOf();
-    // console.log(today, timeStart)
+    // // /*it was uncommented*/ console.log(today, timeStart)
 
     // var influxQuery = `select mean(value), last(county) as county, last(country) as country, last(city) as city, last(location) as location, last(zone) as zone, last(username) as username, last(sensorId) as sensorId, last(type) as type, last(time) as time from (select * from sensors where (` + whereQuery + `) and time>`+timeStart+` and time<now()) group by sensorId, username order by time desc`
     var influxQuery = `select country, county, city, location, zone, type, sensorId, username, value from sensors where (` + whereQuery + `) and (time > now()-5s and time < now()) group by sensorId,username order by time desc limit 600`
-    // console.log(influxQuery)
+    // // /*it was uncommented*/ console.log(influxQuery)
 
     let resultInfluxDb = influxReader(influxQuery).then((result) => {
 
@@ -2862,7 +2872,7 @@ app.get('/api/v2/sensors-alert', async (req, res) => {
                 var max = 0
                 var min = 0
 
-                // console.log(sensor)
+                // // /*it was uncommented*/ console.log(sensor)
                 // graph.push(sensor.value)
 
                 // graph = []
@@ -3071,7 +3081,7 @@ app.get('/api/manage-sensors', authDashboard, (req, res) => {
         res.status(200).send(data)
     } else {
         var sql = "SELECT * FROM sensors WHERE sensorId IN (" + sess.sensorAccess.join(",") + ")"
-        // console.log(sql)
+        // // /*it was uncommented*/ console.log(sql)
         database.query(sql)
             .then(rows => {
                 data.flag = rows.length
@@ -3092,9 +3102,9 @@ app.post('/api/manage-sensors/update', authDashboard, async (req, res) => {
         var sql = 'UPDATE sensors SET county="' + form.county + '", city="' + form.city + '", street="' + form.street + '", sensorName="' + form.name + '" WHERE sensorId = "' + form.id + '"'
         database.query(sql).then((res) => {
             if (res)
-                console.log("User", sess.username, "updated sensor", form.id)
+                /*it was uncommented*/ console.log("User", sess.username, "updated sensor", form.id)
             else
-                console.log("Failed update: user", sess.username, "tried to update sensor", form.id)
+                /*it was uncommented*/ console.log("Failed update: user", sess.username, "tried to update sensor", form.id)
         })
         req.session.message = "Update has been performed"
         res.redirect('/manage-sensors')
@@ -3138,7 +3148,7 @@ app.get('/set-new-device', authDashboard, (req, res) => {
         user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0
     }
     req.session.message = ''
-    // console.log(data)
+    // // /*it was uncommented*/ console.log(data)
     res.render('set-new-device', data)
 })
 
@@ -3194,7 +3204,7 @@ app.get('/api/set-alerts', (req, res) => {
 
     sess = req.session
 
-    // console.log(req.query)
+    // // /*it was uncommented*/ console.log(req.query)
 
     var mysqlReturn = []
 
@@ -3388,7 +3398,7 @@ app.post('/api/create-admin', (req, res) => {
             password
         } = req.body
 
-        // console.log(name,
+        // // /*it was uncommented*/ console.log(name,
         //     username,
         //     email,
         //     company,
@@ -3436,7 +3446,7 @@ app.post('/api/create-admin', (req, res) => {
                     if (err)
                         return res.status(412).send("Try again!")
                     else {
-                        // console.log("New user registration")
+                        // // /*it was uncommented*/ console.log("New user registration")
                         return res.status(200).send("User registered!")
                     }
                 })
@@ -3449,7 +3459,7 @@ app.post('/api/create-admin', (req, res) => {
 // Get distinct locations for sensors that belong to company of superadmin
 app.get('/api/get-zones', (req, res) => {
     sess = req.session;
-    // console.log(sess.userData)
+    // // /*it was uncommented*/ console.log(sess.userData)
     if (sess.role == "superadmin") {
 
         // It returns a list of locations and users associated with that location
@@ -3465,7 +3475,8 @@ app.get('/api/get-zones', (req, res) => {
 
 
         Promise.all([getZonesAndUserList, getZones]).then(result => {
-            // console.log(result[0].length, result[0])
+            // // /*it was uncommented*/ console.log(result[0].length, result[0])
+            // console.log(result[0])
             res.status(200).send(result)
         })
 
@@ -3486,7 +3497,7 @@ app.get('/api/get-zones', (req, res) => {
 
 
         Promise.all([getZones]).then(result => {
-            // console.log(result[0].length, result[0])
+            // // /*it was uncommented*/ console.log(result[0].length, result[0])
             res.status(200).send(result)
         })
 
@@ -3508,11 +3519,11 @@ app.post('/api/edit-zone', authDashboard, async (req, res) => {
 
     form.parse(req, async function (err, fields, files) {
 
-        // console.log(fields)
+        // // /*it was uncommented*/ console.log(fields)
 
         // Get username list raw
         const { zoneid, location1, location2, location3, map, ...userList } = fields;
-        // console.log(fields.zoneid, userList)
+        // // /*it was uncommented*/ console.log(fields.zoneid, userList)
 
         // Get all sensors in a zoneId
         let getSensorList = await mysqlReader("select group_concat(sensors.sensorId) as sensorId from sensors where sensors.zoneId = " + fields.zoneid)
@@ -3541,6 +3552,7 @@ app.post('/api/edit-zone', authDashboard, async (req, res) => {
         // Prepare values for sql query: ('DAS008TCORA','alex.barbu3'),('DAS008TCORA','alex.barbu2')
         let valuesToInsert = () => {
             let returnRaw = ``
+            console.log(userListFinal, getSensorList[0].sensorId)
             userListFinal.forEach((user, index) => {
                 getSensorList[0].sensorId.split(',').forEach((itemSensor, indexSensor) => {
                     returnRaw += `('` + itemSensor + `','` + user + `')`
@@ -3567,7 +3579,7 @@ app.post('/api/edit-zone', authDashboard, async (req, res) => {
 
 
         Promise.all([dropUserAccess, grantUserAccess]).then(result => {
-            // console.log("PROMISE ALL", fields)
+            // // /*it was uncommented*/ console.log("PROMISE ALL", fields)
 
             if (fields.map == 'custom') {
 
@@ -3595,7 +3607,7 @@ app.post('/api/edit-zone', authDashboard, async (req, res) => {
                 } else {
                     let hasImageSetted = false
                     if (hasImageSetted) {
-                        // console.log("Map has the same image")
+                        // // /*it was uncommented*/ console.log("Map has the same image")
                     } else {
                         mysqlReader("UPDATE locations SET map='custom' where zoneId=" + fields.zoneid + "").then((result) => {
                             res.redirect("/settings")
@@ -3614,7 +3626,7 @@ app.post('/api/edit-zone', authDashboard, async (req, res) => {
                     res.status(400).send({ error: err });
                 })
             } else {
-                // console.log("No map selected")
+                // // /*it was uncommented*/ console.log("No map selected")
                 res.redirect("/settings")
                 // mysqlReader("UPDATE locations SET map='NULL' where zoneId=" + fields.zoneid + "").then((result) => {
                 //     res.redirect("/settings")
@@ -3643,7 +3655,7 @@ app.post('/api/update-map', async (req, res) => {
 
         // [ ] perform the update
 
-        // console.log(await hasAccess)
+        // // /*it was uncommented*/ console.log(await hasAccess)
         if (await hasAccess) {
             mysqlReader("UPDATE locations SET map='" + body.map + "' where zoneId=" + body.id + "")
                 .then(() => {
@@ -3655,7 +3667,7 @@ app.post('/api/update-map', async (req, res) => {
     } else if (sess.username) {
         // [ ] check if user has access to map id
         let hasUserAccess = await mysqlReader("select locations.zoneId from locations inner join sensors on sensors.zoneId = locations.zoneId inner join userAccess on (userAccess.sensorId = sensors.sensorId and userAccess.username = '" + sess.username + "');")
-        // console.log(hasUserAccess)
+        // // /*it was uncommented*/ console.log(hasUserAccess)
     }
 })
 
@@ -3663,7 +3675,7 @@ app.post('/api/upload-image', (req, res) => {
     const form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
 
-        // console.log(fields, files)
+        // // /*it was uncommented*/ console.log(fields, files)
 
         const oldpath = files.map.path;
 
@@ -3674,7 +3686,7 @@ app.post('/api/upload-image', (req, res) => {
         filename = date.getTime() + '_' + asciiStr + '.' + filename[1]
         const newpath = './public/images/custom-maps/' + filename;
 
-        // console.log(fields.id, oldpath, newpath)
+        // // /*it was uncommented*/ console.log(fields.id, oldpath, newpath)
 
         // Save image
         fs.rename(oldpath, newpath, function (err) {
@@ -3690,15 +3702,15 @@ app.post('/api/upload-image', (req, res) => {
             }
         });
     })
-    // console.log(req.body)
+    // // /*it was uncommented*/ console.log(req.body)
 })
 
 app.post('/api/v2/upload-image', (req, res) => {
     const form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
         var reader = new FileReader(fields.userfile);
-        console.log(reader)
-        console.log(fields, files)
+        // /*it was uncommented*/ console.log(reader)
+        // /*it was uncommented*/ console.log(fields, files)
         const oldpath = files.map.path;
         // Build path of image
         let filename = files.map.name.toLowerCase().split('.')
@@ -3711,7 +3723,7 @@ app.post('/api/v2/upload-image', (req, res) => {
             if (err)
                 res.status(404).send({ "href": fields.href });
             else {
-                console.log("UPDATE locations SET map='" + newpath + "' where zoneId=" + fields.id + "")
+                // /*it was uncommented*/ console.log("UPDATE locations SET map='" + newpath + "' where zoneId=" + fields.id + "")
                 res.status(200).send({ "href": fields.href });
                 // mysqlReader().then((result) => {
                 //     res.status(200).send({ error: false });
@@ -3738,7 +3750,7 @@ app.get('/api/v2/sensors-access', (req, res) => {
     var time = new Date()
     var data = []
 
-    // console.log(req.query.username)
+    // // /*it was uncommented*/ console.log(req.query.username)
 
     if (req.query.username) {
 
@@ -3749,7 +3761,7 @@ app.get('/api/v2/sensors-access', (req, res) => {
         })
 
         Promise.all([mysqlResult]).then(result => {
-            // console.log(new Date() - time)
+            // // /*it was uncommented*/ console.log(new Date() - time)
             if (result[0].length) {
                 var sensorQuery = 'or ';
                 resultCounter = 0
@@ -3767,10 +3779,10 @@ app.get('/api/v2/sensors-access', (req, res) => {
 
             // var influxQuery = "select zone, username, sensorId from (select * from sensors where " + whereQuery + ") group by sensorId limit 1;"
             var influxQuery = "show series where " + whereQuery
-            // console.log(influxQuery)
+            // // /*it was uncommented*/ console.log(influxQuery)
 
             let influxResult = influxReader(influxQuery).then(async (result) => {
-                // console.log(await result)
+                // // /*it was uncommented*/ console.log(await result)
                 return await result
             })
 
@@ -3816,7 +3828,7 @@ app.get('/api/sensors-access', (req, res) => {
     var time = new Date()
     var data = []
 
-    // console.log(req.query.username)
+    // // /*it was uncommented*/ console.log(req.query.username)
 
     if (req.query.username) {
 
@@ -3827,7 +3839,7 @@ app.get('/api/sensors-access', (req, res) => {
         })
 
         Promise.all([mysqlResult]).then(result => {
-            // console.log(new Date() - time)
+            // // /*it was uncommented*/ console.log(new Date() - time)
             if (result[0].length) {
                 var sensorQuery = 'or ';
                 resultCounter = 0
@@ -3844,16 +3856,16 @@ app.get('/api/sensors-access', (req, res) => {
             }
 
             var influxQuery = "select zone, username, sensorId from (select * from sensors where " + whereQuery + ") group by sensorId limit 1;"
-            // console.log(influxQuery)
+            // // /*it was uncommented*/ console.log(influxQuery)
 
             let influxResult = influxReader(influxQuery).then(async (result) => {
-                // console.log(await result)
+                // // /*it was uncommented*/ console.log(await result)
                 return await result
             })
 
             Promise.all([influxResult]).then(result => {
-                // console.log(new Date() - time)
-                // console.log(result[0])
+                // // /*it was uncommented*/ console.log(new Date() - time)
+                // // /*it was uncommented*/ console.log(result[0])
                 result[0].forEach(element => {
                     data.push({
                         zone: element.zone,
@@ -3901,18 +3913,18 @@ app.get('/api/edit-user', getCounties, async (req, res) => {
 
     sess = req.session
 
-    // console.log(req.url)
+    // // /*it was uncommented*/ console.log(req.url)
 
     if (req.query.password.length == 0) {
 
         // get the sensorIds of selected zone
         if (req.query.zones) {
 
-            // console.log(req.query.zones)
+            // // /*it was uncommented*/ console.log(req.query.zones)
 
             if (typeof req.query.zones == 'string') {
                 var influxQuery = `show series where zone='` + req.query.zones + `' and username='` + sess.username + `'`
-                // console.log(influxQuery)
+                // // /*it was uncommented*/ console.log(influxQuery)
                 influxReader(influxQuery).then(result => {
                     return result[0].key.split("sensorId=")[1].split(",")[0]
                 })
@@ -3937,11 +3949,11 @@ app.get('/api/edit-user', getCounties, async (req, res) => {
                     zoneCounter++
                 })
                 var influxQuery = `show series where (` + zoneQuery + `) and username='` + sess.username + `'`
-                // console.log(influxQuery)
+                // // /*it was uncommented*/ console.log(influxQuery)
 
                 influxReader(influxQuery).then(result => {
                     var sensorsList = []
-                    // console.log(result)
+                    // // /*it was uncommented*/ console.log(result)
                     result.forEach(series => {
                         sensorsList.push(series.key.split("sensorId=")[1].split(",")[0])
                     })
@@ -3989,7 +4001,7 @@ app.get('/api/edit-user', getCounties, async (req, res) => {
         // get the sensorIds of selected zone
         if (req.query.zones) {
 
-            // console.log(typeof req.query.zones)
+            // // /*it was uncommented*/ console.log(typeof req.query.zones)
 
             if (typeof req.query.zones == 'string') {
                 var influxQuery = `show series where username='` + sess.username + `' and zone='` + req.query.zones + `'`
@@ -4020,11 +4032,11 @@ app.get('/api/edit-user', getCounties, async (req, res) => {
                 })
                 var influxQuery = `show series where username='` + sess.username + `' and (` + zoneQuery + `)`
 
-                // console.log(influxQuery)
+                // // /*it was uncommented*/ console.log(influxQuery)
 
                 influxReader(influxQuery).then(result => {
                     var sensorsList = []
-                    // console.log(result)
+                    // // /*it was uncommented*/ console.log(result)
                     result.forEach(series => {
                         sensorsList.push(series.key.split("sensorId=")[1].split(",")[0])
                     })
@@ -4071,7 +4083,7 @@ app.get('/api/edit-user', getCounties, async (req, res) => {
 app.get('/api/add-user', (req, res) => {
     sess = req.session
     if (sess.username) {
-        // console.log(req.query)
+        // // /*it was uncommented*/ console.log(req.query)
         var sql = `SELECT Username from users where username='` + req.query.username + `'`
         mysqlReader(sql).then(async (response) => {
             if (response.length) {
@@ -4118,14 +4130,14 @@ app.post('/api/remove-user', async (req, res) => {
         // res.redirect('/settings')
         res.status(200).send(result)
     }).catch(err => {
-        // console.log(err)
+        // // /*it was uncommented*/ console.log(err)
         res.status(500).send(err)
     })
 
     // const queryRemoveSensors = `delete from sensors where username='` + req.query.username + `'`
     // let removeSensors = await mysqlReader(queryRemoveSensors)
     // Promise.all([removeUser, removeSensors]).then((response) => {
-    //     console.log(response)
+    //     // /*it was uncommented*/ console.log(response)
     // })
     // res.redirect('/team')
 })
@@ -4330,9 +4342,9 @@ app.get("/api/socketio-access", (req, res) => {
 app.post("/proxy", (req, res) => {
 
     axios.post(req.query.url, req.body).then(response => {
-        console.log("url:", req.query.url)
-        console.log("body:", req.body)
-        console.log("response:", response.data)
+        // /*it was uncommented*/ console.log("url:", req.query.url)
+        // /*it was uncommented*/ console.log("body:", req.body)
+        // /*it was uncommented*/ console.log("response:", response.data)
         res.send(response.data)
     })
 
@@ -4343,7 +4355,7 @@ app.post("/proxy", (req, res) => {
 // ROUTE FOR VUE
 //=========================================
 app.get("/api/vue/influx", async (req, res) => {
-    // console.log(req.query)
+    // // /*it was uncommented*/ console.log(req.query)
     var query = req.query.query
     const result = await influxReader(query)
     res.send(result)
@@ -4379,7 +4391,7 @@ app.get("/api/csv", (req, res) => {
             let row = rowArray.join(",");
             csvContent += row + "\r\n";
         });
-        // console.log("csvContent:", csvContent.length)
+        // // /*it was uncommented*/ console.log("csvContent:", csvContent.length)
         res.send(csvContent)
     })
 
@@ -4389,7 +4401,7 @@ app.post('/api/v3/multi-report/hourly', (req, res) => {
     sess = req.session
     // if (sess.username) {
 
-    // console.log(req.body)
+    // // /*it was uncommented*/ console.log(req.body)
 
     function changeTimezone(date, ianatz) {
 
@@ -4411,10 +4423,10 @@ app.post('/api/v3/multi-report/hourly', (req, res) => {
     let today, year, month, hOffset, start, end, customDate = req.body['date[]']
 
     // Preprocess timestamp
-    // console.log(customDate)
+    // // /*it was uncommented*/ console.log(customDate)
     start = customDate[0] + ' 00:00:00'
     end = customDate[1] + ' 23:59:59'
-    // console.log(start,end)
+    // // /*it was uncommented*/ console.log(start,end)
 
     // Prepare sensor list for Influx query
     let sensors = ``
@@ -4448,7 +4460,7 @@ app.post('/api/v3/multi-report/hourly', (req, res) => {
         // Query for DOOR
         if (item == 'door') {
 
-            // console.log(item, sensorIds)
+            // // /*it was uncommented*/ console.log(item, sensorIds)
             sensorTypes.isDoor = true
 
             // Return how many times a door has been open or closed in an hour
@@ -4458,7 +4470,7 @@ app.post('/api/v3/multi-report/hourly', (req, res) => {
             queryDoor = influxReader(query)
         } else if (item == 'temperature') { // Query for TEMPERATURE
 
-            // console.log(item, sensorIds)
+            // // /*it was uncommented*/ console.log(item, sensorIds)
             sensorTypes.isTemperature = true
 
             // Return average of temperature for each hour
@@ -4479,17 +4491,17 @@ app.post('/api/v3/multi-report/hourly', (req, res) => {
 
     Promise.all(listOfPromises).then((results) => {
 
-        // console.log("promise all")
+        // // /*it was uncommented*/ console.log("promise all")
 
-        // console.log(start, end)
+        // // /*it was uncommented*/ console.log(start, end)
 
-        // console.log("Doors:", results[0].groupRows.length)
+        // // /*it was uncommented*/ console.log("Doors:", results[0].groupRows.length)
 
         // Door results
         if (sensorTypes.isDoor)
             results[0].groupRows.forEach((sensor, idx) => {
 
-                // console.log("sensor:", sensor.tags.sensorId)
+                // // /*it was uncommented*/ console.log("sensor:", sensor.tags.sensorId)
                 // Process the result
 
                 let oldHour, oldDay, oldMonth, oldYear
@@ -4507,7 +4519,7 @@ app.post('/api/v3/multi-report/hourly', (req, res) => {
                 dayEnd = new Date(end); // new Date() creates a date with 2 hours less than inserted
                 dayEnd.setTime(dayEnd.getTime() - dayEnd.getTimezoneOffset() * 60 * 1000); // adjust the date
 
-                // console.log(dayStart, dayEnd)
+                // // /*it was uncommented*/ console.log(dayStart, dayEnd)
 
                 for (let d = dayStart; d <= dayEnd; d.setHours(d.getHours() + 1)) {
                     let time = d.toISOString()
@@ -4515,7 +4527,7 @@ app.post('/api/v3/multi-report/hourly', (req, res) => {
                     hourlyOpenDoor.push({ time, value: null, sensorId: null });
                 }
 
-                // console.log(hourlyOpenDoor)
+                // // /*it was uncommented*/ console.log(hourlyOpenDoor)
 
                 // Remap the time and values (minutes when door is opened by hour)
                 sensor.rows.forEach((data, index) => {
@@ -4562,7 +4574,7 @@ app.post('/api/v3/multi-report/hourly', (req, res) => {
                         let mins = seconds / 60
                         hourlyOpenDoorTimer += mins
 
-                        // console.log(new Date(previousTime / 1000000), new Date(currentTimeInflux / 1000000), dailyOpenDoorTimer)
+                        // // /*it was uncommented*/ console.log(new Date(previousTime / 1000000), new Date(currentTimeInflux / 1000000), dailyOpenDoorTimer)
                     }
 
                     if (index == sensor.rows.length - 1) {
@@ -4574,7 +4586,7 @@ app.post('/api/v3/multi-report/hourly', (req, res) => {
                 hourlyOpenDoor = _.orderBy(hourlyOpenDoor, "value", "asc"); //ordering so not-null values are firsts
                 hourlyOpenDoor = _.uniqBy(hourlyOpenDoor, "time"); //removing duplicates
                 hourlyOpenDoor = _.orderBy(hourlyOpenDoor, "time", "desc"); //ordering by timestamp
-                console.log(hourlyOpenDoor)
+                // /*it was uncommented*/ console.log(hourlyOpenDoor)
 
                 // Replace results into original location
                 sensor.rows = hourlyOpenDoor
@@ -4582,7 +4594,7 @@ app.post('/api/v3/multi-report/hourly', (req, res) => {
             });
 
         // Return the results
-        // console.log("promises:",listOfPromises)
+        // // /*it was uncommented*/ console.log("promises:",listOfPromises)
         if (listOfPromises.length == 2) // if there are 2 promises - then it is a door and a temperature
             sensorDataBundle = results[0].groupRows.concat(results[1].groupRows)
         else // if there is 1 promise - the it is either door or temperature
@@ -4601,7 +4613,7 @@ app.post('/api/v3/multi-report', (req, res) => {
     sess = req.session
     // if (sess.username) {
 
-    // console.log(req.body)
+    // // /*it was uncommented*/ console.log(req.body)
 
     function changeTimezone(date, ianatz) {
 
@@ -4678,7 +4690,7 @@ app.post('/api/v3/multi-report', (req, res) => {
         // Query for DOOR
         if (item == 'door') {
 
-            // console.log(item, sensorIds)
+            // // /*it was uncommented*/ console.log(item, sensorIds)
             sensorTypes.isDoor = true
 
             // Return how many times a door has been open or closed in an hour
@@ -4690,7 +4702,7 @@ app.post('/api/v3/multi-report', (req, res) => {
         }
         else if (item == 'temperature') {
 
-            // console.log(item, sensorIds)
+            // // /*it was uncommented*/ console.log(item, sensorIds)
             sensorTypes.isTemperature = true
 
             // Return average of temperature for each hour
@@ -4711,17 +4723,17 @@ app.post('/api/v3/multi-report', (req, res) => {
 
     Promise.all(listOfPromises).then((results) => {
 
-        // console.log("promise all", sensorTypes)
+        // // /*it was uncommented*/ console.log("promise all", sensorTypes)
 
-        // console.log(start, end)
+        // // /*it was uncommented*/ console.log(start, end)
 
-        // console.log("Doors:", results[0].groupRows.length)
+        // // /*it was uncommented*/ console.log("Doors:", results[0].groupRows.length)
 
         // Door results
         if (sensorTypes.isDoor)
             results[0].groupRows.forEach((sensor, idx) => {
 
-                // console.log("sensor:", sensor.tags.sensorId)
+                // // /*it was uncommented*/ console.log("sensor:", sensor.tags.sensorId)
                 // Process the result
 
                 let oldHour, oldDay, oldMonth, oldYear
@@ -4774,14 +4786,14 @@ app.post('/api/v3/multi-report', (req, res) => {
                     }
 
 
-                    // console.log(index)
+                    // // /*it was uncommented*/ console.log(index)
 
                     if (newState == 0) {
                         let currentTimeInflux = data.time.getNanoTime()
                         let previousTime
 
-                        // console.log("currentTimeInflux", currentTimeInflux)
-                        // console.log("sensor.rows[index - 1]", sensor.rows[index - 1])
+                        // // /*it was uncommented*/ console.log("currentTimeInflux", currentTimeInflux)
+                        // // /*it was uncommented*/ console.log("sensor.rows[index - 1]", sensor.rows[index - 1])
                         try {
                             previousTime = sensor.rows[index - 1].time.getNanoTime()
                         } catch (e) {
@@ -4793,7 +4805,7 @@ app.post('/api/v3/multi-report', (req, res) => {
                         let mins = seconds / 60
                         dailyOpenDoorTimer += mins
 
-                        // console.log(new Date(previousTime / 1000000), new Date(currentTimeInflux / 1000000), dailyOpenDoorTimer)
+                        // // /*it was uncommented*/ console.log(new Date(previousTime / 1000000), new Date(currentTimeInflux / 1000000), dailyOpenDoorTimer)
                     }
 
                     if (index == sensor.rows.length - 1) {
@@ -4805,7 +4817,7 @@ app.post('/api/v3/multi-report', (req, res) => {
                 dailyOpenDoor = _.orderBy(dailyOpenDoor, "value", "asc"); //ordering so not-null values are firsts
                 dailyOpenDoor = _.uniqBy(dailyOpenDoor, "time"); //removing duplicates
                 dailyOpenDoor = _.orderBy(dailyOpenDoor, "time", "desc"); //ordering by timestamp
-                // console.log(dailyOpenDoor)
+                // // /*it was uncommented*/ console.log(dailyOpenDoor)
 
                 // Replace results into original location
                 sensor.rows = dailyOpenDoor
@@ -4813,7 +4825,7 @@ app.post('/api/v3/multi-report', (req, res) => {
             });
 
         // Return the results
-        // console.log("promises:",listOfPromises.length)
+        // // /*it was uncommented*/ console.log("promises:",listOfPromises.length)
         if (listOfPromises.length == 2) // if there are 2 promises - then it is a door and a temperature
             sensorDataBundle = results[0].groupRows.concat(results[1].groupRows)
         else // if there is 1 promise - the it is either door or temperature
@@ -4847,7 +4859,7 @@ let server = app.listen(PORT, console.log(`NodeJS started on port ${PORT}`)).on(
     if (err) {
         // checkPort()
         // process.exit();
-        // console.log(`port:`,port)
+        // // /*it was uncommented*/ console.log(`port:`,port)
         // let kill = killPort(port)
     }
 });
@@ -4855,11 +4867,11 @@ let server = app.listen(PORT, console.log(`NodeJS started on port ${PORT}`)).on(
 // let checkPort = () => {
 //     exec('netstat -ltnup | grep 5000', (error, stdout, stderr) => {
 //         if (error) {
-//             console.log(`error: ${error.message}`)
+//             // /*it was uncommented*/ console.log(`error: ${error.message}`)
 //             process.exit(1);
 //             return
 //         } else if (stderr) {
-//             console.log(`stderr: ${stderr}`)
+//             // /*it was uncommented*/ console.log(`stderr: ${stderr}`)
 //             process.exit(1);
 //             return
 //         } else {
@@ -4875,18 +4887,18 @@ let killPort = (pid) => {
 
     //     exec(`kill ` + pid, (error2, stdout2, stderr2) => {
     //         if (error2) {
-    //             console.log(`error2: ${error2.message}`)
+    //             // /*it was uncommented*/ console.log(`error2: ${error2.message}`)
     //             process.exit(1);
     //             return
     //         } else if (stderr2) {
-    //             console.log(`stderr2: ${stderr2}`)
+    //             // /*it was uncommented*/ console.log(`stderr2: ${stderr2}`)
     //             process.exit(1);
     //             return
     //         } else if (stdout2) {
-    //             console.log(`stdout2: ${stdout2}`)
+    //             // /*it was uncommented*/ console.log(`stdout2: ${stdout2}`)
     //             process.exit(1);
     //         } else {
-    //             console.log("kill " + pid)
+    //             // /*it was uncommented*/ console.log("kill " + pid)
     //             process.exit(1);
     //         }
     //     })

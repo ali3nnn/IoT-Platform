@@ -5,6 +5,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.states_dict = exports.conveyorItem = exports.newItemsConveyorLayout = exports.conveyorLayout = exports.conveyor = exports.conveyorLive = exports.newItemLive = exports.doorLive = exports.graphView = exports.currentValueView = void 0;
 
+var _utils = require("./utils.js");
+
 var humanizeDuration = require("humanize-duration");
 
 var currentValueView = function currentValueView(alertClass2, sensor) {
@@ -178,12 +180,13 @@ var conveyorLayout = function conveyorLayout(sensor) {
     if (username.toLowerCase() == 'pharmafarm') {
       // add an image
       return '<img src="/images/custom-maps/pharmafarm.jpg"/>';
+    } else {
+      if ((0, _utils.imageExists)("/images/custom-maps/" + username.toLowerCase() + ".jpg")) {
+        return '<img src="/images/custom-maps/' + username.toLowerCase() + '.jpg"/>';
+      }
     }
 
-    if (username.toLowerCase() == 'pharmafarm') {
-      // add an image
-      return '<img src="/images/custom-maps/pharmafarm.jpg"/>';
-    }
+    return '';
   }() + "\n    <!-- END TIGANEALA -->\n    </div>\n    " + newItemsConveyorLayout() + "\n</div>";
 };
 
@@ -205,7 +208,7 @@ var conveyorItem = function conveyorItem(sensor, draggable) {
     // console.log(sensor)
     if (sensor.sensorType == 'gate') return '<i class="fas fa-door-open"></i>';else if (sensor.sensorType == 'safety') return '<i class="fas fa-exclamation-triangle"></i>';else if (sensor.sensorType == 'segment') return '<i class="fas fa-box-open"></i>';else return ''; // if(sensor.sensorType == 'segment')
     //     return '<i class="fas fa-grip-lines-vertical"></i><i class="fas fa-grip-lines-vertical"></i>'
-  }() + "\n\n    <!-- small view -->\n    <div class='small-view'>\n        <span class='sensorName'>Name: " + sensor.sensorName + "</span>\n    </div>\n        <!-- end small view -->\n        \n  <!-- tooltip -->\n  <span class=\"tooltiptext\">\n    <name>Name: " + info.name + "</name>\n    " + (sensor.status ? '<br><state>Status: ' + states_dict[sensor.status] + '</state>' : '') + "\n    " + function () {
+  }() + "\n\n    <!-- small view -->\n    <div class='small-view'>\n        <span class='sensorName'>Nume: " + sensor.sensorName + "</span>\n    </div>\n    <!-- end small view -->\n        \n  <!-- tooltip -->\n  <span class=\"tooltiptext\">\n    <name>Nume: " + info.name + "</name>\n    " + (sensor.status ? '<br><state>Status: ' + states_dict[sensor.status] + '</state>' : '') + "\n    " + function () {
     if (sensor.statusTime) {
       var h = sensor.statusTime.split("T")[1].split(":")[0];
       var m = sensor.statusTime.split("T")[1].split(":")[1];
@@ -216,8 +219,10 @@ var conveyorItem = function conveyorItem(sensor, draggable) {
 
       var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
       today = today.toLocaleDateString().slice(0, 2);
-      if (today == day) return '<br><date>From: ' + time + '</date>';
-      return '<br><date>From: ' + time + "<br>" + day + " " + " " + monthNames[parseInt(month)].slice(0, 3) + '</date>';
+      if (today == day) return '<br><date>De la: ' + time + '</date>';
+      return '<br><date>De la: ' + time + "<br>" + day + " " + " " + monthNames[parseInt(month)].slice(0, 3) + '</date>';
+    } else {
+      return '<br><date></date>';
     }
   }() + "\n    " + function () {
     if (sensor.usageTotal) {
@@ -240,22 +245,36 @@ var conveyorItem = function conveyorItem(sensor, draggable) {
         usage = sensor.usageTotal;
       }
 
-      return '<br><usage>Usage total: ' + usage + '</usage>';
+      return '<br><usage>Folosire: ' + usage + '</usage>';
+    } else {
+      return '<br><usage></usage>';
     }
   }() + "\n  </span>\n  <!-- end tooltip -->\n\n</div>";
-};
+}; // export let states_dict = {
+//     "run": "is running",
+//     "stop": "is stopped",
+//     "energy": "stand by",
+//     "acc": "in accumulation",
+//     "error": "error",
+//     "open": "is open",
+//     "closed": "is closed",
+//     "close": "is closed",
+//     "press": "emergency button pressed",
+//     "released": "emergency button ok"
+// }
+
 
 exports.conveyorItem = conveyorItem;
 var states_dict = {
-  "run": "is running",
-  "stop": "is stopped",
-  "energy": "energy saving mode",
-  "acc": "in accumulation",
-  "error": "error",
-  "open": "is open",
-  "closed": "is closed",
-  "close": "is closed",
-  "press": "emergency button pressed",
-  "released": "emergency button ok"
+  "run": "pornit",
+  "stop": "oprit",
+  "energy": "standby",
+  "acc": "acumulare",
+  "error": "eroare",
+  "open": "deschis",
+  "closed": "inchis",
+  "close": "inchis",
+  "press": "apasata",
+  "released": "ridicata"
 };
 exports.states_dict = states_dict;

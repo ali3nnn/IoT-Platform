@@ -71,7 +71,8 @@
 
 @import "bootstrap.css";
 
-$conveyor-item-size: 25px;
+$conveyor-item-size: 50px;
+$conveyor-item-large: 100px;
 
 .box-shadow-10 {
   -webkit-box-shadow: 0px 0px 10px #00000061;
@@ -5085,7 +5086,7 @@ div.conveyor-layout {
       transition: width 0.2s ease, height 0.2s ease, transform 0.2s ease;
       padding: 0px;
       border-radius: 5px;
-      width: $conveyor-item-size;
+      width: $conveyor-item-large;
       height: $conveyor-item-size;
       cursor: pointer;
 
@@ -5108,11 +5109,11 @@ div.conveyor-layout {
         &:before,
         &:after {
           content: "";
-          width: 40px;
-          height: 40px;
+          width: $conveyor-item-large;
+          height: $conveyor-item-size;
           border-radius: 3px;
           border: 1px solid var(--conveyor-acc);
-          // background-color: var(--red);
+          background-color: var(--conveyor-acc);
           position: absolute;
           top: 0;
           right: 0;
@@ -5123,6 +5124,7 @@ div.conveyor-layout {
           transform-origin: center center;
           animation: pulse-me-small 1s linear infinite;
           z-index: -99;
+          display: none;
         }
         &:after {
           animation-delay: 1s;
@@ -5137,11 +5139,11 @@ div.conveyor-layout {
         &:before,
         &:after {
           content: "";
-          width: 40px;
-          height: 40px;
+          width: $conveyor-item-large;
+          height: $conveyor-item-size;
           border-radius: 3px;
           border: 1px solid var(--conveyor-open);
-          // background-color: var(--red);
+          background-color: var(-conveyor-open);
           position: absolute;
           top: 0;
           right: 0;
@@ -5174,11 +5176,11 @@ div.conveyor-layout {
         &:before,
         &:after {
           content: "";
-          width: 40px;
-          height: 40px;
+          width: $conveyor-item-large;
+          height: $conveyor-item-size;
           border-radius: 3px;
           border: 1px solid var(--conveyor-press);
-          // background-color: var(--red);
+          background-color: var(--conveyor-press);
           position: absolute;
           top: 0;
           right: 0;
@@ -5213,11 +5215,11 @@ div.conveyor-layout {
         &:before,
         &:after {
           content: "";
-          width: 40px;
-          height: 40px;
+          width: $conveyor-item-large;
+          height: $conveyor-item-size;
           border-radius: 3px;
           border: 1px solid var(--conveyor-error);
-          // background-color: var(--red);
+          background-color: var(--conveyor-error);
           position: absolute;
           top: 0;
           right: 0;
@@ -5278,6 +5280,9 @@ div.conveyor-layout {
         display: block;
         text-align: center;
         line-height: 25px;
+        transform: translateY(-50%);
+        top:50%;
+        position: relative;
       }
 
       span {
@@ -5429,6 +5434,7 @@ div#map {
             text-align: center;
             /* z-index: 0; */
             border-radius: 13px;
+            bottom: unset;
           }
         }
 
@@ -5530,6 +5536,7 @@ div#map > div.custom-map > .sensor-item:hover {
 
 div#map > div.custom-map > .sensor-item:hover:after {
   display: block !important;
+  // height: 30px;
 }
 // End test dot over map
 
@@ -7567,6 +7574,7 @@ border-bottom: 1px dotted black; */
 
   .sensor-item[type="segment"] {
     width: 100px !important;
+    height: 25px !important;
     .tooltiptext {
       top: 10px !important;
     }
@@ -7574,6 +7582,7 @@ border-bottom: 1px dotted black; */
 
   .sensor-item[type="gate"] {
     height: 100px !important;
+    width: 25px !important;
     .tooltiptext {
       top: -30px !important;
       left: -79px !important;
@@ -7594,13 +7603,14 @@ border-bottom: 1px dotted black; */
   padding: 5px 0;
   position: absolute;
   z-index: 1;
-  // bottom: -31px;
+
   top: 20px;
   left: 50%;
-  -webkit-transform: translate(-50%, 50%);
-  -moz-transform: translate(-50%, 50%);
-  -o-transform: translate(-50%, 50%);
-  transform: translate(-50%, 50%);
+
+  -webkit-transform: translate(-50%,50px);
+  -moz-transform: translate(-50%,50px);
+  -o-transform: translate(-50%,50px);
+  transform: translate(-50%,50px);
 
   -webkit-transition: opacity 0.3s ease-in;
   -o-transition: opacity 0.3s ease-in;

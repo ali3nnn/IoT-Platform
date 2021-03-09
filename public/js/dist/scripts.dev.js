@@ -5,14 +5,47 @@ var _moment = require("moment");
 var _utils = require("./utils.js");
 
 console.log("script.js added");
-// End Imports
-var href = window.location.pathname; // Window loader
+var href = window.location.pathname;
+console.log(userData_raw); // Window loader
 // ============================
 
 $(window).on('load', function () {
   $("body").addClass("window-loaded");
 }); // ============================
 // END Window loader
+// Browser detector
+// Opera 8.0+
+
+var isOpera = !!window.opr && !!opr.addons || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0; // Firefox 1.0+
+
+var isFirefox = typeof InstallTrigger !== 'undefined'; // Safari 3.0+ "[object HTMLElementConstructor]" 
+
+var isSafari = /constructor/i.test(window.HTMLElement) || function (p) {
+  return p.toString() === "[object SafariRemoteNotification]";
+}(!window['safari'] || typeof safari !== 'undefined' && window['safari'].pushNotification); // Internet Explorer 6-11
+
+
+var isIE =
+/*@cc_on!@*/
+false || !!document.documentMode; // Edge 20+
+
+var isEdge = !isIE && !!window.StyleMedia; // Chrome 1 - 79
+
+var isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime); // Edge (based on chromium) detection
+
+var isEdgeChromium = isChrome && navigator.userAgent.indexOf("Edg") != -1; // Blink engine detection
+
+var isBlink = (isChrome || isOpera) && !!window.CSS;
+if (isSafari) $("body").addClass('safari'); // var output = 'Detecting browsers by ducktyping:<hr>';
+// output += 'isFirefox: ' + isFirefox + '<br>';
+// output += 'isChrome: ' + isChrome + '<br>';
+// output += 'isSafari: ' + isSafari + '<br>';
+// output += 'isOpera: ' + isOpera + '<br>';
+// output += 'isIE: ' + isIE + '<br>';
+// output += 'isEdge: ' + isEdge + '<br>';
+// output += 'isEdgeChromium: ' + isEdgeChromium + '<br>';
+// output += 'isBlink: ' + isBlink + '<br>';
+// document.body.innerHTML = output;
 // Init sensor form
 // ============================
 
@@ -291,9 +324,9 @@ try {
 // Chart.JS
 
 
-{
-  /* <script> */
-} // chartIt('temperature_1')
+{}
+/* <script> */
+// chartIt('temperature_1')
 
 function chartIt(selector) {
   var ctx = document.getElementById(selector).getContext('2d');

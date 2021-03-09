@@ -11,6 +11,8 @@ var humanizeDuration = require("humanize-duration");
 
 var _ = require('lodash');
 
+window.lodash = _;
+
 var checkOnlineStatus = function checkOnlineStatus() {
   var online;
   return regeneratorRuntime.async(function checkOnlineStatus$(_context) {
@@ -345,6 +347,27 @@ function triggerSensorView(sensorId, sensor) {
             "status": 0
           })
         });
+        $(".state-btn-inner > input").attr("disabled", true); // SEND STOP TO MQTT 2 TIMES
+        // ---------------
+
+        var intervalGap = 2000;
+        var stopInterval = setInterval(function () {
+          console.log("send stop one more time");
+          (0, _utils.sendMessage)("socketChannel", {
+            topic: 'anygo/conveyor',
+            message: JSON.stringify({
+              username: username,
+              sensorId: sensorId,
+              "status": 0
+            })
+          });
+        }, intervalGap);
+        setTimeout(function () {
+          console.log("stop sender is cleared");
+          clearInterval(stopInterval);
+          $(".state-btn-inner > input").attr("disabled", false);
+        }, intervalGap * 5); // ---------------
+        // END STOP WORKAROUND
       } // set info msg
 
 
@@ -912,7 +935,8 @@ function updateCurrentValue(sensorid, value) {
     var currentDate = new Date();
     var oldDate = new Date(date);
     var diff = (currentDate.getTime() - oldDate.getTime()) / 1000;
-    if (diff > 3600) timeEl.siblings('.pulse').addClass("not-live");else timeEl.siblings('.pulse').removeClass("not-live"); // Update date
+    if (diff > 5 * 60) // diff > SECONDS - seconds = how many seconds should wait before showing not live
+      timeEl.siblings('.pulse').addClass("not-live");else timeEl.siblings('.pulse').removeClass("not-live"); // Update date
 
     timeEl.html(date);
   } else {
@@ -1027,7 +1051,7 @@ var currentValueBox = $("article[class*='live-card']"); // TIGANEALA
 // =========================
 
 socket.on(socketChannel, function _callee(data) {
-  var msg, value, currentPower, _currentPower, isclick, sensorId, status, timeEl, oldTime, oldTimeObj, now, date, day, month;
+  var msg, value, currentPower, _currentPower, isSensorForCurrentUser, isclick, sensorId, status, timeEl, oldTime, oldTimeObj, now, date, day, month;
 
   return regeneratorRuntime.async(function _callee$(_context5) {
     while (1) {
@@ -1080,9 +1104,14 @@ socket.on(socketChannel, function _callee(data) {
 
 
           if (data.topic == 'anygo/conveyor') {
-            msg = JSON.parse(data.message); // msg = `{"username":"demo",sensorId":"TEST0001CONV0003SEG","status":"run"}`
+            msg = JSON.parse(data.message); // console.log(msg)
+            // msg = `{"username":"demo",sensorId":"TEST0001CONV0003SEG","status":"run"}`
 
-            if ('status' in msg && 'sensorId' in msg) {
+            isSensorForCurrentUser = _.find(userData_raw, function (n) {
+              if (n.sensorId == msg.sensorId) return true;
+            }); // if (isSensorForCurrentUser) {
+
+            if ('status' in msg && 'sensorId' in msg && isSensorForCurrentUser) {
               // Start/stop conveyor - from mqtt directly not from button
               if ([1, 0, '1', '0'].includes(msg['status'])) {
                 if ($('.controller-' + msg["sensorId"] + ' .cb-value').parent('.state-btn-inner').hasClass("active") && msg["status"] == 0) {
@@ -1157,7 +1186,10 @@ socket.on(socketChannel, function _callee(data) {
                   stopAlert();
                 }
               }
-            }
+            } // } else {
+            //     console.warn("topic: anygo/conveyor", "msg:"+msg.sensorId, "not for this user")
+            // }
+
           } // ======================================================
 
 
@@ -1452,7 +1484,14 @@ var initLiveData = function initLiveData() {
   });
 };
 
-initLiveData(); // Update charts continously
+initLiveData(); // Order graph in ascending order based on sensor name
+// const orderCharts = () => {
+//     console.log("here")
+//     console.log($(""))
+// }
+// timeoutAsync(3000, orderCharts)
+// End ordering
+// Update charts continously
 
 var liveChart = function liveChart() {
   var sensorDataRaw, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, sensor, sensorData, _i, _sensorDataRaw, _sensor;

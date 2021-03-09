@@ -14,7 +14,7 @@ const influx = new Influx.InfluxDB({
 
 // Influx Write - ASYNC
 function influxWriter(measurement, country, county, city, location, zone, username, type, sensorId, value, database = 'anysensor3', precision = 's') {
-    console.log('Influx Write')
+    // /*it was uncommented*/ console.log('Influx Write')
     influx.writePoints([{
         measurement,
         tags: {
@@ -42,7 +42,7 @@ function influxWriter(measurement, country, county, city, location, zone, userna
 // Influx Query - PROMISE
 function influxReader(query) {
     return new Promise((resolve, reject) => {
-        // console.log(query)
+        // // /*it was uncommented*/ console.log(query)
         influx.query(query)
             .then(result => {
                 return resolve(result)
@@ -61,7 +61,7 @@ function influxReader(query) {
 
 // DB Configuration
 config_db = {
-    host: process.env.DATABASE_HOST,
+    host: process.env.IP_HOST,
     user: process.env.DATABASE_USER,
     password: process.env.DATABASE_PASSWORD,
     database: process.env.DATABASE
@@ -71,7 +71,7 @@ config_db = {
 class Database {
     constructor(config) {
         this.connection = mysql.createConnection(config);
-        // console.log("Second connection to MySQL in promise")
+        // // /*it was uncommented*/ console.log("Second connection to MySQL in promise")
     }
     query(sql, args) {
         return new Promise((resolve, reject) => {
@@ -98,7 +98,7 @@ database = new Database(config_db)
 
 function mysqlReader(query) {
     return new Promise((resolve, reject) => {
-        // console.log(query)
+        // // /*it was uncommented*/ console.log(query)
         database.query(query)
             .then(result => {
                 return resolve(result)
@@ -111,7 +111,7 @@ function mysqlReader(query) {
 
 function mysqlWriter(query) {
     return new Promise((resolve, reject) => {
-        // console.log(query)
+        // // /*it was uncommented*/ console.log(query)
         database.query(query)
             .then(result => {
                 return resolve(result)
@@ -146,7 +146,7 @@ const getUserData = async (req, res, next) => {
         //         from sensors 
         //         join locations where sensors.zoneId=locations.zoneId and locations.createdBy = (select company from users where username='`+sess.username+`')
         //         group by sensors.sensorId;`).then((result)=>{
-        //             // console.log(result)
+        //             // // /*it was uncommented*/ console.log(result)
         //             if(result) {
         //                 userData = result
         //                 userData["error"] = false
@@ -161,7 +161,7 @@ const getUserData = async (req, res, next) => {
                 from sensors 
                 join locations where sensors.zoneId=locations.zoneId and locations.createdBy = (select company from users where username='`+ sess.username + `')
                 group by sensors.sensorId;`).then((result) => {
-            // console.log(result)
+            // // /*it was uncommented*/ console.log(result)
             if (result) {
                 userData = result
                 userData["error"] = false
@@ -175,8 +175,9 @@ const getUserData = async (req, res, next) => {
             // sess.userData = userData // set list of sensors that are assigned to company of superadmin
 
             // Set sess.company variable
-            mysqlReader("SELECT company FROM users where username='" + sess.username + "'").then((result) => {
+            mysqlReader("SELECT company, name FROM users where username='" + sess.username + "'").then((result) => {
                 sess.company = result[0].company
+                sess.name = result[0].name
             }).then(() => {
                 next()
             })
@@ -194,23 +195,26 @@ const getUserData = async (req, res, next) => {
             // sess.userData = userData
         }).then(() => {
             // Set sess.company variable
-            mysqlReader("SELECT company, role FROM users where username='" + sess.username + "'").then((result) => {
-                console.log(result)
+            mysqlReader("SELECT company, role, name FROM users where username='" + sess.username + "'").then((result) => {
+                // // /*it was uncommented*/ console.log(result)
                 // sess.company = result[0].company
                 // sess.role = result[0].role
-                if(!("error" in userData)) {
-                    let userDataFull = userData.map((item,index)=>{
+                if (userData.error == false) {
+                    let userDataFull = userData.map((item, index) => {
                         return {
                             ...item,
                             company: result[0].company,
-                            role: result[0].role
+                            role: result[0].role,
+                            name: result[0].name
                         }
                     })
                     sess.userData = userDataFull
                 } else {
                     sess.userData = userData
                 }
-                
+                sess.name = result[0].name
+                sess.company = result[0].company
+
             }).then(() => {
                 next()
             })
@@ -222,7 +226,7 @@ const getCounties = async (req, res, next) => {
 
     sess = req.session;
     sess.counties = []
-    console.log("getcounties:", sess.username)
+    // /*it was uncommented*/ console.log("getcounties:", sess.username)
 
     var time = new Date()
     var data = []
@@ -233,7 +237,7 @@ const getCounties = async (req, res, next) => {
             if (rows.length) {
                 // TODO - continue from here
                 sess.userData = rows[0]
-                console.log(rows[0])
+                // // /*it was uncommented*/ console.log(rows[0])
 
                 // var whereQuery = `where (username='` + sess.username + `') or (`
 
@@ -249,14 +253,14 @@ const getCounties = async (req, res, next) => {
 
             } else {
 
-                console.log("not found", rows)
+                // /*it was uncommented*/ console.log("not found", rows)
                 // get counties
                 // var queryCounties = "select distinct(county) as county from (select county, value from sensors where username='" + sess.username + "')"
                 // var queryCounties = `SHOW TAG VALUES WITH KEY IN ("county") WHERE username='` + sess.username + `'`
 
             }
 
-            // console.log("queryCounties:", queryCounties)
+            // // /*it was uncommented*/ console.log("queryCounties:", queryCounties)
 
             // let counties = influxReader(queryCounties).then(async (result) => {
 
@@ -266,7 +270,7 @@ const getCounties = async (req, res, next) => {
             //         counties.push(result[i].value)
             //     }
 
-            //     console.log("counties", counties)
+            //     // /*it was uncommented*/ console.log("counties", counties)
 
             //     return await counties
 
@@ -299,17 +303,17 @@ const getCounties = async (req, res, next) => {
             //         sess.counties = []
             //     }
 
-            //     console.log("data", data)
+            //     // /*it was uncommented*/ console.log("data", data)
 
-            //     // console.log(sess.username, "getCounties 2", sess.counties)
+            //     // // /*it was uncommented*/ console.log(sess.username, "getCounties 2", sess.counties)
 
             //     next()
 
-            // }).catch(error => console.log(`Error in promise for GETCOUNTY ${error}`))
+            // }).catch(error => // /*it was uncommented*/ console.log(`Error in promise for GETCOUNTY ${error}`))
 
         })
 
-        // console.log(sess.username, "getCounties 3", sess.counties)
+        // // /*it was uncommented*/ console.log(sess.username, "getCounties 3", sess.counties)
         next()
 
     } else res.render("login", {
@@ -330,7 +334,7 @@ const getSensorLocation = async (req, res, next) => {
     //         const query = "SELECT * FROM sensors WHERE username='" + sess.username + "'"
     //         mysqlReader(query).then(async (rows) => {
     //             let rows_ = await rows
-    //             // console.log(await rows)
+    //             // // /*it was uncommented*/ console.log(await rows)
     //             if (rows_.length) {
 
     //                 var whereQuery = `where (username='` + sess.username + `') or (`
@@ -353,7 +357,7 @@ const getSensorLocation = async (req, res, next) => {
 
     //             }
 
-    //             // console.log(querySensorId)
+    //             // // /*it was uncommented*/ console.log(querySensorId)
 
     //             let sensors = influxReader(querySensorId).then(async (result) => {
 
@@ -395,20 +399,20 @@ const getSensorLocation = async (req, res, next) => {
     //                     // sess.data = []
     //                 }
 
-    //                 // console.log(sess.username, "getCounties 2", sess.counties)
+    //                 // // /*it was uncommented*/ console.log(sess.username, "getCounties 2", sess.counties)
 
-    //                 // console.log(sess.sensors)
+    //                 // // /*it was uncommented*/ console.log(sess.sensors)
 
     //                 next()
 
-    //             }).catch(error => console.log(`Error in promise for GETSENSORLOCATION ${error}`))
+    //             }).catch(error => // /*it was uncommented*/ console.log(`Error in promise for GETSENSORLOCATION ${error}`))
 
     //         })
     //     } else {
     //         next()
     //     }
     // } else {
-    //     // console.log("test")
+    //     // // /*it was uncommented*/ console.log("test")
     //     res.render("login", {
     //         alert: "You are not logged in"
     //     })
@@ -494,7 +498,7 @@ const isScannerAvailable = async (req, res, next) => {
     // var data = {}
     // if (sess.username) {
     //     if (sess.isScannerAvailable == undefined || sess.isScannerAvailable.length == 0) {
-    //         // console.log(sess.isScannerAvailable, "up")
+    //         // // /*it was uncommented*/ console.log(sess.isScannerAvailable, "up")
     //         const query = "SHOW TABLES LIKE 'scanner_" + sess.username + "'";
     //         mysqlReader(query)
     //             .then(rows => {
@@ -505,7 +509,7 @@ const isScannerAvailable = async (req, res, next) => {
     //                             data['count'] = count[0].count
     //                             data["responseTime"] = new Date() - time
     //                         }).then(() => {
-    //                             // console.log(data)
+    //                             // // /*it was uncommented*/ console.log(data)
     //                             sess.isScannerAvailable = data
     //                             next()
     //                         })
@@ -517,7 +521,7 @@ const isScannerAvailable = async (req, res, next) => {
     //                 }
     //             })
     //     } else {
-    //         // console.log(sess.isScannerAvailable, "down")
+    //         // // /*it was uncommented*/ console.log(sess.isScannerAvailable, "down")
     //         next()
     //     }
     // } else {
@@ -531,7 +535,7 @@ const mqttOverSocketIoBridge = (req, res, next) => {
 
 // This is a test middleware that is used at every route
 const test = (req, res, next) => {
-    // console.log("--->>>", req.originalUrl)
+    // // /*it was uncommented*/ console.log("--->>>", req.originalUrl)
 
     // Allow request from url like /api/url_path?admin=target_username
     if (req.query.admin) {
@@ -584,7 +588,7 @@ const getDaysInMonth = (m, y) => {
 // const trackurl = (req,res,next) => {
 //     if(req.originalUrl!='undefined')
 //         req.session.trackurl += ","+req.originalUrl
-//     console.log(">>",req.originalUrl, req.session.trackurl)
+//     // /*it was uncommented*/ console.log(">>",req.originalUrl, req.session.trackurl)
 //     next()
 // }
 

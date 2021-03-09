@@ -156,14 +156,14 @@ var _require5 = require('buffer'),
 
 
 var influx = new Influx.InfluxDB({
-  host: 'localhost',
+  host: process.env.IP_HOST,
   database: 'anysensor3'
 }); // Influx Write - ASYNC
 
 function influxWriter(measurement, country, county, city, location, zone, username, type, sensorId, value) {
   var database = arguments.length > 10 && arguments[10] !== undefined ? arguments[10] : 'anysensor3';
   var precision = arguments.length > 11 && arguments[11] !== undefined ? arguments[11] : 's';
-  // console.log('Influx Write')
+  // // /*it was uncommented*/ console.log('Influx Write')
   influx.writePoints([{
     measurement: measurement,
     tags: {
@@ -190,7 +190,7 @@ function influxWriter(measurement, country, county, city, location, zone, userna
 
 function influxReader(query) {
   return new Promise(function (resolve, reject) {
-    // console.log(query)
+    // // /*it was uncommented*/ console.log(query)
     influx.query(query).then(function (result) {
       return resolve(result);
     }).catch(function (error) {
@@ -207,7 +207,7 @@ function influxReader(query) {
 
 
 config_db = {
-  host: process.env.DATABASE_HOST,
+  host: process.env.IP_HOST,
   user: process.env.DATABASE_USER,
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE
@@ -221,8 +221,8 @@ config_verne = {
 // let db = mysql.createConnection(config_db)
 // Connect to DB - Async
 // db.connect((err) => {
-//     if (err) console.log("Connecting to mysql failed")
-//     else console.log("First connection to MySQL", '\r\n')
+//     if (err) // /*it was uncommented*/ console.log("Connecting to mysql failed")
+//     else // /*it was uncommented*/ console.log("First connection to MySQL", '\r\n')
 // })
 // Database Connection In Promise
 
@@ -232,7 +232,7 @@ function () {
   function Database(config) {
     _classCallCheck(this, Database);
 
-    this.connection = mysql.createConnection(config); // console.log("Second connection to MySQL in promise")
+    this.connection = mysql.createConnection(config); // // /*it was uncommented*/ console.log("Second connection to MySQL in promise")
   }
 
   _createClass(Database, [{
@@ -272,18 +272,21 @@ var db = mysql.createConnection(config_db);
 
 function mysqlReader(query) {
   return new Promise(function (resolve, reject) {
-    // console.log(query)
+    // // /*it was uncommented*/ console.log(query)
     database.query(query).then(function (result) {
       return resolve(result);
     }).catch(function (error) {
       return reject(error);
     });
   });
-}
+} // Fix problem with groupconcat length <= 1024 characters
+
+
+mysqlReader("SET SESSION group_concat_max_len = 1000000;");
 
 function addUserVerne(query) {
   return new Promise(function (resolve, reject) {
-    // console.log(query)
+    // // /*it was uncommented*/ console.log(query)
     verne.query(query).then(function (result) {
       return resolve(result);
     }).catch(function (error) {
@@ -294,7 +297,7 @@ function addUserVerne(query) {
 
 function mysqlWriter(query) {
   return new Promise(function (resolve, reject) {
-    // console.log(query)
+    // // /*it was uncommented*/ console.log(query)
     database.query(query).then(function (result) {
       return resolve(result);
     }).catch(function (error) {
@@ -374,12 +377,13 @@ app.get('/', function (req, res) {
 }); // getCounties, getSensorLocation, isScaleAvailable, isConveyorAvailable, isScannerAvailable,
 
 app.get("/map", cookieChecker, authDashboard, getUserData, mqttOverSocketIoBridge, function (req, res) {
-  sess = req.session;
-  console.log("sess:", sess);
+  sess = req.session; // /*it was uncommented*/ console.log("sess:",sess)
+
   res.render("map", {
     username: sess.username,
     role: sess.role,
-    userData: sess.userData
+    userData: sess.userData,
+    name: sess.name.split(' ').length > 1 ? sess.name.split(' ')[0] : sess.name
   });
 });
 app.get("/map/zone", cookieChecker, authDashboard, getUserData, mqttOverSocketIoBridge, function (req, res) {
@@ -391,7 +395,7 @@ app.get("/map/zone", cookieChecker, authDashboard, getUserData, mqttOverSocketIo
     // let data = []
     // let sensorBuffer = [] // this buffer is use to prevent double inserting of sensors
     // sess.userData.forEach(sensor => {
-    //     console.log(sensor.sensorId, sensorBuffer.indexOf(sensor.sensorId))
+    //     // /*it was uncommented*/ console.log(sensor.sensorId, sensorBuffer.indexOf(sensor.sensorId))
     //     if (sensorBuffer.indexOf(sensor.sensorId) == -1) {
     //         sensor.zoneId == req.query.zoneid ? data.push(sensor) : null
     //         sensorBuffer.push(sensor.sensorId)
@@ -402,7 +406,8 @@ app.get("/map/zone", cookieChecker, authDashboard, getUserData, mqttOverSocketIo
       // zoneData: data,
       username: sess.username,
       role: sess.role,
-      userData: sess.userData // county: req.params.county,
+      userData: sess.userData,
+      name: sess.name.split(' ').length > 1 ? sess.name.split(' ')[0] : sess.name // county: req.params.county,
       // username: sess.username,
       // user_role: sess.user_role,
       // sensorId: sess.sensorId, //this needs to be replaced or removed
@@ -433,13 +438,14 @@ app.get("/map/zone", cookieChecker, authDashboard, getUserData, mqttOverSocketIo
 
 app.get('/map/:county', cookieChecker, authDashboard, getCounties, getSensorLocation, isScaleAvailable, isConveyorAvailable, isScannerAvailable, mqttOverSocketIoBridge, function (req, res) {
   sess = req.session;
-  sess.county = req.params.county; // console.log(sess.username, sess.counties)
-  // console.log("/map/" + sess.county)
-  // console.log("User:", sess.username)
+  sess.county = req.params.county; // // /*it was uncommented*/ console.log(sess.username, sess.counties)
+  // // /*it was uncommented*/ console.log("/map/" + sess.county)
+  // // /*it was uncommented*/ console.log("User:", sess.username)
 
   if (sess.username) res.status(200).render('dashboard', {
     county: req.params.county,
     username: sess.username,
+    name: sess.name.split(' ').length > 1 ? sess.name.split(' ')[0] : sess.name,
     user_role: sess.user_role,
     sensorId: sess.sensorId,
     //this needs to be replaced or removed
@@ -461,6 +467,7 @@ app.get('/scale-dashboard', cookieChecker, authDashboard, getCounties, isScaleAv
   sess = req.session;
   res.render("scale-dashboard", {
     username: sess.username,
+    name: sess.name.split(' ').length > 1 ? sess.name.split(' ')[0] : sess.name,
     user_role: sess.user_role,
     sensorId: sess.sensorAccess,
     //this needs to be replaced or removed
@@ -477,6 +484,7 @@ app.get('/conveyor-dashboard', cookieChecker, authDashboard, getCounties, isScal
   sess = req.session;
   res.render("conveyor-dashboard", {
     username: sess.username,
+    name: sess.name.split(' ').length > 1 ? sess.name.split(' ')[0] : sess.name,
     user_role: sess.user_role,
     sensorId: sess.sensorAccess,
     //this needs to be replaced or removed
@@ -494,6 +502,7 @@ app.get('/scanner-dashboard', cookieChecker, authDashboard, getCounties, isScale
   sess = req.session;
   res.render("scanner-dashboard", {
     username: sess.username,
+    name: sess.name.split(' ').length > 1 ? sess.name.split(' ')[0] : sess.name,
     user_role: sess.user_role,
     sensorId: sess.sensorAccess,
     //this needs to be replaced or removed
@@ -514,6 +523,7 @@ app.get('/settings', cookieChecker, authDashboard, getUserData, function (req, r
   sess = req.session;
   res.render('settings', {
     username: sess.username,
+    name: sess.name.split(' ').length > 1 ? sess.name.split(' ')[0] : sess.name,
     role: sess.role,
     userData: sess.userData
   });
@@ -568,7 +578,7 @@ app.get('/users', authDashboard, getCounties, authSuperAdmin, showAllUsers, func
       role_basic: req.body.role == 'basic' ? true : false,
       role_superadmin: req.body.role == 'superadmin' ? true : false,
       message: "Notification test message"
-    }; // console.log(dataRender)
+    }; // // /*it was uncommented*/ console.log(dataRender)
 
     res.render("admin_allusers", dataRender);
   }); // try {
@@ -585,11 +595,11 @@ app.get('/users', authDashboard, getCounties, authSuperAdmin, showAllUsers, func
   //             role_superadmin: req.body.role == 'superadmin' ? true : false,
   //             message: "Notification test message"
   //         }
-  //         // console.log(data)
+  //         // // /*it was uncommented*/ console.log(data)
   //         res.render("admin_allusers", data)
   //     })
   // } catch (err) {
-  //     console.log("db query users error:", err)
+  //     // /*it was uncommented*/ console.log("db query users error:", err)
   // }
 }); // Update user
 
@@ -604,7 +614,7 @@ app.post('/update', function _callee(req, res) {
             break;
           }
 
-          // console.log("Query:", req.body)
+          // // /*it was uncommented*/ console.log("Query:", req.body)
           db.query("UPDATE users SET Name='" + req.body.name + "', Username='" + req.body.username + "', Email='" + req.body.email + "', User_role='" + req.body.role + "' WHERE Id='" + req.body.id + "'", function (err, result) {
             if (err) console.error(err);else {
               res.render("admin_allusers", {
@@ -624,7 +634,7 @@ app.post('/update', function _callee(req, res) {
 
         case 6:
           hashedPassword = _context.sent;
-          // console.log(hashedPassword)
+          // // /*it was uncommented*/ console.log(hashedPassword)
           db.query("UPDATE users SET Name='" + req.body.name + "', Username='" + req.body.username + "', Email='" + req.body.email + "', User_role='" + req.body.role + "', Password='" + hashedPassword + "' WHERE Id='" + req.body.id + "'", function (err, result) {
             if (err) console.error(err);else {
               res.render("admin_allusers", {
@@ -652,7 +662,7 @@ app.get('/add-sensor', authDashboard, authSuperAdmin, function (req, res) {}); /
 app.get('/api/v3/get-user-data', cookieChecker, authDashboard, getUserData, function (req, res) {
   sess = req.session;
   var userData = {};
-  userData = sess.userData; // console.log(userData)
+  userData = sess.userData; // // /*it was uncommented*/ console.log(userData)
 
   if (userData['error']) {
     res.status(403).send(userData);
@@ -673,14 +683,14 @@ app.get('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, fun
           // [*] TODO 1: check if sensor exists in sensors tabel, if exists it means it is assigned already and show alert message
           // [*] TODO 2: set a new location or pick an old one from other sensors that users has access to
           // [*] TODO 3: insert into sensors and userAccess
-          // console.log(sess)
+          // // /*it was uncommented*/ console.log(sess)
 
           if (!sess.username) {
             _context2.next = 10;
             break;
           }
 
-          userData = sess.userData; // console.log(userData)
+          userData = sess.userData; // // /*it was uncommented*/ console.log(userData)
 
           _context2.next = 6;
           return regeneratorRuntime.awrap(mysqlReader("select * from sensors where sensorId='" + getQuery.sensorid + "';"));
@@ -693,7 +703,7 @@ app.get('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, fun
             // const query = "select distinct locations.* from locations inner join sensors on sensors.zoneId = locations.zoneId inner join userAccess on userAccess.sensorId = sensors.sensorId and userAccess.username = '" + sess.username + "'";
             _query = "select locations.* from locations where createdBy = (select company from users where username='" + sess.username + "');";
             mysqlReader(_query).then(function (locations) {
-              // console.log("locations",locations)
+              // // /*it was uncommented*/ console.log("locations",locations)
               res.render('initsensor-qr', {
                 username: sess.username,
                 sensorid: getQuery.sensorid,
@@ -734,7 +744,7 @@ app.get('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, fun
 
 app.post('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, function (req, res) {
   sess = req.session;
-  var postQuery = req.body; // console.log(postQuery)
+  var postQuery = req.body; // // /*it was uncommented*/ console.log(postQuery)
 
   if (postQuery.location1 && postQuery.location2 && postQuery.location2 && postQuery.location3 && postQuery.sensorName) {
     // Location from dropdown
@@ -772,7 +782,7 @@ app.post('/api/v3/init-sensor-qr', cookieChecker, authDashboard, getUserData, fu
       //     })
       // } else {
       // Insert into locations
-      // console.log("INSERT INTO locations (location1, location2, location3, createdBy) values ('" + postQuery.location1 + "','" + postQuery.location2 + "','" + postQuery.location3 + "', '"+sess.company+"')")
+      // // /*it was uncommented*/ console.log("INSERT INTO locations (location1, location2, location3, createdBy) values ('" + postQuery.location1 + "','" + postQuery.location2 + "','" + postQuery.location3 + "', '"+sess.company+"')")
 
       mysqlReader("INSERT INTO locations (location1, location2, location3, createdBy) values ('" + postQuery.location1 + "','" + postQuery.location2 + "','" + postQuery.location3 + "', '" + sess.company + "')").then(function () {
         // Get zoneId
@@ -834,11 +844,11 @@ app.get('/api/v3/get-sensor-data', function (req, res) {
     influxQuery = "SELECT value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQueryDoor + "' and time<now() order by time desc;"; // influxQuery = "SELECT value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQuery + "' and time<now() order by time desc;"
   } else {
     influxQuery = "SELECT mean(value) as value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQueryGeneral + "' and time<now() group by time(5m) order by time desc;";
-  } // console.log(influxQuery)
+  } // // /*it was uncommented*/ console.log(influxQuery)
 
 
   if (req.query.type == 'door') {
-    // console.log(req.query.type, influxQuery)
+    // // /*it was uncommented*/ console.log(req.query.type, influxQuery)
     influxReader(influxQuery).then(function (result) {
       var paddingStyle = 1; // 1,2,3
 
@@ -853,11 +863,11 @@ app.get('/api/v3/get-sensor-data', function (req, res) {
             if (typeof item.time == 'string') day = item.time.split('T')[0].split('-')[2];else {
               var time = item.time._nanoISO;
               day = time.split('T')[0].split('-')[2];
-            } // console.log(typeof item.time, day, thisDay, day==thisDay)
+            } // // /*it was uncommented*/ console.log(typeof item.time, day, thisDay, day==thisDay)
 
             return day == thisDay;
           } catch (e) {
-            console.log(e);
+            // /*it was uncommented*/ console.log(e)
             return false;
           }
         };
@@ -868,11 +878,11 @@ app.get('/api/v3/get-sensor-data', function (req, res) {
             if (typeof item.time == 'string') day = item.time.split('T')[0].split('-')[2];else {
               var time = item.time._nanoISO;
               day = time.split('T')[0].split('-')[2];
-            } // console.log(typeof item.time, day, thisDay, day==thisDay)
+            } // // /*it was uncommented*/ console.log(typeof item.time, day, thisDay, day==thisDay)
 
             return day == thisDay - 1;
           } catch (e) {
-            console.log(e);
+            // /*it was uncommented*/ console.log(e)
             return false;
           }
         };
@@ -965,11 +975,11 @@ app.get('/api/v3/get-sensor-data', function (req, res) {
 
         if (finalResultFilteredYesterday.length) {
           oldestValue = finalResultFilteredYesterday[0].value; // last value recorded yesterday
-          // console.log(oldestValue, oldestValue == 1, oldestValue == 0)
+          // // /*it was uncommented*/ console.log(oldestValue, oldestValue == 1, oldestValue == 0)
 
           if (oldestValue == 1) {
             var midnight = new Date();
-            midnight = midnight.toISOString().split("T")[0] + 'T00:00:00.000Z'; // console.log(midnight)
+            midnight = midnight.toISOString().split("T")[0] + 'T00:00:00.000Z'; // // /*it was uncommented*/ console.log(midnight)
 
             finalResultFiltered.push({
               "time": midnight,
@@ -979,7 +989,7 @@ app.get('/api/v3/get-sensor-data', function (req, res) {
           } else {
             var _midnight = new Date();
 
-            _midnight = _midnight.toISOString().split("T")[0] + 'T00:00:00.000Z'; // console.log(midnight)
+            _midnight = _midnight.toISOString().split("T")[0] + 'T00:00:00.000Z'; // // /*it was uncommented*/ console.log(midnight)
 
             finalResultFiltered.push({
               "time": _midnight,
@@ -1014,11 +1024,11 @@ app.get('/api/v3/get-sensor-data', function (req, res) {
             if (typeof item.time == 'string') day = item.time.split('T')[0].split('-')[2];else {
               var time = item.time._nanoISO;
               day = time.split('T')[0].split('-')[2];
-            } // console.log(typeof item.time, day, thisDay, day==thisDay)
+            } // // /*it was uncommented*/ console.log(typeof item.time, day, thisDay, day==thisDay)
 
             return day == _thisDay;
           } catch (e) {
-            console.log(e);
+            // /*it was uncommented*/ console.log(e)
             return false;
           }
         };
@@ -1152,11 +1162,11 @@ app.get('/api/v3/get-sensor-data', function (req, res) {
             if (typeof item.time == 'string') day = item.time.split('T')[0].split('-')[2];else {
               var time = item.time._nanoISO;
               day = time.split('T')[0].split('-')[2];
-            } // console.log(typeof item.time, day, thisDay, day==thisDay)
+            } // // /*it was uncommented*/ console.log(typeof item.time, day, thisDay, day==thisDay)
 
             return day == _thisDay2;
           } catch (e) {
-            console.log(e);
+            // /*it was uncommented*/ console.log(e)
             return false;
           }
         };
@@ -1167,11 +1177,11 @@ app.get('/api/v3/get-sensor-data', function (req, res) {
             if (typeof item.time == 'string') day = item.time.split('T')[0].split('-')[2];else {
               var time = item.time._nanoISO;
               day = time.split('T')[0].split('-')[2];
-            } // console.log(typeof item.time, day, thisDay, day==thisDay)
+            } // // /*it was uncommented*/ console.log(typeof item.time, day, thisDay, day==thisDay)
 
             return day == _thisDay2 - 1;
           } catch (e) {
-            console.log(e);
+            // /*it was uncommented*/ console.log(e)
             return false;
           }
         };
@@ -1248,17 +1258,17 @@ app.get('/api/v3/get-sensor-data', function (req, res) {
         var _thisDay2 = todayRaw.getDate();
 
         finalResultFiltered = finalResult.filter(_checkIfToday2);
-        finalResultFilteredYesterday = finalResult.filter(_checkIfYesterday); // console.log(finalResult)
+        finalResultFilteredYesterday = finalResult.filter(_checkIfYesterday); // // /*it was uncommented*/ console.log(finalResult)
         // END Filter only today's data
         // last value - midnight
 
         var _oldestValue = finalResultFilteredYesterday[0].value; // last value recorded yesterday
-        // console.log(oldestValue, oldestValue == 1, oldestValue == 0)
+        // // /*it was uncommented*/ console.log(oldestValue, oldestValue == 1, oldestValue == 0)
 
         if (_oldestValue == 1) {
           var _midnight3 = new Date();
 
-          _midnight3 = _midnight3.toISOString().split("T")[0] + '00:00:00.000Z'; // console.log(midnight)
+          _midnight3 = _midnight3.toISOString().split("T")[0] + '00:00:00.000Z'; // // /*it was uncommented*/ console.log(midnight)
 
           finalResultFiltered.push({
             "time": _midnight3,
@@ -1267,7 +1277,7 @@ app.get('/api/v3/get-sensor-data', function (req, res) {
         } else {
           var _midnight4 = new Date();
 
-          _midnight4 = _midnight4.toISOString().split("T")[0] + '00:00:00.000Z'; // console.log(midnight)
+          _midnight4 = _midnight4.toISOString().split("T")[0] + '00:00:00.000Z'; // // /*it was uncommented*/ console.log(midnight)
 
           finalResultFiltered.push({
             "time": _midnight4,
@@ -1315,7 +1325,7 @@ app.get('/api/v3/save-settings', function (req, res) {
     return req.query.xlat ? ' x=\'' + req.query.xlat + '\' ' : ' x=NULL';
   }() + "," + function () {
     return req.query.ylong ? ' y=\'' + req.query.ylong + '\'' : ' y=NULL';
-  }() + " WHERE sensorId=" + req.query.sensorId + ';'; // console.log(query)
+  }() + " WHERE sensorId=" + req.query.sensorId + ';'; // // /*it was uncommented*/ console.log(query)
 
 
   mysqlReader(query).then(function (res) {
@@ -1352,7 +1362,7 @@ app.get('/api/v3/get-interval', function _callee3(req, res) {
           //         if(item.sensorId == sensorId) 
           //             sensorType = item.sensorType
           //     })
-          // console.log(sensorId, sensorType)
+          // // /*it was uncommented*/ console.log(sensorId, sensorType)
           start = new Date(req.query.start);
           end = new Date(req.query.end);
           diffRaw = end - start;
@@ -1374,7 +1384,7 @@ app.get('/api/v3/get-interval', function _callee3(req, res) {
           //     query = influxQuery = "SELECT value FROM sensors where sensorId='" + sensorId + "' and time>='" + req.query.start + "' and time<="+req.query.end+" order by time desc;"
           // } else if (sensorType=='temperature') {
           query = "select mean(value) as value from sensors where sensorId='" + sensorId + "' and time<='" + req.query.end + "' and time>='" + req.query.start + "' group by time(" + averageTimeInterval(diff) + ") order by time desc"; // }
-          // console.log(query)
+          // // /*it was uncommented*/ console.log(query)
 
           if (sess.username) {
             influxReader(query).then(function (result) {
@@ -1415,7 +1425,7 @@ app.get('/api/v3/set-sensor-name', function (req, res) {
   sess = req.session;
 
   if (sess.username) {
-    // console.log(req.query)
+    // // /*it was uncommented*/ console.log(req.query)
     // Build query
     var query = "UPDATE sensors SET sensorName='" + req.query.name + "' WHERE sensorId='" + req.query.sensorId + "';"; // Check string
 
@@ -1426,7 +1436,7 @@ app.get('/api/v3/set-sensor-name', function (req, res) {
         msg: "Enter a proper name"
       });
     } else {
-      // console.log(query)
+      // // /*it was uncommented*/ console.log(query)
       mysqlReader(query).then(function (result) {
         res.status(200).send({
           msg: "Update performed"
@@ -1454,7 +1464,7 @@ function onlyUnique(value, index, self) {
 
 
 app.get('/api/get-data', function (req, res) {
-  var time = new Date(); // console.log("GET DATA", new Date() - time)
+  var time = new Date(); // // /*it was uncommented*/ console.log("GET DATA", new Date() - time)
 
   sess = req.session;
   var data = [];
@@ -1519,34 +1529,34 @@ app.get('/api/get-data', function (req, res) {
               // // get cities
               // var queryCities = "select distinct(city) as city from (select city, value from sensors where username='"+sess.username+"')"
               // let cities = influxReader(queryCities).then(async (result) => {
-              //     // console.log("GET cities", new Date() - time)
+              //     // // /*it was uncommented*/ console.log("GET cities", new Date() - time)
               //     let cities = []
               //     for (var i = 0; i < result.length; i++) {
               //         cities.push(result[i].city)
               //     }
-              //     // console.log("GET cities", new Date() - time)
+              //     // // /*it was uncommented*/ console.log("GET cities", new Date() - time)
               //     return await cities
               // })
               // // get locations
               // var queryLocation = "select distinct(location) as location from (select location, value from sensors where username='"+sess.username+"')"
               // let locations = influxReader(queryLocation).then(async (result) => {
-              //     // console.log("GET locations", new Date() - time)
+              //     // // /*it was uncommented*/ console.log("GET locations", new Date() - time)
               //     let locations = []
               //     for (var i = 0; i < result.length; i++) {
               //         locations.push(result[i].location)
               //     }
-              //     // console.log("GET locations", new Date() - time)
+              //     // // /*it was uncommented*/ console.log("GET locations", new Date() - time)
               //     return await locations
               // })
               // // get zones
               // var queryZone = "select distinct(zone) as zone from (select zone, value from sensors where username='"+sess.username+"')"
               // let zones = influxReader(queryZone).then(async (result) => {
-              //     // console.log("GET zones", new Date() - time)
+              //     // // /*it was uncommented*/ console.log("GET zones", new Date() - time)
               //     let zones = []
               //     for (var i = 0; i < result.length; i++) {
               //         zones.push(result[i].zone)
               //     }
-              //     // console.log("GET zones", new Date() - time)
+              //     // // /*it was uncommented*/ console.log("GET zones", new Date() - time)
               //     return await zones
               // })
 
@@ -1555,10 +1565,10 @@ app.get('/api/get-data', function (req, res) {
               zones = [0]; // ================ END ================
 
               Promise.all([counties, cities, locations, zones]).then(function (result) {
-                // console.log("promise all", new Date() - time)
+                // // /*it was uncommented*/ console.log("promise all", new Date() - time)
                 // build the output
                 if (result[0].length && result[1].length && result[2].length && result[3].length) {
-                  // console.log("promise all push", new Date() - time)
+                  // // /*it was uncommented*/ console.log("promise all push", new Date() - time)
                   data.push({
                     error: false,
                     message: "Data found",
@@ -1567,14 +1577,14 @@ app.get('/api/get-data', function (req, res) {
                     counties: result[0].length ? result[0] : "No county found",
                     query: queryCounties,
                     responseTime: new Date() - time + "ms"
-                  }); // console.log("promise all push done", new Date() - time)
+                  }); // // /*it was uncommented*/ console.log("promise all push done", new Date() - time)
                 } else {
                   data.push({
                     error: true,
                     message: "No data found for this user",
                     user: sess.username
                   });
-                } // console.log("GET all", new Date() - time)
+                } // // /*it was uncommented*/ console.log("GET all", new Date() - time)
                 // send the data
 
 
@@ -1595,20 +1605,20 @@ app.get('/api/get-data', function (req, res) {
       error: "you are not logged in"
     });
     res.status(403).send(data);
-  } // console.log("done", new Date() - time)
+  } // // /*it was uncommented*/ console.log("done", new Date() - time)
 
 }); // No longer used - instead I use /api/get-data/last/:county/:sensorQuery
 
 app.get('/api/get-data/type/:sensorId', function (req, res) {
   sess = req.session;
   var data = [];
-  var time = new Date(); // console.log(req.originalUrl)
+  var time = new Date(); // // /*it was uncommented*/ console.log(req.originalUrl)
 
   if (sess.username) {
     // var query = `select distinct(type) as type from sensors where sensorId='`+req.params.sensorId+`' LIMIT 1`
     var query = "select zone, type from (select zone, type, value from sensors where sensorId='" + req.params.sensorId + "') LIMIT 1";
     var type = influxReader(query).then(function (result) {
-      // console.log(influxQuery)
+      // // /*it was uncommented*/ console.log(influxQuery)
       if (result.length) data.push({
         error: false,
         message: "Data found",
@@ -1675,12 +1685,12 @@ app.get('/api/v2/get-data/sensorId/:county', function (req, res) {
               } else {
                 whereQuery = "where username='" + sess.username + "' and county='" + req.params.county + "'";
                 influxQuery = "show series " + whereQuery;
-              } // console.log(influxQuery)
+              } // // /*it was uncommented*/ console.log(influxQuery)
               // Get all types of sensors of logged in user and from requested county
 
 
               sensorsData = influxReader(influxQuery).then(function (result) {
-                // console.log("after fetch", new Date() - time)
+                // // /*it was uncommented*/ console.log("after fetch", new Date() - time)
                 // get sensor type
                 var sensorIdList = [];
                 var sensorTypeList = [];
@@ -1751,17 +1761,17 @@ app.get('/api/get-data/sensorId/:county', function (req, res) {
   var time = new Date();
   sess = req.session; // get params
   // const queryObject = url.parse(req.url,true).query;
-  // console.log(queryObject);
-  // console.log(queryObject);
-  // console.log(sess.username)
+  // // /*it was uncommented*/ console.log(queryObject);
+  // // /*it was uncommented*/ console.log(queryObject);
+  // // /*it was uncommented*/ console.log(sess.username)
 
   var data = []; // Who ask for the data
 
   if (sess.username) {
-    // console.log("if",new Date()-time)
+    // // /*it was uncommented*/ console.log("if",new Date()-time)
     // req.params.county = req.params.county.toLowerCase()
-    // console.log(req.originalUrl)
-    // console.log("User:", sess.username);
+    // // /*it was uncommented*/ console.log(req.originalUrl)
+    // // /*it was uncommented*/ console.log("User:", sess.username);
     // Create the query based on user type
     if (sess.sensorAccess != -1) {// // return evrything that belongs to username and match county and is in a 1day time interval
       // var whereQuery = `where username='` + sess.username + `' and county='` + req.params.county + `'`
@@ -1775,7 +1785,7 @@ app.get('/api/get-data/sensorId/:county', function (req, res) {
       // var influxQuery = `select mean(value) as value, last(type) as type from sensors ` + whereQuery + ` GROUP BY time(1h) ORDER BY time DESC`
       // // check what sensor type for the user
       // var influxQuery = `select * from sensors ` + whereQuery + ` ORDER BY time DESC`
-      // // console.log(influxQuery)
+      // // // /*it was uncommented*/ console.log(influxQuery)
       // select (distinct sensorId), type from ( select sensorId, type, value from sensors where username='demo' and county='bucuresti') group by sensorId
       // get sensor access from mysql
 
@@ -1807,12 +1817,12 @@ app.get('/api/get-data/sensorId/:county', function (req, res) {
               } else {
                 whereQuery = "where username='" + sess.username + "' and county='" + req.params.county + "'";
                 influxQuery = "select distinct(sensorId) as sensorId from ( select sensorId, type, value from sensors " + whereQuery + " )";
-              } // console.log(influxQuery)
+              } // // /*it was uncommented*/ console.log(influxQuery)
               // Get all types of sensors of logged in user and from requested county
 
 
               sensorsData = influxReader(influxQuery).then(function (result) {
-                // console.log("after fetch", new Date() - time)
+                // // /*it was uncommented*/ console.log("after fetch", new Date() - time)
                 // get sensor type
                 // var sensorTypeList = []
                 var sensorIdList = []; // var sensorIdListAux = []
@@ -1879,11 +1889,11 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', function (req, res) {
     // the way I check if sensor is counter should be estabilshed after
     // we decide about sensorId template
 
-    var isCounter = req.params.sensorQuery.split('-')[1] == 'c' ? true : false; // console.log(req.originalUrl)
-    // console.log('/api/get-data/' + req.params.county + '/' + req.params.sensorQuery)
-    // console.log("User:", sess.username);
-    // console.log("Access to sensorId:", sess.sensorAccess);
-    // console.log(req.params)
+    var isCounter = req.params.sensorQuery.split('-')[1] == 'c' ? true : false; // // /*it was uncommented*/ console.log(req.originalUrl)
+    // // /*it was uncommented*/ console.log('/api/get-data/' + req.params.county + '/' + req.params.sensorQuery)
+    // // /*it was uncommented*/ console.log("User:", sess.username);
+    // // /*it was uncommented*/ console.log("Access to sensorId:", sess.sensorAccess);
+    // // /*it was uncommented*/ console.log(req.params)
     // Get the date for influx query - this day 0 to currentHour
 
     var today = new Date(); // cannot query for today date starting at 00:00 because influx tz is -1h than romanian tz
@@ -1894,7 +1904,7 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', function (req, res) {
     var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
 
     var yyyy = today.getFullYear();
-    today = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z'; // console.log(">> TODAY start:", today)
+    today = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z'; // // /*it was uncommented*/ console.log(">> TODAY start:", today)
     // Mean of last week - experiment
     // ==========================================
 
@@ -1904,7 +1914,7 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', function (req, res) {
     var mm = String(lastweekTodayStart.getMonth() + 1).padStart(2, '0'); //January is 0!
 
     var yyyy = lastweekTodayStart.getFullYear();
-    lastweekTodayStart = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z'; // console.log(">> lastweekTodayStart start:", lastweekTodayStart)
+    lastweekTodayStart = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z'; // // /*it was uncommented*/ console.log(">> lastweekTodayStart start:", lastweekTodayStart)
 
     var lastweekTodayStop = new Date();
     lastweekTodayStop.setDate(lastweekTodayStop.getDate() - 7);
@@ -1912,10 +1922,10 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', function (req, res) {
     var mm = String(lastweekTodayStop.getMonth() + 1).padStart(2, '0'); //January is 0!
 
     var yyyy = lastweekTodayStop.getFullYear();
-    lastweekTodayStop = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z'; // console.log(">> lastweekTodayStop start:", lastweekTodayStop)
+    lastweekTodayStop = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z'; // // /*it was uncommented*/ console.log(">> lastweekTodayStop start:", lastweekTodayStop)
     // ==========================================
     // END Mean of last week - experiment
-    // console.log("api req date:", today)
+    // // /*it was uncommented*/ console.log("api req date:", today)
 
     if (sess.sensorAccess != -1) {
       // return evrything that belongs to username and match county and is in a 1day time interval
@@ -1941,17 +1951,17 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', function (req, res) {
       // var influxQuery = `select mean(value) as value, last(type) as type from sensors ` + whereQuery + ` GROUP BY time(1h) ORDER BY time DESC`
       // // check what sensor type for the user
       // var influxQuery = `select * from sensors ` + whereQuery + ` ORDER BY time DESC`
-      // // console.log(influxQuery)
+      // // // /*it was uncommented*/ console.log(influxQuery)
       // get sensor zone
       // var query = "select type, zone from (select type, zone, value from sensors where sensorId='" + req.params.sensorQuery + "') limit 1"
 
 
     var query = "SHOW TAG VALUES WITH KEY IN (\"type\", \"zone\") WHERE sensorId='" + req.params.sensorQuery + "'";
     var sensorZoneAndType = influxReader(query).then(function (res) {
-      // console.log(res)
+      // // /*it was uncommented*/ console.log(res)
       return res;
-    }); // console.log(query, res[0])
-    // console.log(influxQuery)
+    }); // // /*it was uncommented*/ console.log(query, res[0])
+    // // /*it was uncommented*/ console.log(influxQuery)
 
     var resultInfluxDb = influxReader(influxQueryExperiment).then(function _callee8(result) {
       var sensorZoneAndType_, i;
@@ -1965,9 +1975,9 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', function (req, res) {
             case 2:
               sensorZoneAndType_ = _context8.sent;
 
-              // console.log(sensorZoneAndType_)
-              // console.log(sensorZoneAndType_[0].value)
-              // console.log(sensorZoneAndType_[1].value)
+              // // /*it was uncommented*/ console.log(sensorZoneAndType_)
+              // // /*it was uncommented*/ console.log(sensorZoneAndType_[0].value)
+              // // /*it was uncommented*/ console.log(sensorZoneAndType_[1].value)
               if (result.length) {
                 data.push({
                   error: false,
@@ -2041,7 +2051,7 @@ app.get('/api/experiment/get-data/:county/:sensorQuery', function (req, res) {
 app.get('/api/get-data/:county/:sensorQuery', function (req, res) {
   sess = req.session;
   var data = [];
-  var time = new Date(); // console.log(sess.username, req.params)
+  var time = new Date(); // // /*it was uncommented*/ console.log(sess.username, req.params)
 
   if (sess.username) {
     // Server side log
@@ -2049,11 +2059,11 @@ app.get('/api/get-data/:county/:sensorQuery', function (req, res) {
     // the way I check if sensor is counter should be estabilshed after
     // we decide about sensorId template
 
-    var isCounter = req.params.sensorQuery.split('-')[1] == 'c' ? true : false; // console.log(req.originalUrl)
-    // console.log('/api/get-data/' + req.params.county + '/' + req.params.sensorQuery)
-    // console.log("User:", sess.username);
-    // console.log("Access to sensorId:", sess.sensorAccess);
-    // console.log(req.params)
+    var isCounter = req.params.sensorQuery.split('-')[1] == 'c' ? true : false; // // /*it was uncommented*/ console.log(req.originalUrl)
+    // // /*it was uncommented*/ console.log('/api/get-data/' + req.params.county + '/' + req.params.sensorQuery)
+    // // /*it was uncommented*/ console.log("User:", sess.username);
+    // // /*it was uncommented*/ console.log("Access to sensorId:", sess.sensorAccess);
+    // // /*it was uncommented*/ console.log(req.params)
     // Get the date for influx query - this day 0 to currentHour
 
     var today = new Date(); // cannot query for today date starting at 00:00 because influx tz is -1h than romanian tz
@@ -2064,7 +2074,7 @@ app.get('/api/get-data/:county/:sensorQuery', function (req, res) {
     var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
 
     var yyyy = today.getFullYear();
-    today = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z'; // console.log(">> TODAY start:",today)
+    today = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z'; // // /*it was uncommented*/ console.log(">> TODAY start:",today)
     // Mean of last week - experiment
     // ==========================================
     // var lastweekTodayStart = new Date();
@@ -2073,17 +2083,17 @@ app.get('/api/get-data/:county/:sensorQuery', function (req, res) {
     // var mm = String(lastweekTodayStart.getMonth() + 1).padStart(2, '0'); //January is 0!
     // var yyyy = lastweekTodayStart.getFullYear();
     // lastweekTodayStart = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
-    // console.log(">> lastweekTodayStart start:",lastweekTodayStart)
+    // // /*it was uncommented*/ console.log(">> lastweekTodayStart start:",lastweekTodayStart)
     // var lastweekTodayStop = new Date();
     // lastweekTodayStop.setDate(lastweekTodayStop.getDate() - 7)
     // var dd = String(lastweekTodayStop.getDate()).padStart(2, '0');
     // var mm = String(lastweekTodayStop.getMonth() + 1).padStart(2, '0'); //January is 0!
     // var yyyy = lastweekTodayStop.getFullYear();
     // lastweekTodayStop = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
-    // console.log(">> lastweekTodayStop start:",lastweekTodayStop)
+    // // /*it was uncommented*/ console.log(">> lastweekTodayStop start:",lastweekTodayStop)
     // ==========================================
     // END Mean of last week - experiment
-    // console.log("api req date:", today)
+    // // /*it was uncommented*/ console.log("api req date:", today)
 
     if (sess.sensorAccess != -1) {
       // return evrything that belongs to username and match county and is in a 1day time interval
@@ -2108,17 +2118,17 @@ app.get('/api/get-data/:county/:sensorQuery', function (req, res) {
       // var influxQuery = `select mean(value) as value, last(type) as type from sensors ` + whereQuery + ` GROUP BY time(1h) ORDER BY time DESC`
       // // check what sensor type for the user
       // var influxQuery = `select * from sensors ` + whereQuery + ` ORDER BY time DESC`
-      // // console.log(influxQuery)
+      // // // /*it was uncommented*/ console.log(influxQuery)
       // get sensor zone
       // var query = "select type, zone from (select type, zone, value from sensors where sensorId='" + req.params.sensorQuery + "') limit 1"
 
 
     var query = "SHOW TAG VALUES WITH KEY IN (\"type\", \"zone\") WHERE sensorId='" + req.params.sensorQuery + "'";
     var sensorZoneAndType = influxReader(query).then(function (res) {
-      // console.log(res)
+      // // /*it was uncommented*/ console.log(res)
       return res;
-    }); // console.log(query, res[0])
-    // console.log(influxQuery)
+    }); // // /*it was uncommented*/ console.log(query, res[0])
+    // // /*it was uncommented*/ console.log(influxQuery)
 
     var resultInfluxDb = influxReader(influxQuery).then(function _callee10(result) {
       var sensorZoneAndType_, i;
@@ -2132,9 +2142,9 @@ app.get('/api/get-data/:county/:sensorQuery', function (req, res) {
             case 2:
               sensorZoneAndType_ = _context10.sent;
 
-              // console.log(sensorZoneAndType_)
-              // console.log(sensorZoneAndType_[0].value)
-              // console.log(sensorZoneAndType_[1].value)
+              // // /*it was uncommented*/ console.log(sensorZoneAndType_)
+              // // /*it was uncommented*/ console.log(sensorZoneAndType_[0].value)
+              // // /*it was uncommented*/ console.log(sensorZoneAndType_[1].value)
               if (result.length) {
                 data.push({
                   error: false,
@@ -2208,7 +2218,7 @@ app.get('/api/get-data/:county/:sensorQuery', function (req, res) {
 app.get('/api/v2/get-data/:county/:sensorQuery', function (req, res) {
   sess = req.session;
   var data = [];
-  var time = new Date(); // console.log(sess.username, req.params)
+  var time = new Date(); // // /*it was uncommented*/ console.log(sess.username, req.params)
 
   if (sess.username) {
     // Server side log
@@ -2216,17 +2226,17 @@ app.get('/api/v2/get-data/:county/:sensorQuery', function (req, res) {
     // the way I check if sensor is counter should be estabilshed after
     // we decide about sensorId template
 
-    var isCounter = req.params.sensorQuery.split('-')[1] == 'c' ? true : false; // console.log(req.originalUrl)
-    // console.log('/api/get-data/' + req.params.county + '/' + req.params.sensorQuery)
-    // console.log("User:", sess.username);
-    // console.log("Access to sensorId:", sess.sensorAccess);
-    // console.log(req.params)
+    var isCounter = req.params.sensorQuery.split('-')[1] == 'c' ? true : false; // // /*it was uncommented*/ console.log(req.originalUrl)
+    // // /*it was uncommented*/ console.log('/api/get-data/' + req.params.county + '/' + req.params.sensorQuery)
+    // // /*it was uncommented*/ console.log("User:", sess.username);
+    // // /*it was uncommented*/ console.log("Access to sensorId:", sess.sensorAccess);
+    // // /*it was uncommented*/ console.log(req.params)
     // Get the date for influx query - this day 0 to currentHour
 
     var today__raw = new Date(); // this is -1h romanian timezone
 
     var today__raw_2 = new Date(); // this is -1h romanian timezone
-    // console.log("today__raw", today__raw);
+    // // /*it was uncommented*/ console.log("today__raw", today__raw);
     // cannot query for today date starting at 00:00 because influx tz is -1h than romanian tz
     // set today 00:00 as yesterday 23:00
 
@@ -2244,8 +2254,8 @@ app.get('/api/v2/get-data/:county/:sensorQuery', function (req, res) {
       useGrouping: false
     });
     todayEnd = "'" + yyyy + '-' + mm + '-' + dd + 'T23:00:00Z' + "'"; // todayEnd = "now()"
-    // console.log(">> TODAY start:", today)
-    // console.log(">> TODAY end:", todayEnd)
+    // // /*it was uncommented*/ console.log(">> TODAY start:", today)
+    // // /*it was uncommented*/ console.log(">> TODAY end:", todayEnd)
     // Mean of last week - experiment
     // ==========================================
     // var lastweekTodayStart = new Date();
@@ -2254,17 +2264,17 @@ app.get('/api/v2/get-data/:county/:sensorQuery', function (req, res) {
     // var mm = String(lastweekTodayStart.getMonth() + 1).padStart(2, '0'); //January is 0!
     // var yyyy = lastweekTodayStart.getFullYear();
     // lastweekTodayStart = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
-    // console.log(">> lastweekTodayStart start:",lastweekTodayStart)
+    // // /*it was uncommented*/ console.log(">> lastweekTodayStart start:",lastweekTodayStart)
     // var lastweekTodayStop = new Date();
     // lastweekTodayStop.setDate(lastweekTodayStop.getDate() - 7)
     // var dd = String(lastweekTodayStop.getDate()).padStart(2, '0');
     // var mm = String(lastweekTodayStop.getMonth() + 1).padStart(2, '0'); //January is 0!
     // var yyyy = lastweekTodayStop.getFullYear();
     // lastweekTodayStop = yyyy + '-' + mm + '-' + dd + 'T23:00:00Z';
-    // console.log(">> lastweekTodayStop start:",lastweekTodayStop)
+    // // /*it was uncommented*/ console.log(">> lastweekTodayStop start:",lastweekTodayStop)
     // ==========================================
     // END Mean of last week - experiment
-    // console.log("api req date:", today)
+    // // /*it was uncommented*/ console.log("api req date:", today)
 
     if (sess.sensorAccess != -1) {
       // return evrything that belongs to username and match county and is in a 1day time interval
@@ -2289,17 +2299,17 @@ app.get('/api/v2/get-data/:county/:sensorQuery', function (req, res) {
       // var influxQuery = `select mean(value) as value, last(type) as type from sensors ` + whereQuery + ` GROUP BY time(1h) ORDER BY time DESC`
       // // check what sensor type for the user
       // var influxQuery = `select * from sensors ` + whereQuery + ` ORDER BY time DESC`
-      // // console.log(influxQuery)
+      // // // /*it was uncommented*/ console.log(influxQuery)
       // get sensor zone
       // var query = "select type, zone from (select type, zone, value from sensors where sensorId='" + req.params.sensorQuery + "') limit 1"
 
 
     var query = "SHOW TAG VALUES WITH KEY IN (\"type\", \"zone\") WHERE sensorId='" + req.params.sensorQuery + "'";
     var sensorZoneAndType = influxReader(query).then(function (res) {
-      // console.log(res)
+      // // /*it was uncommented*/ console.log(res)
       return res;
-    }); // console.log(query, res[0])
-    // console.log(influxQuery)
+    }); // // /*it was uncommented*/ console.log(query, res[0])
+    // // /*it was uncommented*/ console.log(influxQuery)
 
     var resultInfluxDb = influxReader(influxQuery).then(function _callee12(result) {
       var sensorZoneAndType_, i;
@@ -2313,9 +2323,9 @@ app.get('/api/v2/get-data/:county/:sensorQuery', function (req, res) {
             case 2:
               sensorZoneAndType_ = _context12.sent;
 
-              // console.log(sensorZoneAndType_)
-              // console.log(sensorZoneAndType_[0].value)
-              // console.log(sensorZoneAndType_[1].value)
+              // // /*it was uncommented*/ console.log(sensorZoneAndType_)
+              // // /*it was uncommented*/ console.log(sensorZoneAndType_[0].value)
+              // // /*it was uncommented*/ console.log(sensorZoneAndType_[1].value)
               if (result.length) {
                 data.push({
                   error: false,
@@ -2397,10 +2407,10 @@ app.get('/api/get-data/last/:county/:sensorQuery', function (req, res) {
   if (sess.username) {
     // Server side log
     req.params.county = req.params.county.toLowerCase(); // req.params.sensorQuery = req.params.sensorQuery.toLowerCase()
-    // console.log(req.originalUrl)
-    // console.log("User:", sess.username);
-    // console.log("Access to sensorId:", sess.sensorAccess);
-    // console.log(req.params)
+    // // /*it was uncommented*/ console.log(req.originalUrl)
+    // // /*it was uncommented*/ console.log("User:", sess.username);
+    // // /*it was uncommented*/ console.log("Access to sensorId:", sess.sensorAccess);
+    // // /*it was uncommented*/ console.log(req.params)
     // Get the date for influx query - this day 0 to currentHour
 
     var today = new Date();
@@ -2424,12 +2434,12 @@ app.get('/api/get-data/last/:county/:sensorQuery', function (req, res) {
     // var influxQuery = `select mean(value) as value, last(type) as type from sensors ` + whereQuery + ` GROUP BY time(1h) ORDER BY time DESC`
     // // check what sensor type for the user
     // var influxQuery = `select * from sensors ` + whereQuery + ` ORDER BY time DESC`
-    // // console.log(influxQuery)
-    // console.log("---->",influxQuery)
+    // // // /*it was uncommented*/ console.log(influxQuery)
+    // // /*it was uncommented*/ console.log("---->",influxQuery)
 
 
     var resultInfluxDb = influxReader(influxQuery).then(function (result) {
-      // console.log(result)
+      // // /*it was uncommented*/ console.log(result)
       if (result.length) {
         data.push({
           error: false,
@@ -2477,21 +2487,21 @@ app.get('/api/get-data/last/:county/:sensorQuery', function (req, res) {
 });
 app.get('/api/get-interval/:step', function (req, res) {
   sess = req.session;
-  var data = []; // console.log("--->",req.params.step)
+  var data = []; // // /*it was uncommented*/ console.log("--->",req.params.step)
 
-  var time = new Date(); // console.log('/api/get-interval/...')
-  // console.log("---")
-  // console.log(req.params)
-  // console.log(req.query.county)
-  // console.log(req.query.sensorQuery)
-  // console.log("---")
+  var time = new Date(); // // /*it was uncommented*/ console.log('/api/get-interval/...')
+  // // /*it was uncommented*/ console.log("---")
+  // // /*it was uncommented*/ console.log(req.params)
+  // // /*it was uncommented*/ console.log(req.query.county)
+  // // /*it was uncommented*/ console.log(req.query.sensorQuery)
+  // // /*it was uncommented*/ console.log("---")
   // sess.username = "1"
 
   if (sess.username) {
     if (sess.sensorAccess != -1) {
       // return evrything that belongs to username and match county and is in a 1day time interval
       var whereQuery = "where county='" + req.query.county + "' and sensorId='" + req.query.sensorQuery + "' and time>='" + req.query.start + "' and time<'" + req.query.end + "'"; // group by
-      // console.log(req.params.step)
+      // // /*it was uncommented*/ console.log(req.params.step)
 
       switch (req.params.step) {
         case '30mins':
@@ -2529,14 +2539,14 @@ app.get('/api/get-interval/:step', function (req, res) {
       // check what sensor type for the user
 
 
-      var influxQuery = "select mean(value) as value from sensors " + whereQuery + " " + groupBy + " "; // console.log(influxQuery)
+      var influxQuery = "select mean(value) as value from sensors " + whereQuery + " " + groupBy + " "; // // /*it was uncommented*/ console.log(influxQuery)
     } else {} // work in progress
       // var whereQuery = `where county='` + req.params.county + `' and time>='` + today + `' and time<now()`
       // var influxQuery = `select mean(value) as value, last(type) as type, last(value) as live from sensors ` + whereQuery + ` GROUP BY time(1h) ORDER BY time DESC`
       // // check what sensor type for the user
       // var influxQuery = `select * from sensors ` + whereQuery + ` ORDER BY time DESC`
-      // console.log(influxQuery)
-      // console.log(influxQuery)
+      // // /*it was uncommented*/ console.log(influxQuery)
+      // // /*it was uncommented*/ console.log(influxQuery)
 
 
     var resultInfluxDb = influxReader(influxQuery).then(function (result) {
@@ -2608,7 +2618,7 @@ app.get("/graficMail", function (req, res) {
     if (err) {
       res.writeHead(400, {
         'Content-type': 'text/html'
-      }); // console.log(err);
+      }); // // /*it was uncommented*/ console.log(err);
 
       res.end("No such image");
     } else {
@@ -2655,10 +2665,10 @@ app.get('/api/:username/get-counties', function (req, res) {
   var zones = [0]; // ================ END ================
 
   Promise.all([counties, cities, locations, zones]).then(function (result) {
-    // console.log("promise all", new Date() - time)
+    // // /*it was uncommented*/ console.log("promise all", new Date() - time)
     // build the output
     if (result[0].length && result[1].length && result[2].length && result[3].length) {
-      // console.log("promise all push", new Date() - time)
+      // // /*it was uncommented*/ console.log("promise all push", new Date() - time)
       data.push({
         error: false,
         message: "Data found",
@@ -2666,7 +2676,7 @@ app.get('/api/:username/get-counties', function (req, res) {
         countiesCounter: result[0].length,
         counties: result[0].length ? result[0] : "No county found",
         responseTime: new Date() - time + "ms"
-      }); // console.log("promise all push done", new Date() - time)
+      }); // // /*it was uncommented*/ console.log("promise all push done", new Date() - time)
     } else {
       data.push({
         error: true,
@@ -2690,7 +2700,7 @@ app.get('/api/:username/:county/get-sensors', function (req, res) {
 
   var influxQuery = "select distinct(sensorId) as sensorId from ( select sensorId, value from sensors " + whereQuery + " )";
   var sensorsData = influxReader(influxQuery).then(function (result) {
-    // console.log("after fetch", new Date() - time)
+    // // /*it was uncommented*/ console.log("after fetch", new Date() - time)
     // get sensor type
     // var sensorTypeList = []
     var sensorIdList = []; // var sensorIdListAux = []
@@ -2732,10 +2742,10 @@ app.get('/api/:sensor/get-value', function (req, res) {
   var time = new Date();
   var data = [];
   var whereQuery = "where sensorId='" + req.params.sensor + "'";
-  var influxQuery = "select last(value) as value, username, country, county, city, zone from sensors " + whereQuery + " ORDER BY time DESC LIMIT 1"; // console.log(influxQuery)
+  var influxQuery = "select last(value) as value, username, country, county, city, zone from sensors " + whereQuery + " ORDER BY time DESC LIMIT 1"; // // /*it was uncommented*/ console.log(influxQuery)
 
   var resultInfluxDb = influxReader(influxQuery).then(function (result) {
-    // console.log(result)
+    // // /*it was uncommented*/ console.log(result)
     if (result.length) {
       data.push({
         error: false,
@@ -2829,7 +2839,7 @@ app.get('/api/v2/sensors-alert', function _callee15(req, res) {
     while (1) {
       switch (_context15.prev = _context15.next) {
         case 0:
-          // console.log(req.url)
+          // // /*it was uncommented*/ console.log(req.url)
           time = new Date(); // var data = []
 
           sqlQuery = "select * from alerts";
@@ -2856,10 +2866,10 @@ app.get('/api/v2/sensors-alert', function _callee15(req, res) {
           today = new Date();
           timeStart = new Date(today.getTime() - 10 * 60000); // var timeStart = String(timeStart).split(" ")
 
-          timeStart = timeStart.valueOf(); // console.log(today, timeStart)
+          timeStart = timeStart.valueOf(); // // /*it was uncommented*/ console.log(today, timeStart)
           // var influxQuery = `select mean(value), last(county) as county, last(country) as country, last(city) as city, last(location) as location, last(zone) as zone, last(username) as username, last(sensorId) as sensorId, last(type) as type, last(time) as time from (select * from sensors where (` + whereQuery + `) and time>`+timeStart+` and time<now()) group by sensorId, username order by time desc`
 
-          influxQuery = "select country, county, city, location, zone, type, sensorId, username, value from sensors where (" + whereQuery + ") and (time > now()-5s and time < now()) group by sensorId,username order by time desc limit 600"; // console.log(influxQuery)
+          influxQuery = "select country, county, city, location, zone, type, sensorId, username, value from sensors where (" + whereQuery + ") and (time > now()-5s and time < now()) group by sensorId,username order by time desc limit 600"; // // /*it was uncommented*/ console.log(influxQuery)
 
           resultInfluxDb = influxReader(influxQuery).then(function (result) {
             var alertList = [];
@@ -2874,7 +2884,7 @@ app.get('/api/v2/sensors-alert', function _callee15(req, res) {
               result.forEach(function (sensor) {
                 var sensorAlertFlag = false;
                 var max = 0;
-                var min = 0; // console.log(sensor)
+                var min = 0; // // /*it was uncommented*/ console.log(sensor)
                 // graph.push(sensor.value)
                 // graph = []
 
@@ -3051,7 +3061,7 @@ app.get('/api/manage-sensors', authDashboard, function (req, res) {
     data.result = "Superadmin - work in progress";
     res.status(200).send(data);
   } else {
-    var sql = "SELECT * FROM sensors WHERE sensorId IN (" + sess.sensorAccess.join(",") + ")"; // console.log(sql)
+    var sql = "SELECT * FROM sensors WHERE sensorId IN (" + sess.sensorAccess.join(",") + ")"; // // /*it was uncommented*/ console.log(sql)
 
     database.query(sql).then(function (rows) {
       data.flag = rows.length;
@@ -3074,7 +3084,11 @@ app.post('/api/manage-sensors/update', authDashboard, function _callee16(req, re
           if (sess.sensorAccess.includes(parseInt(form.id))) {
             sql = 'UPDATE sensors SET county="' + form.county + '", city="' + form.city + '", street="' + form.street + '", sensorName="' + form.name + '" WHERE sensorId = "' + form.id + '"';
             database.query(sql).then(function (res) {
-              if (res) console.log("User", sess.username, "updated sensor", form.id);else console.log("Failed update: user", sess.username, "tried to update sensor", form.id);
+              if (res)
+                /*it was uncommented*/
+                console.log("User", sess.username, "updated sensor", form.id);else
+                /*it was uncommented*/
+                console.log("Failed update: user", sess.username, "tried to update sensor", form.id);
             });
             req.session.message = "Update has been performed";
             res.redirect('/manage-sensors');
@@ -3125,7 +3139,7 @@ app.get('/set-new-device', authDashboard, function (req, res) {
     sensorId: sess.sensorId,
     user_role_is_superadmin: sess.user_role == 'superadmin' ? 1 : 0
   };
-  req.session.message = ''; // console.log(data)
+  req.session.message = ''; // // /*it was uncommented*/ console.log(data)
 
   res.render('set-new-device', data);
 }); // Sensor Location
@@ -3190,7 +3204,7 @@ app.get('/api/read-alerts', function (req, res) {
   });
 });
 app.get('/api/set-alerts', function (req, res) {
-  sess = req.session; // console.log(req.query)
+  sess = req.session; // // /*it was uncommented*/ console.log(req.query)
 
   var mysqlReturn = [];
 
@@ -3381,7 +3395,7 @@ app.post('/api/create-admin', function (req, res) {
         _username = _req$body.username,
         email = _req$body.email,
         company = _req$body.company,
-        password = _req$body.password; // console.log(name,
+        password = _req$body.password; // // /*it was uncommented*/ console.log(name,
     //     username,
     //     email,
     //     company,
@@ -3443,7 +3457,7 @@ app.post('/api/create-admin', function (req, res) {
               };
               db.query("INSERT INTO users SET ?", credentials, function (err, result) {
                 if (err) return res.status(412).send("Try again!");else {
-                  // console.log("New user registration")
+                  // // /*it was uncommented*/ console.log("New user registration")
                   return res.status(200).send("User registered!");
                 }
               });
@@ -3459,7 +3473,7 @@ app.post('/api/create-admin', function (req, res) {
 }); // Get distinct locations for sensors that belong to company of superadmin
 
 app.get('/api/get-zones', function (req, res) {
-  sess = req.session; // console.log(sess.userData)
+  sess = req.session; // // /*it was uncommented*/ console.log(sess.userData)
 
   if (sess.role == "superadmin") {
     // It returns a list of locations and users associated with that location
@@ -3467,7 +3481,8 @@ app.get('/api/get-zones', function (req, res) {
 
     var getZones = mysqlReader("select * from locations where createdBy='" + sess.company + "'");
     Promise.all([getZonesAndUserList, getZones]).then(function (result) {
-      // console.log(result[0].length, result[0])
+      // // /*it was uncommented*/ console.log(result[0].length, result[0])
+      // console.log(result[0])
       res.status(200).send(result);
     });
   } else if (sess.role == "admin") {
@@ -3482,7 +3497,7 @@ app.get('/api/get-zones', function (req, res) {
     // let getZones = mysqlReader(`select * from locations where createdBy='` + sess.company + `'`)
     var _getZones = sess.userData;
     Promise.all([_getZones]).then(function (result) {
-      // console.log(result[0].length, result[0])
+      // // /*it was uncommented*/ console.log(result[0].length, result[0])
       res.status(200).send(result);
     }); // res.status(200).send(undefined)
   } else {
@@ -3505,9 +3520,9 @@ app.post('/api/edit-zone', authDashboard, function _callee23(req, res) {
               while (1) {
                 switch (_context22.prev = _context22.next) {
                   case 0:
-                    // console.log(fields)
+                    // // /*it was uncommented*/ console.log(fields)
                     // Get username list raw
-                    zoneid = fields.zoneid, location1 = fields.location1, location2 = fields.location2, location3 = fields.location3, map = fields.map, userList = _objectWithoutProperties(fields, ["zoneid", "location1", "location2", "location3", "map"]); // console.log(fields.zoneid, userList)
+                    zoneid = fields.zoneid, location1 = fields.location1, location2 = fields.location2, location3 = fields.location3, map = fields.map, userList = _objectWithoutProperties(fields, ["zoneid", "location1", "location2", "location3", "map"]); // // /*it was uncommented*/ console.log(fields.zoneid, userList)
                     // Get all sensors in a zoneId
 
                     _context22.next = 3;
@@ -3549,6 +3564,7 @@ app.post('/api/edit-zone', authDashboard, function _callee23(req, res) {
 
                     valuesToInsert = function valuesToInsert() {
                       var returnRaw = "";
+                      console.log(userListFinal, getSensorList[0].sensorId);
                       userListFinal.forEach(function (user, index) {
                         getSensorList[0].sensorId.split(',').forEach(function (itemSensor, indexSensor) {
                           returnRaw += "('" + itemSensor + "','" + user + "')";
@@ -3591,7 +3607,7 @@ app.post('/api/edit-zone', authDashboard, function _callee23(req, res) {
 
                   case 27:
                     Promise.all([dropUserAccess, grantUserAccess]).then(function (result) {
-                      // console.log("PROMISE ALL", fields)
+                      // // /*it was uncommented*/ console.log("PROMISE ALL", fields)
                       if (fields.map == 'custom') {
                         if (files.mapimage.size) {
                           // Get tmp path
@@ -3619,7 +3635,7 @@ app.post('/api/edit-zone', authDashboard, function _callee23(req, res) {
                         } else {
                           var hasImageSetted = false;
 
-                          if (hasImageSetted) {// console.log("Map has the same image")
+                          if (hasImageSetted) {// // /*it was uncommented*/ console.log("Map has the same image")
                           } else {
                             mysqlReader("UPDATE locations SET map='custom' where zoneId=" + fields.zoneid + "").then(function (result) {
                               res.redirect("/settings");
@@ -3639,7 +3655,7 @@ app.post('/api/edit-zone', authDashboard, function _callee23(req, res) {
                           });
                         });
                       } else {
-                        // console.log("No map selected")
+                        // // /*it was uncommented*/ console.log("No map selected")
                         res.redirect("/settings"); // mysqlReader("UPDATE locations SET map='NULL' where zoneId=" + fields.zoneid + "").then((result) => {
                         //     res.redirect("/settings")
                         // }).catch((err) => {
@@ -3685,7 +3701,7 @@ app.post('/api/update-map', function _callee24(req, res) {
           }).then(function (access) {
             return access;
           }); // [ ] perform the update
-          // console.log(await hasAccess)
+          // // /*it was uncommented*/ console.log(await hasAccess)
 
           _context24.next = 6;
           return regeneratorRuntime.awrap(hasAccess);
@@ -3737,14 +3753,14 @@ app.post('/api/update-map', function _callee24(req, res) {
 app.post('/api/upload-image', function (req, res) {
   var form = new formidable.IncomingForm();
   form.parse(req, function (err, fields, files) {
-    // console.log(fields, files)
+    // // /*it was uncommented*/ console.log(fields, files)
     var oldpath = files.map.path; // Build path of image
 
     var filename = files.map.name.toLowerCase().split('.');
     var asciiStr = filename[0].normalize('NFKD').replace(/[^\w]/g, '');
     var date = new Date();
     filename = date.getTime() + '_' + asciiStr + '.' + filename[1];
-    var newpath = './public/images/custom-maps/' + filename; // console.log(fields.id, oldpath, newpath)
+    var newpath = './public/images/custom-maps/' + filename; // // /*it was uncommented*/ console.log(fields.id, oldpath, newpath)
     // Save image
 
     fs.rename(oldpath, newpath, function (err) {
@@ -3761,14 +3777,14 @@ app.post('/api/upload-image', function (req, res) {
         });
       }
     });
-  }); // console.log(req.body)
+  }); // // /*it was uncommented*/ console.log(req.body)
 });
 app.post('/api/v2/upload-image', function (req, res) {
   var form = new formidable.IncomingForm();
   form.parse(req, function (err, fields, files) {
-    var reader = new FileReader(fields.userfile);
-    console.log(reader);
-    console.log(fields, files);
+    var reader = new FileReader(fields.userfile); // /*it was uncommented*/ console.log(reader)
+    // /*it was uncommented*/ console.log(fields, files)
+
     var oldpath = files.map.path; // Build path of image
 
     var filename = files.map.name.toLowerCase().split('.');
@@ -3781,7 +3797,7 @@ app.post('/api/v2/upload-image', function (req, res) {
       if (err) res.status(404).send({
         "href": fields.href
       });else {
-        console.log("UPDATE locations SET map='" + newpath + "' where zoneId=" + fields.id + "");
+        // /*it was uncommented*/ console.log("UPDATE locations SET map='" + newpath + "' where zoneId=" + fields.id + "")
         res.status(200).send({
           "href": fields.href
         }); // mysqlReader().then((result) => {
@@ -3816,7 +3832,7 @@ app.get('/api/mysql', function _callee25(req, res) {
 
 app.get('/api/v2/sensors-access', function (req, res) {
   var time = new Date();
-  var data = []; // console.log(req.query.username)
+  var data = []; // // /*it was uncommented*/ console.log(req.query.username)
 
   if (req.query.username) {
     var query = "SELECT * FROM sensors WHERE username='" + req.query.username + "'";
@@ -3839,7 +3855,7 @@ app.get('/api/v2/sensors-access', function (req, res) {
       });
     });
     Promise.all([mysqlResult]).then(function (result) {
-      // console.log(new Date() - time)
+      // // /*it was uncommented*/ console.log(new Date() - time)
       if (result[0].length) {
         var sensorQuery = 'or ';
         resultCounter = 0;
@@ -3853,7 +3869,7 @@ app.get('/api/v2/sensors-access', function (req, res) {
       } // var influxQuery = "select zone, username, sensorId from (select * from sensors where " + whereQuery + ") group by sensorId limit 1;"
 
 
-      var influxQuery = "show series where " + whereQuery; // console.log(influxQuery)
+      var influxQuery = "show series where " + whereQuery; // // /*it was uncommented*/ console.log(influxQuery)
 
       var influxResult = influxReader(influxQuery).then(function _callee27(result) {
         return regeneratorRuntime.async(function _callee27$(_context27) {
@@ -3909,7 +3925,7 @@ app.get('/api/v2/sensors-access', function (req, res) {
 
 app.get('/api/sensors-access', function (req, res) {
   var time = new Date();
-  var data = []; // console.log(req.query.username)
+  var data = []; // // /*it was uncommented*/ console.log(req.query.username)
 
   if (req.query.username) {
     var query = "SELECT * FROM sensors WHERE username='" + req.query.username + "'";
@@ -3932,7 +3948,7 @@ app.get('/api/sensors-access', function (req, res) {
       });
     });
     Promise.all([mysqlResult]).then(function (result) {
-      // console.log(new Date() - time)
+      // // /*it was uncommented*/ console.log(new Date() - time)
       if (result[0].length) {
         var sensorQuery = 'or ';
         resultCounter = 0;
@@ -3945,7 +3961,7 @@ app.get('/api/sensors-access', function (req, res) {
         var whereQuery = "username='" + req.query.username + "'";
       }
 
-      var influxQuery = "select zone, username, sensorId from (select * from sensors where " + whereQuery + ") group by sensorId limit 1;"; // console.log(influxQuery)
+      var influxQuery = "select zone, username, sensorId from (select * from sensors where " + whereQuery + ") group by sensorId limit 1;"; // // /*it was uncommented*/ console.log(influxQuery)
 
       var influxResult = influxReader(influxQuery).then(function _callee29(result) {
         return regeneratorRuntime.async(function _callee29$(_context29) {
@@ -3966,8 +3982,8 @@ app.get('/api/sensors-access', function (req, res) {
         });
       });
       Promise.all([influxResult]).then(function (result) {
-        // console.log(new Date() - time)
-        // console.log(result[0])
+        // // /*it was uncommented*/ console.log(new Date() - time)
+        // // /*it was uncommented*/ console.log(result[0])
         result[0].forEach(function (element) {
           data.push({
             zone: element.zone,
@@ -4030,7 +4046,7 @@ app.get('/api/edit-user', getCounties, function _callee39(req, res) {
     while (1) {
       switch (_context39.prev = _context39.next) {
         case 0:
-          sess = req.session; // console.log(req.url)
+          sess = req.session; // // /*it was uncommented*/ console.log(req.url)
 
           if (!(req.query.password.length == 0)) {
             _context39.next = 7;
@@ -4039,9 +4055,9 @@ app.get('/api/edit-user', getCounties, function _callee39(req, res) {
 
           // get the sensorIds of selected zone
           if (req.query.zones) {
-            // console.log(req.query.zones)
+            // // /*it was uncommented*/ console.log(req.query.zones)
             if (typeof req.query.zones == 'string') {
-              influxQuery = "show series where zone='" + req.query.zones + "' and username='" + sess.username + "'"; // console.log(influxQuery)
+              influxQuery = "show series where zone='" + req.query.zones + "' and username='" + sess.username + "'"; // // /*it was uncommented*/ console.log(influxQuery)
 
               influxReader(influxQuery).then(function (result) {
                 return result[0].key.split("sensorId=")[1].split(",")[0];
@@ -4087,10 +4103,10 @@ app.get('/api/edit-user', getCounties, function _callee39(req, res) {
                 if (zoneCounter < req.query.zones.length - 1) zoneQuery += ' or ';
                 zoneCounter++;
               });
-              influxQuery = "show series where (" + zoneQuery + ") and username='" + sess.username + "'"; // console.log(influxQuery)
+              influxQuery = "show series where (" + zoneQuery + ") and username='" + sess.username + "'"; // // /*it was uncommented*/ console.log(influxQuery)
 
               influxReader(influxQuery).then(function (result) {
-                var sensorsList = []; // console.log(result)
+                var sensorsList = []; // // /*it was uncommented*/ console.log(result)
 
                 result.forEach(function (series) {
                   sensorsList.push(series.key.split("sensorId=")[1].split(",")[0]);
@@ -4155,7 +4171,7 @@ app.get('/api/edit-user', getCounties, function _callee39(req, res) {
         case 7:
           // get the sensorIds of selected zone
           if (req.query.zones) {
-            // console.log(typeof req.query.zones)
+            // // /*it was uncommented*/ console.log(typeof req.query.zones)
             if (typeof req.query.zones == 'string') {
               influxQuery = "show series where username='" + sess.username + "' and zone='" + req.query.zones + "'";
               influxReader(influxQuery).then(function (result) {
@@ -4203,10 +4219,10 @@ app.get('/api/edit-user', getCounties, function _callee39(req, res) {
                 if (zoneCounter < req.query.zones.length - 1) zoneQuery += ' or ';
                 zoneCounter++;
               });
-              influxQuery = "show series where username='" + sess.username + "' and (" + zoneQuery + ")"; // console.log(influxQuery)
+              influxQuery = "show series where username='" + sess.username + "' and (" + zoneQuery + ")"; // // /*it was uncommented*/ console.log(influxQuery)
 
               influxReader(influxQuery).then(function (result) {
-                var sensorsList = []; // console.log(result)
+                var sensorsList = []; // // /*it was uncommented*/ console.log(result)
 
                 result.forEach(function (series) {
                   sensorsList.push(series.key.split("sensorId=")[1].split(",")[0]);
@@ -4276,7 +4292,7 @@ app.get('/api/add-user', function (req, res) {
   sess = req.session;
 
   if (sess.username) {
-    // console.log(req.query)
+    // // /*it was uncommented*/ console.log(req.query)
     var sql = "SELECT Username from users where username='" + req.query.username + "'";
     mysqlReader(sql).then(function _callee40(response) {
       var hashedPassword, sql;
@@ -4348,12 +4364,12 @@ app.post('/api/remove-user', function _callee41(req, res) {
             // res.redirect('/settings')
             res.status(200).send(result);
           }).catch(function (err) {
-            // console.log(err)
+            // // /*it was uncommented*/ console.log(err)
             res.status(500).send(err);
           }); // const queryRemoveSensors = `delete from sensors where username='` + req.query.username + `'`
           // let removeSensors = await mysqlReader(queryRemoveSensors)
           // Promise.all([removeUser, removeSensors]).then((response) => {
-          //     console.log(response)
+          //     // /*it was uncommented*/ console.log(response)
           // })
           // res.redirect('/team')
 
@@ -4564,9 +4580,9 @@ app.get("/api/socketio-access", function (req, res) {
 
 app.post("/proxy", function (req, res) {
   axios.post(req.query.url, req.body).then(function (response) {
-    console.log("url:", req.query.url);
-    console.log("body:", req.body);
-    console.log("response:", response.data);
+    // /*it was uncommented*/ console.log("url:", req.query.url)
+    // /*it was uncommented*/ console.log("body:", req.body)
+    // /*it was uncommented*/ console.log("response:", response.data)
     res.send(response.data);
   });
 }); //=========================================
@@ -4580,7 +4596,7 @@ app.get("/api/vue/influx", function _callee43(req, res) {
     while (1) {
       switch (_context43.prev = _context43.next) {
         case 0:
-          // console.log(req.query)
+          // // /*it was uncommented*/ console.log(req.query)
           query = req.query.query;
           _context43.next = 3;
           return regeneratorRuntime.awrap(influxReader(query));
@@ -4633,14 +4649,14 @@ app.get("/api/csv", function (req, res) {
     csvData.forEach(function (rowArray) {
       var row = rowArray.join(",");
       csvContent += row + "\r\n";
-    }); // console.log("csvContent:", csvContent.length)
+    }); // // /*it was uncommented*/ console.log("csvContent:", csvContent.length)
 
     res.send(csvContent);
   });
 });
 app.post('/api/v3/multi-report/hourly', function (req, res) {
   sess = req.session; // if (sess.username) {
-  // console.log(req.body)
+  // // /*it was uncommented*/ console.log(req.body)
 
   function changeTimezone(date, ianatz) {
     // suppose the date is 12:00 UTC
@@ -4662,10 +4678,10 @@ app.post('/api/v3/multi-report/hourly', function (req, res) {
       start,
       end,
       customDate = req.body['date[]']; // Preprocess timestamp
-  // console.log(customDate)
+  // // /*it was uncommented*/ console.log(customDate)
 
   start = customDate[0] + ' 00:00:00';
-  end = customDate[1] + ' 23:59:59'; // console.log(start,end)
+  end = customDate[1] + ' 23:59:59'; // // /*it was uncommented*/ console.log(start,end)
   // Prepare sensor list for Influx query
 
   var sensors = "";
@@ -4702,7 +4718,7 @@ app.post('/api/v3/multi-report/hourly', function (req, res) {
             }); // Query for DOOR
 
             if (item == 'door') {
-              // console.log(item, sensorIds)
+              // // /*it was uncommented*/ console.log(item, sensorIds)
               sensorTypes.isDoor = true; // Return how many times a door has been open or closed in an hour
 
               query = "select value from sensors where sensorId =~ /" + sensorIds.join('|') + "/ and time<='" + end + "' and time>='" + start + "' group by sensorId order by time desc"; // Make the request
@@ -4710,7 +4726,7 @@ app.post('/api/v3/multi-report/hourly', function (req, res) {
               queryDoor = influxReader(query);
             } else if (item == 'temperature') {
               // Query for TEMPERATURE
-              // console.log(item, sensorIds)
+              // // /*it was uncommented*/ console.log(item, sensorIds)
               sensorTypes.isTemperature = true; // Return average of temperature for each hour
 
               _query2 = "select mean(value) as value from sensors where sensorId =~ /" + sensorIds.join('|') + "/ and time<='" + end + "' and time>='" + start + "' group by sensorId,time(1h) order by time desc"; // Make the request
@@ -4729,12 +4745,12 @@ app.post('/api/v3/multi-report/hourly', function (req, res) {
   if (sensorTypes.isDoor) listOfPromises.push(queryDoor);
   if (sensorTypes.isTemperature) listOfPromises.push(queryTemperature);
   Promise.all(listOfPromises).then(function (results) {
-    // console.log("promise all")
-    // console.log(start, end)
-    // console.log("Doors:", results[0].groupRows.length)
+    // // /*it was uncommented*/ console.log("promise all")
+    // // /*it was uncommented*/ console.log(start, end)
+    // // /*it was uncommented*/ console.log("Doors:", results[0].groupRows.length)
     // Door results
     if (sensorTypes.isDoor) results[0].groupRows.forEach(function (sensor, idx) {
-      // console.log("sensor:", sensor.tags.sensorId)
+      // // /*it was uncommented*/ console.log("sensor:", sensor.tags.sensorId)
       // Process the result
       var oldHour, oldDay, oldMonth, oldYear;
       var hourlyOpenDoor = [];
@@ -4752,7 +4768,7 @@ app.post('/api/v3/multi-report/hourly', function (req, res) {
       dayEnd = new Date(end); // new Date() creates a date with 2 hours less than inserted
 
       dayEnd.setTime(dayEnd.getTime() - dayEnd.getTimezoneOffset() * 60 * 1000); // adjust the date
-      // console.log(dayStart, dayEnd)
+      // // /*it was uncommented*/ console.log(dayStart, dayEnd)
 
       for (var d = dayStart; d <= dayEnd; d.setHours(d.getHours() + 1)) {
         var time = d.toISOString(); // let time = d.toLocaleString()
@@ -4762,7 +4778,7 @@ app.post('/api/v3/multi-report/hourly', function (req, res) {
           value: null,
           sensorId: null
         });
-      } // console.log(hourlyOpenDoor)
+      } // // /*it was uncommented*/ console.log(hourlyOpenDoor)
       // Remap the time and values (minutes when door is opened by hour)
 
 
@@ -4817,7 +4833,7 @@ app.post('/api/v3/multi-report/hourly', function (req, res) {
           var millis = duration / 1000000;
           var seconds = millis / 1000;
           var mins = seconds / 60;
-          hourlyOpenDoorTimer += mins; // console.log(new Date(previousTime / 1000000), new Date(currentTimeInflux / 1000000), dailyOpenDoorTimer)
+          hourlyOpenDoorTimer += mins; // // /*it was uncommented*/ console.log(new Date(previousTime / 1000000), new Date(currentTimeInflux / 1000000), dailyOpenDoorTimer)
         }
 
         if (index == sensor.rows.length - 1) {
@@ -4833,12 +4849,12 @@ app.post('/api/v3/multi-report/hourly', function (req, res) {
       hourlyOpenDoor = _.uniqBy(hourlyOpenDoor, "time"); //removing duplicates
 
       hourlyOpenDoor = _.orderBy(hourlyOpenDoor, "time", "desc"); //ordering by timestamp
-
-      console.log(hourlyOpenDoor); // Replace results into original location
+      // /*it was uncommented*/ console.log(hourlyOpenDoor)
+      // Replace results into original location
 
       sensor.rows = hourlyOpenDoor;
     }); // Return the results
-    // console.log("promises:",listOfPromises)
+    // // /*it was uncommented*/ console.log("promises:",listOfPromises)
 
     if (listOfPromises.length == 2) // if there are 2 promises - then it is a door and a temperature
       sensorDataBundle = results[0].groupRows.concat(results[1].groupRows);else // if there is 1 promise - the it is either door or temperature
@@ -4851,7 +4867,7 @@ app.post('/api/v3/multi-report/hourly', function (req, res) {
 });
 app.post('/api/v3/multi-report', function (req, res) {
   sess = req.session; // if (sess.username) {
-  // console.log(req.body)
+  // // /*it was uncommented*/ console.log(req.body)
 
   function changeTimezone(date, ianatz) {
     // suppose the date is 12:00 UTC
@@ -4928,14 +4944,14 @@ app.post('/api/v3/multi-report', function (req, res) {
             }); // Query for DOOR
 
             if (item == 'door') {
-              // console.log(item, sensorIds)
+              // // /*it was uncommented*/ console.log(item, sensorIds)
               sensorTypes.isDoor = true; // Return how many times a door has been open or closed in an hour
 
               query = "select value from sensors where sensorId =~ /" + sensorIds.join('|') + "/ and time<='" + end + "' and time>='" + start + "' group by sensorId order by time desc"; // Make the request
 
               queryDoor = influxReader(query);
             } else if (item == 'temperature') {
-              // console.log(item, sensorIds)
+              // // /*it was uncommented*/ console.log(item, sensorIds)
               sensorTypes.isTemperature = true; // Return average of temperature for each hour
 
               _query3 = "select mean(value) as value from sensors where sensorId =~ /" + sensorIds.join('|') + "/ and time<='" + end + "' and time>='" + start + "' group by sensorId,time(1d) order by time desc"; // Make the request
@@ -4954,12 +4970,12 @@ app.post('/api/v3/multi-report', function (req, res) {
   if (sensorTypes.isDoor) listOfPromises.push(queryDoor);
   if (sensorTypes.isTemperature) listOfPromises.push(queryTemperature);
   Promise.all(listOfPromises).then(function (results) {
-    // console.log("promise all", sensorTypes)
-    // console.log(start, end)
-    // console.log("Doors:", results[0].groupRows.length)
+    // // /*it was uncommented*/ console.log("promise all", sensorTypes)
+    // // /*it was uncommented*/ console.log(start, end)
+    // // /*it was uncommented*/ console.log("Doors:", results[0].groupRows.length)
     // Door results
     if (sensorTypes.isDoor) results[0].groupRows.forEach(function (sensor, idx) {
-      // console.log("sensor:", sensor.tags.sensorId)
+      // // /*it was uncommented*/ console.log("sensor:", sensor.tags.sensorId)
       // Process the result
       var oldHour, oldDay, oldMonth, oldYear;
       var hourlyOpenDoor = [];
@@ -5019,13 +5035,13 @@ app.post('/api/v3/multi-report', function (req, res) {
 
         if (newYear != oldYear) {
           oldYear = newYear;
-        } // console.log(index)
+        } // // /*it was uncommented*/ console.log(index)
 
 
         if (newState == 0) {
           var currentTimeInflux = data.time.getNanoTime();
-          var previousTime; // console.log("currentTimeInflux", currentTimeInflux)
-          // console.log("sensor.rows[index - 1]", sensor.rows[index - 1])
+          var previousTime; // // /*it was uncommented*/ console.log("currentTimeInflux", currentTimeInflux)
+          // // /*it was uncommented*/ console.log("sensor.rows[index - 1]", sensor.rows[index - 1])
 
           try {
             previousTime = sensor.rows[index - 1].time.getNanoTime();
@@ -5037,7 +5053,7 @@ app.post('/api/v3/multi-report', function (req, res) {
           var millis = duration / 1000000;
           var seconds = millis / 1000;
           var mins = seconds / 60;
-          dailyOpenDoorTimer += mins; // console.log(new Date(previousTime / 1000000), new Date(currentTimeInflux / 1000000), dailyOpenDoorTimer)
+          dailyOpenDoorTimer += mins; // // /*it was uncommented*/ console.log(new Date(previousTime / 1000000), new Date(currentTimeInflux / 1000000), dailyOpenDoorTimer)
         }
 
         if (index == sensor.rows.length - 1) {
@@ -5053,12 +5069,12 @@ app.post('/api/v3/multi-report', function (req, res) {
       dailyOpenDoor = _.uniqBy(dailyOpenDoor, "time"); //removing duplicates
 
       dailyOpenDoor = _.orderBy(dailyOpenDoor, "time", "desc"); //ordering by timestamp
-      // console.log(dailyOpenDoor)
+      // // /*it was uncommented*/ console.log(dailyOpenDoor)
       // Replace results into original location
 
       sensor.rows = dailyOpenDoor;
     }); // Return the results
-    // console.log("promises:",listOfPromises.length)
+    // // /*it was uncommented*/ console.log("promises:",listOfPromises.length)
 
     if (listOfPromises.length == 2) // if there are 2 promises - then it is a door and a temperature
       sensorDataBundle = results[0].groupRows.concat(results[1].groupRows);else // if there is 1 promise - the it is either door or temperature
@@ -5084,17 +5100,17 @@ var server = app.listen(PORT, console.log("NodeJS started on port ".concat(PORT)
 
   if (err) {// checkPort()
     // process.exit();
-    // console.log(`port:`,port)
+    // // /*it was uncommented*/ console.log(`port:`,port)
     // let kill = killPort(port)
   }
 }); // let checkPort = () => {
 //     exec('netstat -ltnup | grep 5000', (error, stdout, stderr) => {
 //         if (error) {
-//             console.log(`error: ${error.message}`)
+//             // /*it was uncommented*/ console.log(`error: ${error.message}`)
 //             process.exit(1);
 //             return
 //         } else if (stderr) {
-//             console.log(`stderr: ${stderr}`)
+//             // /*it was uncommented*/ console.log(`stderr: ${stderr}`)
 //             process.exit(1);
 //             return
 //         } else {
@@ -5106,18 +5122,18 @@ var server = app.listen(PORT, console.log("NodeJS started on port ".concat(PORT)
 
 var killPort = function killPort(pid) {//     exec(`kill ` + pid, (error2, stdout2, stderr2) => {
   //         if (error2) {
-  //             console.log(`error2: ${error2.message}`)
+  //             // /*it was uncommented*/ console.log(`error2: ${error2.message}`)
   //             process.exit(1);
   //             return
   //         } else if (stderr2) {
-  //             console.log(`stderr2: ${stderr2}`)
+  //             // /*it was uncommented*/ console.log(`stderr2: ${stderr2}`)
   //             process.exit(1);
   //             return
   //         } else if (stdout2) {
-  //             console.log(`stdout2: ${stdout2}`)
+  //             // /*it was uncommented*/ console.log(`stdout2: ${stdout2}`)
   //             process.exit(1);
   //         } else {
-  //             console.log("kill " + pid)
+  //             // /*it was uncommented*/ console.log("kill " + pid)
   //             process.exit(1);
   //         }
   //     })

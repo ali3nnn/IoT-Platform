@@ -33,7 +33,7 @@ var influx = new Influx.InfluxDB({
 function influxWriter(measurement, country, county, city, location, zone, username, type, sensorId, value) {
   var database = arguments.length > 10 && arguments[10] !== undefined ? arguments[10] : 'anysensor3';
   var precision = arguments.length > 11 && arguments[11] !== undefined ? arguments[11] : 's';
-  console.log('Influx Write');
+  // /*it was uncommented*/ console.log('Influx Write')
   influx.writePoints([{
     measurement: measurement,
     tags: {
@@ -60,7 +60,7 @@ function influxWriter(measurement, country, county, city, location, zone, userna
 
 function influxReader(query) {
   return new Promise(function (resolve, reject) {
-    // console.log(query)
+    // // /*it was uncommented*/ console.log(query)
     influx.query(query).then(function (result) {
       return resolve(result);
     }).catch(function (error) {
@@ -75,7 +75,7 @@ function influxReader(query) {
 
 
 config_db = {
-  host: process.env.DATABASE_HOST,
+  host: process.env.IP_HOST,
   user: process.env.DATABASE_USER,
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE
@@ -87,7 +87,7 @@ function () {
   function Database(config) {
     _classCallCheck(this, Database);
 
-    this.connection = mysql.createConnection(config); // console.log("Second connection to MySQL in promise")
+    this.connection = mysql.createConnection(config); // // /*it was uncommented*/ console.log("Second connection to MySQL in promise")
   }
 
   _createClass(Database, [{
@@ -124,7 +124,7 @@ database = new Database(config_db);
 
 function mysqlReader(query) {
   return new Promise(function (resolve, reject) {
-    // console.log(query)
+    // // /*it was uncommented*/ console.log(query)
     database.query(query).then(function (result) {
       return resolve(result);
     }).catch(function (error) {
@@ -135,7 +135,7 @@ function mysqlReader(query) {
 
 function mysqlWriter(query) {
   return new Promise(function (resolve, reject) {
-    // console.log(query)
+    // // /*it was uncommented*/ console.log(query)
     database.query(query).then(function (result) {
       return resolve(result);
     }).catch(function (error) {
@@ -171,7 +171,7 @@ var getUserData = function getUserData(req, res, next) {
             //         from sensors 
             //         join locations where sensors.zoneId=locations.zoneId and locations.createdBy = (select company from users where username='`+sess.username+`')
             //         group by sensors.sensorId;`).then((result)=>{
-            //             // console.log(result)
+            //             // // /*it was uncommented*/ console.log(result)
             //             if(result) {
             //                 userData = result
             //                 userData["error"] = false
@@ -183,7 +183,7 @@ var getUserData = function getUserData(req, res, next) {
             //     }
             // }).
             mysqlReader("select sensors.*, locations.*\n                from sensors \n                join locations where sensors.zoneId=locations.zoneId and locations.createdBy = (select company from users where username='" + sess.username + "')\n                group by sensors.sensorId;").then(function (result) {
-              // console.log(result)
+              // // /*it was uncommented*/ console.log(result)
               if (result) {
                 userData = result;
                 userData["error"] = false;
@@ -196,8 +196,9 @@ var getUserData = function getUserData(req, res, next) {
               // Set session varriable
               // sess.userData = userData // set list of sensors that are assigned to company of superadmin
               // Set sess.company variable
-              mysqlReader("SELECT company FROM users where username='" + sess.username + "'").then(function (result) {
+              mysqlReader("SELECT company, name FROM users where username='" + sess.username + "'").then(function (result) {
                 sess.company = result[0].company;
+                sess.name = result[0].name;
               }).then(function () {
                 next();
               });
@@ -226,21 +227,25 @@ var getUserData = function getUserData(req, res, next) {
               });
             }).then(function () {
               // Set sess.company variable
-              mysqlReader("SELECT company, role FROM users where username='" + sess.username + "'").then(function (result) {
-                console.log(result); // sess.company = result[0].company
+              mysqlReader("SELECT company, role, name FROM users where username='" + sess.username + "'").then(function (result) {
+                // // /*it was uncommented*/ console.log(result)
+                // sess.company = result[0].company
                 // sess.role = result[0].role
-
-                if (!("error" in userData)) {
+                if (userData.error == false) {
                   var userDataFull = userData.map(function (item, index) {
                     return _objectSpread({}, item, {
                       company: result[0].company,
-                      role: result[0].role
+                      role: result[0].role,
+                      name: result[0].name
                     });
                   });
                   sess.userData = userDataFull;
                 } else {
                   sess.userData = userData;
                 }
+
+                sess.name = result[0].name;
+                sess.company = result[0].company;
               }).then(function () {
                 next();
               });
@@ -262,8 +267,8 @@ var getCounties = function getCounties(req, res, next) {
       switch (_context4.prev = _context4.next) {
         case 0:
           sess = req.session;
-          sess.counties = [];
-          console.log("getcounties:", sess.username);
+          sess.counties = []; // /*it was uncommented*/ console.log("getcounties:", sess.username)
+
           time = new Date();
           data = [];
 
@@ -276,8 +281,8 @@ var getCounties = function getCounties(req, res, next) {
                     case 0:
                       if (rows.length) {
                         // TODO - continue from here
-                        sess.userData = rows[0];
-                        console.log(rows[0]); // var whereQuery = `where (username='` + sess.username + `') or (`
+                        sess.userData = rows[0]; // // /*it was uncommented*/ console.log(rows[0])
+                        // var whereQuery = `where (username='` + sess.username + `') or (`
                         // for (var i = 0; i < rows_.length; i++) {
                         //     whereQuery += `sensorId='` + rows_[i].sensorId + `'`
                         //     if (i < rows_.length - 1) whereQuery += ` or `
@@ -285,45 +290,45 @@ var getCounties = function getCounties(req, res, next) {
                         // }
                         // // var queryCounties = `select distinct(county) as county from ( select county, value from sensors ` + whereQuery + ` )`
                         // var queryCounties = `SHOW TAG VALUES WITH KEY IN ("county") ` + whereQuery
-                      } else {
-                        console.log("not found", rows); // get counties
+                      } else {} // /*it was uncommented*/ console.log("not found", rows)
+                        // get counties
                         // var queryCounties = "select distinct(county) as county from (select county, value from sensors where username='" + sess.username + "')"
                         // var queryCounties = `SHOW TAG VALUES WITH KEY IN ("county") WHERE username='` + sess.username + `'`
-                      } // console.log("queryCounties:", queryCounties)
-                      // let counties = influxReader(queryCounties).then(async (result) => {
-                      //     var counties = []
-                      //     for (var i = 0; i < result.length; i++) {
-                      //         // counties.push(result[i].county)
-                      //         counties.push(result[i].value)
-                      //     }
-                      //     console.log("counties", counties)
-                      //     return await counties
-                      // })
-                      // Promise.all([counties]).then((result) => {
-                      //     // build the output
-                      //     if (result[0].length) {
-                      //         data.push({
-                      //             error: false,
-                      //             message: "Data found",
-                      //             user: sess.username,
-                      //             countiesCounter: result[0].length,
-                      //             counties: result[0].length ? result[0] : "No county found",
-                      //             query: queryCounties,
-                      //             responseTime: new Date() - time + "ms",
-                      //         })
-                      //         sess.counties = data[0].counties
-                      //     } else {
-                      //         data.push({
-                      //             error: true,
-                      //             message: "No sensor in influx for this user",
-                      //             user: sess.username
-                      //         })
-                      //         sess.counties = []
-                      //     }
-                      //     console.log("data", data)
-                      //     // console.log(sess.username, "getCounties 2", sess.counties)
-                      //     next()
-                      // }).catch(error => console.log(`Error in promise for GETCOUNTY ${error}`))
+                        // // /*it was uncommented*/ console.log("queryCounties:", queryCounties)
+                        // let counties = influxReader(queryCounties).then(async (result) => {
+                        //     var counties = []
+                        //     for (var i = 0; i < result.length; i++) {
+                        //         // counties.push(result[i].county)
+                        //         counties.push(result[i].value)
+                        //     }
+                        //     // /*it was uncommented*/ console.log("counties", counties)
+                        //     return await counties
+                        // })
+                        // Promise.all([counties]).then((result) => {
+                        //     // build the output
+                        //     if (result[0].length) {
+                        //         data.push({
+                        //             error: false,
+                        //             message: "Data found",
+                        //             user: sess.username,
+                        //             countiesCounter: result[0].length,
+                        //             counties: result[0].length ? result[0] : "No county found",
+                        //             query: queryCounties,
+                        //             responseTime: new Date() - time + "ms",
+                        //         })
+                        //         sess.counties = data[0].counties
+                        //     } else {
+                        //         data.push({
+                        //             error: true,
+                        //             message: "No sensor in influx for this user",
+                        //             user: sess.username
+                        //         })
+                        //         sess.counties = []
+                        //     }
+                        //     // /*it was uncommented*/ console.log("data", data)
+                        //     // // /*it was uncommented*/ console.log(sess.username, "getCounties 2", sess.counties)
+                        //     next()
+                        // }).catch(error => // /*it was uncommented*/ console.log(`Error in promise for GETCOUNTY ${error}`))
 
 
                     case 1:
@@ -332,14 +337,14 @@ var getCounties = function getCounties(req, res, next) {
                   }
                 }
               });
-            }); // console.log(sess.username, "getCounties 3", sess.counties)
+            }); // // /*it was uncommented*/ console.log(sess.username, "getCounties 3", sess.counties)
 
             next();
           } else res.render("login", {
             alert: "You are not logged in"
           });
 
-        case 6:
+        case 5:
         case "end":
           return _context4.stop();
       }
@@ -361,7 +366,7 @@ var getSensorLocation = function getSensorLocation(req, res, next) {
           //         const query = "SELECT * FROM sensors WHERE username='" + sess.username + "'"
           //         mysqlReader(query).then(async (rows) => {
           //             let rows_ = await rows
-          //             // console.log(await rows)
+          //             // // /*it was uncommented*/ console.log(await rows)
           //             if (rows_.length) {
           //                 var whereQuery = `where (username='` + sess.username + `') or (`
           //                 for (var i = 0; i < rows_.length; i++) {
@@ -376,7 +381,7 @@ var getSensorLocation = function getSensorLocation(req, res, next) {
           //                 // var querySensorId = `select distinct(sensorId) as sensorId from (select sensorId, value from sensors where username='` + sess.username + `')`
           //                 var querySensorId = `SHOW TAG VALUES WITH KEY IN ("sensorId") WHERE username='` + sess.username + `'`
           //             }
-          //             // console.log(querySensorId)
+          //             // // /*it was uncommented*/ console.log(querySensorId)
           //             let sensors = influxReader(querySensorId).then(async (result) => {
           //                 var sensors = []
           //                 for (var i = 0; i < result.length; i++) {
@@ -407,16 +412,16 @@ var getSensorLocation = function getSensorLocation(req, res, next) {
           //                     })
           //                     // sess.data = []
           //                 }
-          //                 // console.log(sess.username, "getCounties 2", sess.counties)
-          //                 // console.log(sess.sensors)
+          //                 // // /*it was uncommented*/ console.log(sess.username, "getCounties 2", sess.counties)
+          //                 // // /*it was uncommented*/ console.log(sess.sensors)
           //                 next()
-          //             }).catch(error => console.log(`Error in promise for GETSENSORLOCATION ${error}`))
+          //             }).catch(error => // /*it was uncommented*/ console.log(`Error in promise for GETSENSORLOCATION ${error}`))
           //         })
           //     } else {
           //         next()
           //     }
           // } else {
-          //     // console.log("test")
+          //     // // /*it was uncommented*/ console.log("test")
           //     res.render("login", {
           //         alert: "You are not logged in"
           //     })
@@ -531,7 +536,7 @@ var isScannerAvailable = function isScannerAvailable(req, res, next) {
           // var data = {}
           // if (sess.username) {
           //     if (sess.isScannerAvailable == undefined || sess.isScannerAvailable.length == 0) {
-          //         // console.log(sess.isScannerAvailable, "up")
+          //         // // /*it was uncommented*/ console.log(sess.isScannerAvailable, "up")
           //         const query = "SHOW TABLES LIKE 'scanner_" + sess.username + "'";
           //         mysqlReader(query)
           //             .then(rows => {
@@ -542,7 +547,7 @@ var isScannerAvailable = function isScannerAvailable(req, res, next) {
           //                             data['count'] = count[0].count
           //                             data["responseTime"] = new Date() - time
           //                         }).then(() => {
-          //                             // console.log(data)
+          //                             // // /*it was uncommented*/ console.log(data)
           //                             sess.isScannerAvailable = data
           //                             next()
           //                         })
@@ -554,7 +559,7 @@ var isScannerAvailable = function isScannerAvailable(req, res, next) {
           //                 }
           //             })
           //     } else {
-          //         // console.log(sess.isScannerAvailable, "down")
+          //         // // /*it was uncommented*/ console.log(sess.isScannerAvailable, "down")
           //         next()
           //     }
           // } else {
@@ -575,7 +580,7 @@ var mqttOverSocketIoBridge = function mqttOverSocketIoBridge(req, res, next) {
 
 
 var test = function test(req, res, next) {
-  // console.log("--->>>", req.originalUrl)
+  // // /*it was uncommented*/ console.log("--->>>", req.originalUrl)
   // Allow request from url like /api/url_path?admin=target_username
   if (req.query.admin) {
     req.session.username = req.query.admin;
@@ -625,7 +630,7 @@ var getDaysInMonth = function getDaysInMonth(m, y) {
 // const trackurl = (req,res,next) => {
 //     if(req.originalUrl!='undefined')
 //         req.session.trackurl += ","+req.originalUrl
-//     console.log(">>",req.originalUrl, req.session.trackurl)
+//     // /*it was uncommented*/ console.log(">>",req.originalUrl, req.session.trackurl)
 //     next()
 // }
 // ==================================

@@ -4834,8 +4834,8 @@ div.conveyor-layout > div .sensor-item {
   transition: width 0.2s ease, height 0.2s ease, transform 0.2s ease;
   padding: 0px;
   border-radius: 5px;
-  width: 25px;
-  height: 25px;
+  width: 100px;
+  height: 50px;
   cursor: pointer;
 }
 div.conveyor-layout > div .sensor-item:hover {
@@ -4855,10 +4855,11 @@ div.conveyor-layout > div .sensor-item[state=acc] {
 }
 div.conveyor-layout > div .sensor-item[state=acc]:before, div.conveyor-layout > div .sensor-item[state=acc]:after {
   content: "";
-  width: 40px;
-  height: 40px;
+  width: 100px;
+  height: 50px;
   border-radius: 3px;
   border: 1px solid var(--conveyor-acc);
+  background-color: var(--conveyor-acc);
   position: absolute;
   top: 0;
   right: 0;
@@ -4869,6 +4870,7 @@ div.conveyor-layout > div .sensor-item[state=acc]:before, div.conveyor-layout > 
   transform-origin: center center;
   animation: pulse-me-small 1s linear infinite;
   z-index: -99;
+  display: none;
 }
 div.conveyor-layout > div .sensor-item[state=acc]:after {
   animation-delay: 1s;
@@ -4879,10 +4881,11 @@ div.conveyor-layout > div .sensor-item[state=open] {
 }
 div.conveyor-layout > div .sensor-item[state=open]:before, div.conveyor-layout > div .sensor-item[state=open]:after {
   content: "";
-  width: 40px;
-  height: 40px;
+  width: 100px;
+  height: 50px;
   border-radius: 3px;
   border: 1px solid var(--conveyor-open);
+  background-color: var(-conveyor-open);
   position: absolute;
   top: 0;
   right: 0;
@@ -4910,10 +4913,11 @@ div.conveyor-layout > div .sensor-item[state=press] {
 }
 div.conveyor-layout > div .sensor-item[state=press]:before, div.conveyor-layout > div .sensor-item[state=press]:after {
   content: "";
-  width: 40px;
-  height: 40px;
+  width: 100px;
+  height: 50px;
   border-radius: 3px;
   border: 1px solid var(--conveyor-press);
+  background-color: var(--conveyor-press);
   position: absolute;
   top: 0;
   right: 0;
@@ -4940,10 +4944,11 @@ div.conveyor-layout > div .sensor-item[state=error] {
 }
 div.conveyor-layout > div .sensor-item[state=error]:before, div.conveyor-layout > div .sensor-item[state=error]:after {
   content: "";
-  width: 40px;
-  height: 40px;
+  width: 100px;
+  height: 50px;
   border-radius: 3px;
   border: 1px solid var(--conveyor-error);
+  background-color: var(--conveyor-error);
   position: absolute;
   top: 0;
   right: 0;
@@ -4990,6 +4995,9 @@ div.conveyor-layout > div .sensor-item i {
   display: block;
   text-align: center;
   line-height: 25px;
+  transform: translateY(-50%);
+  top: 50%;
+  position: relative;
 }
 div.conveyor-layout > div .sensor-item span {
   display: block;
@@ -5089,6 +5097,7 @@ div#map > div.custom-map > .sensor-item.no-power:after, div#map > div.custom-map
   text-align: center;
   /* z-index: 0; */
   border-radius: 13px;
+  bottom: unset;
 }
 div#map > div.custom-map > .sensor-item.no-power {
   background: var(--offline);
@@ -6810,12 +6819,14 @@ label.switch-label:active:after {
 }
 .client-username-pharmaFarm .sensor-item[type=segment] {
   width: 100px !important;
+  height: 25px !important;
 }
 .client-username-pharmaFarm .sensor-item[type=segment] .tooltiptext {
   top: 10px !important;
 }
 .client-username-pharmaFarm .sensor-item[type=gate] {
   height: 100px !important;
+  width: 25px !important;
 }
 .client-username-pharmaFarm .sensor-item[type=gate] .tooltiptext {
   top: -30px !important;
@@ -6835,10 +6846,10 @@ label.switch-label:active:after {
   z-index: 1;
   top: 20px;
   left: 50%;
-  -webkit-transform: translate(-50%, 50%);
-  -moz-transform: translate(-50%, 50%);
-  -o-transform: translate(-50%, 50%);
-  transform: translate(-50%, 50%);
+  -webkit-transform: translate(-50%, 50px);
+  -moz-transform: translate(-50%, 50px);
+  -o-transform: translate(-50%, 50px);
+  transform: translate(-50%, 50px);
   -webkit-transition: opacity 0.3s ease-in;
   -o-transition: opacity 0.3s ease-in;
   transition: opacity 0.3s ease-in;

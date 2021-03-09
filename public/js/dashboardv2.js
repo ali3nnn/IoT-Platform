@@ -4,6 +4,7 @@
 // import { deprecationHandler } from 'moment'
 const humanizeDuration = require("humanize-duration");
 const _ = require('lodash');
+window.lodash = _
 
 import {
     getDistinctValuesFromObject,
@@ -326,26 +327,26 @@ function triggerSensorView(sensorId, sensor) {
                 // do not let conveyor run with gate open
                 // for (let item of userData_raw) {
 
-                    // // check if gate exist and is open
-                    // if (item.sensorType == 'gate' && item.status == 'open') {
-                    //     // do not start
+                // // check if gate exist and is open
+                // if (item.sensorType == 'gate' && item.status == 'open') {
+                //     // do not start
 
-                    //     alert("Atentie! Poarta deschisa! Inchideti poarta inainte de pornire!")
-                    // } else {
-                    //     // start
+                //     alert("Atentie! Poarta deschisa! Inchideti poarta inainte de pornire!")
+                // } else {
+                //     // start
 
-                    //     // send 1 to mqtt
-                    //     sendMessage("socketChannel", {
-                    //         topic: 'anygo/conveyor',
-                    //         message: JSON.stringify({ username, sensorId, "status": 1 })
-                    //     })
+                //     // send 1 to mqtt
+                //     sendMessage("socketChannel", {
+                //         topic: 'anygo/conveyor',
+                //         message: JSON.stringify({ username, sensorId, "status": 1 })
+                //     })
 
-                        // set info message
-                        $('.controller-' + sensorId + ' .state-button .conveyor-info-message').html("RUN")
+                // set info message
+                $('.controller-' + sensorId + ' .state-button .conveyor-info-message').html("RUN")
 
-                    //     // update seconds
-                    //     conveyorUsage(sensorId)
-                    // }
+                //     // update seconds
+                //     conveyorUsage(sensorId)
+                // }
                 // }
             }
 
@@ -362,6 +363,28 @@ function triggerSensorView(sensorId, sensor) {
                     topic: 'anygo/conveyor',
                     message: JSON.stringify({ username, sensorId, "status": 0 })
                 })
+
+                $(".state-btn-inner > input").attr("disabled", true)
+
+                // SEND STOP TO MQTT 2 TIMES
+                // ---------------
+                let intervalGap = 2000
+
+                let stopInterval = setInterval(()=>{
+                    console.log("send stop one more time")
+                    sendMessage("socketChannel", {
+                        topic: 'anygo/conveyor',
+                        message: JSON.stringify({ username, sensorId, "status": 0 })
+                    })
+                },intervalGap)
+
+                setTimeout(()=>{
+                    console.log("stop sender is cleared")
+                    clearInterval(stopInterval)
+                    $(".state-btn-inner > input").attr("disabled", false)
+                },intervalGap*5)
+                // ---------------
+                // END STOP WORKAROUND
             }
 
             // set info msg
@@ -954,7 +977,7 @@ function updateCurrentValue(sensorid, value, date = false) {
         let currentDate = new Date()
         let oldDate = new Date(date)
         let diff = (currentDate.getTime() - oldDate.getTime()) / 1000
-        if (diff > 3600)
+        if (diff > 5*60) // diff > SECONDS - seconds = how many seconds should wait before showing not live
             timeEl.siblings('.pulse').addClass("not-live")
         else
             timeEl.siblings('.pulse').removeClass("not-live")
@@ -1133,9 +1156,17 @@ socket.on(socketChannel, async (data) => {
     if (data.topic == 'anygo/conveyor') {
 
         msg = JSON.parse(data.message)
+        // console.log(msg)
         // msg = `{"username":"demo",sensorId":"TEST0001CONV0003SEG","status":"run"}`
 
-        if ('status' in msg && 'sensorId' in msg) {
+        let isSensorForCurrentUser = _.find(userData_raw, function (n) {
+            if (n.sensorId == msg.sensorId)
+                return true
+        });
+
+        // if (isSensorForCurrentUser) {
+
+        if ('status' in msg && 'sensorId' in msg && isSensorForCurrentUser) {
 
             // Start/stop conveyor - from mqtt directly not from button
             if ([1, 0, '1', '0'].includes(msg['status'])) {
@@ -1166,7 +1197,8 @@ socket.on(socketChannel, async (data) => {
                 let timeEl = $(".sensor-item[sensor='" + sensorId + "'] .tooltiptext date").html()
                 // let len = timeEl.length
 
-                let oldTime = timeEl.slice(6)
+                let oldTime
+                oldTime = timeEl.slice(6)
                 let oldTimeObj = new Date()
                 oldTimeObj.setHours(parseInt(oldTime.slice(0, 2)))
                 oldTimeObj.setMinutes(parseInt(oldTime.slice(3)))
@@ -1221,8 +1253,11 @@ socket.on(socketChannel, async (data) => {
                     stopAlert()
                 }
             }
-
         }
+
+        // } else {
+        //     console.warn("topic: anygo/conveyor", "msg:"+msg.sensorId, "not for this user")
+        // }
 
     }
     // ======================================================
@@ -1400,6 +1435,7 @@ let mainLoader = async () => {
 
 }
 
+
 let influxQuery = async (query) => {
     let response = await fetch("/api/v3/query-influx?query=" + query)
     return response.json()
@@ -1428,6 +1464,15 @@ let initLiveData = async () => {
 }
 
 initLiveData()
+
+// Order graph in ascending order based on sensor name
+// const orderCharts = () => {
+//     console.log("here")
+//     console.log($(""))
+// }
+// timeoutAsync(3000, orderCharts)
+// End ordering
+
 
 // Update charts continously
 let liveChart = async () => {

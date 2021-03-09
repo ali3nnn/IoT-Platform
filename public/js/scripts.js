@@ -14,6 +14,8 @@ import {
 
 let href = window.location.pathname
 
+console.log(userData_raw)
+
 // Window loader
 // ============================
 $(window).on('load', function () {

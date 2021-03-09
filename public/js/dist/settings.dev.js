@@ -159,19 +159,31 @@ var zoneModal = function zoneModal(id, zoneid, location1, location2, location3, 
   var usersChecked = [];
   var userBuffer = []; // } else {
   // There are some users for some zones
+  // console.log("zone",listOfZoneAccess)
+  // console.log(listOfZoneAccess[0])
 
   listOfZoneAccess[1].forEach(function (location, index) {
+    // console.log(location.zoneId, zoneid)
     if (location.zoneId == zoneid) {
       // Get row with this zone id from list of locations and users
       var zone = listOfZoneAccess[0].filter(function (location, idx) {
         return location.zoneId == zoneid ? location : false;
-      }); // console.log(zone[0])
+      }); // let zone = listOfZoneAccess.filter((location_, idx) => {
+      //     console.log("filter:", location_[0].zoneId, zoneid)
+      //     if(location_[0].zoneId == zoneid)
+      //         return listOfZoneAccess[idx]
+      //     return false
+      //     // return location_.zoneId == zoneid ? location_ : false
+      //     // return false
+      // })
+      // console.log(location)
+      // console.log("zone",zone)
       // If current zone has usersList
 
       if (zone[0]) {
         // Get unqiue users of it 
         var userAssignated = zone[0].usersList.split(',');
-        userAssignated = new Set(userAssignated); // console.log(userAssignated)
+        userAssignated = new Set(userAssignated); // console.log(zone[0].location2, zone[0].usersList)
         // Loop through each user and check who is assignated and who is not
 
         listOfUsers.forEach(function (user, index) {
@@ -199,7 +211,7 @@ var zoneModal = function zoneModal(id, zoneid, location1, location2, location3, 
     return path == 'NULL' || !path ? 'custom' : path;
   }() + "\"> Custom Map " + function () {
     return path == 'NULL' || !path ? '' : '(<a target="_blank" rel="noopener noreferrer" href="/images/custom-maps/' + path + '">Image</a>)';
-  }() + " </input> <br>\n                                    <input type=\"radio\" " + olmap + " name=\"map\" value=\"ol\"> OL Map </input>\n                                </div>\n\n                                <div class=\"form-group\">\n                                    <input id=\"image-file\" " + function () {
+  }() + " </input> <br>\n                                    <input type=\"radio\" " + olmap + " name=\"map\" value=\"ol\" disabled> OL Map </input>\n                                </div>\n\n                                <div class=\"form-group\">\n                                    <input id=\"image-file\" " + function () {
     return olmap ? 'disabled' : '';
   }() + " name=\"mapimage\" type=\"file\">\n                                </div>\n\n                                <div class=\"form-group form-checkboxes\">\n                                    " + checkboxes + "\n                                </div>\n\n                            </form>\n                        </div>\n\n                        <div class=\"modal-footer\">\n                            <button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\"\n                                aria-label=\"Close\">Close</button>\n                            <button type=\"submit\" value=\"submit\" form=\"form-edit-zone-" + id + "\"\n                                class=\"btn btn-primary\">Save</button>\n                        </div>\n\n                    </div>\n                </div>\n            </div>\n            </div>";
 }; // END ZONE MODAL
@@ -235,6 +247,7 @@ fetchAdminsPromise.then(function () {
 
 
     if (userRole.superadmin) {
+      // console.log(result[0])
       zonesAndUserList = result[0];
       zonesRaw = result[1];
     } else if (userRole.admin) {
@@ -247,8 +260,8 @@ fetchAdminsPromise.then(function () {
     zonesRaw = _utils._.uniqBy(zonesRaw, function (e) {
       return e.zoneId;
     }); // console.log(userRole, result)
-    // console.log(result)
-    // console.log(userData_raw)
+
+    console.log(result); // console.log(userData_raw)
 
     if (!zonesRaw.length) {
       // Append rows to zone-tab

@@ -660,12 +660,12 @@ let updateCurrentValueOnMap = (id, value, date = false) => {
     let oldDate = new Date(date.replace("Z", ""))
     let diff = (currentDate.getTime() - oldDate.getTime()) / 1000
     // if last value is 1 hour old then, sensor is offline
-    if (diff > 3600) {
+    if (diff > 5*60) { // diff > SECONDS - seconds = how many seconds should wait before showing not live
       $("#map .sensor-item[sensor='" + id + "'] .pulse").addClass("not-live")
       $("#map .sensor-item[sensor='" + id + "'][type='temperature']").addClass("sensor-offline")
     }
     else {
-      console.log(id)
+      // console.log(id)
       $("#map .sensor-item[sensor='" + id + "'] .pulse").removeClass("not-live")
       $("#map .sensor-item[sensor='" + id + "'][type='temperature']").removeClass("sensor-offline")
     }
