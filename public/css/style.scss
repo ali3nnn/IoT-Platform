@@ -3954,7 +3954,7 @@ article[class*="live"] {
     // color: #80808070;
     div.card-body:after {
       color: black;
-      // content: "No power";
+      // content: "On battery";
       top: 10px;
       left: -5px;
       display: block;
@@ -3995,7 +3995,7 @@ article[class*="live"] {
       color: var(--gray);
     }
     div.card-body:after {
-      content: "No power";
+      content: "On battery";
       background: var(--gray);
       color: #ffffff;
     }
@@ -5435,6 +5435,12 @@ div#map {
             /* z-index: 0; */
             border-radius: 13px;
             bottom: unset;
+            width: 80px;
+            left: 50%;
+            transform: translate(-50%);
+            -webkit-transform: translate(-50%);
+            -moz-transform: translate(-50%);
+            -ms-transform: translate(-50%);
           }
         }
 
@@ -5443,7 +5449,7 @@ div#map {
           // color: #80808070;
           background: var(--offline);
           &:after {
-            content: "No power";
+            content: "On battery";
             background: var(--offline);
             // color: #ffffff;
           }

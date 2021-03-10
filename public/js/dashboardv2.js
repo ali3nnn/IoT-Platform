@@ -34,7 +34,7 @@ import {
 // ======================================================
 const checkOnlineStatus = async () => {
     try {
-        const online = await fetch("/sound/alert.wav");
+        const online = await fetch("www.google.ro");
         return online.status >= 200 && online.status < 300; // either true or false
     } catch (err) {
         return false; // definitely offline
@@ -370,19 +370,19 @@ function triggerSensorView(sensorId, sensor) {
                 // ---------------
                 let intervalGap = 2000
 
-                let stopInterval = setInterval(()=>{
+                let stopInterval = setInterval(() => {
                     console.log("send stop one more time")
                     sendMessage("socketChannel", {
                         topic: 'anygo/conveyor',
                         message: JSON.stringify({ username, sensorId, "status": 0 })
                     })
-                },intervalGap)
+                }, intervalGap)
 
-                setTimeout(()=>{
+                setTimeout(() => {
                     console.log("stop sender is cleared")
                     clearInterval(stopInterval)
                     $(".state-btn-inner > input").attr("disabled", false)
-                },intervalGap*5)
+                }, intervalGap * 5)
                 // ---------------
                 // END STOP WORKAROUND
             }
@@ -977,7 +977,7 @@ function updateCurrentValue(sensorid, value, date = false) {
         let currentDate = new Date()
         let oldDate = new Date(date)
         let diff = (currentDate.getTime() - oldDate.getTime()) / 1000
-        if (diff > 5*60) // diff > SECONDS - seconds = how many seconds should wait before showing not live
+        if (diff > 5 * 60) // diff > SECONDS - seconds = how many seconds should wait before showing not live
             timeEl.siblings('.pulse').addClass("not-live")
         else
             timeEl.siblings('.pulse').removeClass("not-live")
@@ -1100,7 +1100,7 @@ let currentValueBox = $("article[class*='live-card']")
 
 socket.on(socketChannel, async (data) => {
 
-    // Temperature - OLD @depracated
+    // Temperature - OLD @depracated - check what sensors work this way before delete
     // ======================================================
     currentValueBox.each((index, item) => {
 
@@ -1132,15 +1132,14 @@ socket.on(socketChannel, async (data) => {
     // ======================================================
     if (data.topic == 'dataPub/power') {
         msg = JSON.parse(data.message)
-        if (parseInt(msg.value)) {
-            // add class no power to cId
+        if (parseInt(msg.value)) { // add no power class - {"cId":"sensorId","value":1}
             if (!$(".live-card-" + msg.cId).hasClass('no-power')) {
                 $(".live-card-" + msg.cId + "[battery='1']").removeClass("alert-active").removeClass("alarm-active").addClass("no-power")
                 let currentPower = $(".battery-info h3").html().split('/')
                 currentPower[0] = Math.min(parseInt(currentPower[0]) + 1, currentPower[1])
                 $(".battery-info h3").html(currentPower[0] + ' / ' + currentPower[1])
             }
-        } else {
+        } else { // remove no power class - {"cId":"sensorId","value":0}
             if ($(".live-card-" + msg.cId).hasClass('no-power')) {
                 let currentPower = $(".battery-info h3").html().split('/')
                 currentPower[0] = Math.max(parseInt(currentPower[0]) - 1, 0)
@@ -1297,13 +1296,14 @@ let mainLoader = async () => {
     let sensorDataRaw = []
     let sensorsWithBattery = []
     let sensorCounter = 0
-
+    // console.log(sensorMetaRaw)
     for (const sensor of sensorMetaRaw) {
 
         // Get influx data for each sensor
         // --------------------------------------------------
         let sensorData = await getSensorData(sensor.sensorId, sensor.sensorType)
         sensorDataRaw.push({ sensorMeta: sensor, sensorData })
+        // console.log(sensorDataRaw.length)
         // --------------------------------------------------
 
         // Add Conveyor Class + Append Conveyor Layout Map
@@ -1352,8 +1352,6 @@ let mainLoader = async () => {
         if (sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.battery == 1)
             sensorsWithBattery.push(sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.sensorId)
 
-        // console.log(sensorMetaRaw)
-
         if (sensorCounter == 0) { // Add info box - location
 
             // Add info box BUT NOT on conveyor dashboard
@@ -1368,16 +1366,13 @@ let mainLoader = async () => {
                     icon: '<i class="fas fa-compass"></i>',
                     class: ''
                 })
-
+ 
                 let alert = 0, alarm = 0, power = 0
 
-                sensorDataRaw.forEach(item => {
-                    if (item.sensorMeta.alerts == 1)
-                        alert++
-                    if (item.sensorMeta.alerts == 2)
-                        alarm++
-                    if ([3, 4].includes(item.sensorMeta.alerts))
-                        power++
+                sensorMetaRaw.forEach(item => {
+                    if (item.alerts == 1)               { alert++ }
+                    if (item.alerts == 2)               { alarm++ }
+                    if ([3, 4].includes(item.alerts))   { power++ }
                 })
 
                 appendInfoBox({
@@ -1395,7 +1390,6 @@ let mainLoader = async () => {
                 })
 
                 // Display battery info box only if there are sensors with this functionality
-                // console.log("sensorsWithBattery:",sensorsWithBattery)
                 if (sensorsWithBattery.length)
                     appendInfoBox({
                         title: 'On battery',

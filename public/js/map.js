@@ -595,12 +595,28 @@ socket.on(socketChannel, async (data) => {
     }
   })
 
-  // NEW TOPIC dataPub
+  // NEW TOPIC dataPub - live changing from offline to online
   // dataPub {cId: "DAS001TCORA", value: 23.992979}
   if (data.topic == 'dataPub') {
     let msg = JSON.parse(data.message)
     updateCurrentValueOnMap(msg.cId, parseFloat(msg.value).toFixed(1))
   }
+
+  // No power - live changing from no power to power
+  if (data.topic == 'dataPub/power') {
+    let msg = JSON.parse(data.message)
+    if (parseInt(msg.value)) { // add no power class - {"cId":"sensorId","value":1}
+      if (!$(".sensor-item[sensor='" + msg.cId + "']").hasClass('no-power')) {
+        $(".sensor-item[sensor='" + msg.cId + "']").removeClass("alert-active").removeClass("alarm-active").addClass("no-power")
+      }
+    } else { // remove no power class - {"cId":"sensorId","value":0}
+      if ($(".sensor-item[sensor='" + msg.cId + "']").hasClass('no-power')) {
+        $(".sensor-item[sensor='" + msg.cId + "']").removeClass("no-power")
+      }
+    }
+  }
+
+  // TODO: live changing alarm,alert
 
   // OL MAP REFRESH
   if (mapOption == 'ol' && data.topic == 'dataPub') {
@@ -645,6 +661,11 @@ let updateCurrentValueOnMap = (id, value, date = false) => {
   // console.log("updateCurrentValueOnMap", id, value)
 
   let type = $("#map .sensor-item[sensor='" + id + "']").attr("type")
+  let element = $("#map .sensor-item[sensor='" + id + "']")
+  let liveElement = $("#map .sensor-item[sensor='" + id + "'] span.pulse")
+
+  element.removeClass("sensor-offline")
+  liveElement.removeClass("not-live")
 
   let symbol = (type) => {
     if (type == 'temperature')
@@ -660,7 +681,7 @@ let updateCurrentValueOnMap = (id, value, date = false) => {
     let oldDate = new Date(date.replace("Z", ""))
     let diff = (currentDate.getTime() - oldDate.getTime()) / 1000
     // if last value is 1 hour old then, sensor is offline
-    if (diff > 5*60) { // diff > SECONDS - seconds = how many seconds should wait before showing not live
+    if (diff > 5 * 60) { // diff > SECONDS - seconds = how many seconds should wait before showing not live
       $("#map .sensor-item[sensor='" + id + "'] .pulse").addClass("not-live")
       $("#map .sensor-item[sensor='" + id + "'][type='temperature']").addClass("sensor-offline")
     }

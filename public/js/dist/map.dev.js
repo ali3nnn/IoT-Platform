@@ -429,7 +429,7 @@ if ($("#map .custom-map")) {
 
 var socketChannel = 'socketChannel';
 socket.on(socketChannel, function _callee3(data) {
-  var currentValueBox, msg, _msg, layers, _i, _Object$entries, _Object$entries$_i, ol_index, sensor, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, feature;
+  var currentValueBox, msg, _msg, _msg2, layers, _i, _Object$entries, _Object$entries$_i, ol_index, sensor, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, feature;
 
   return regeneratorRuntime.async(function _callee3$(_context3) {
     while (1) {
@@ -452,21 +452,39 @@ socket.on(socketChannel, function _callee3(data) {
 
               $(item).html(parseFloat(data.message).toFixed(1) + symbol());
             }
-          }); // NEW TOPIC dataPub
+          }); // NEW TOPIC dataPub - live changing from offline to online
           // dataPub {cId: "DAS001TCORA", value: 23.992979}
 
           if (data.topic == 'dataPub') {
             msg = JSON.parse(data.message);
             updateCurrentValueOnMap(msg.cId, parseFloat(msg.value).toFixed(1));
-          } // OL MAP REFRESH
+          } // No power - live changing from no power to power
+
+
+          if (data.topic == 'dataPub/power') {
+            _msg = JSON.parse(data.message);
+
+            if (parseInt(_msg.value)) {
+              // add no power class - {"cId":"sensorId","value":1}
+              if (!$(".sensor-item[sensor='" + _msg.cId + "']").hasClass('no-power')) {
+                $(".sensor-item[sensor='" + _msg.cId + "']").removeClass("alert-active").removeClass("alarm-active").addClass("no-power");
+              }
+            } else {
+              // remove no power class - {"cId":"sensorId","value":0}
+              if ($(".sensor-item[sensor='" + _msg.cId + "']").hasClass('no-power')) {
+                $(".sensor-item[sensor='" + _msg.cId + "']").removeClass("no-power");
+              }
+            }
+          } // TODO: live changing alarm,alert
+          // OL MAP REFRESH
 
 
           if (!(mapOption == 'ol' && data.topic == 'dataPub')) {
-            _context3.next = 32;
+            _context3.next = 33;
             break;
           }
 
-          _msg = JSON.parse(data.message); // console.log(msg)
+          _msg2 = JSON.parse(data.message); // console.log(msg)
           // console.log(vectorLayerFeature)
 
           layers = map.map.getLayers(); // window.layers = layers
@@ -475,16 +493,16 @@ socket.on(socketChannel, function _callee3(data) {
 
           _i = 0, _Object$entries = Object.entries(layers.array_[1].values_.source.uidIndex_);
 
-        case 7:
+        case 8:
           if (!(_i < _Object$entries.length)) {
-            _context3.next = 32;
+            _context3.next = 33;
             break;
           }
 
           _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2), ol_index = _Object$entries$_i[0], sensor = _Object$entries$_i[1];
 
-          if (!(sensor.customData.sensorId == _msg.cId)) {
-            _context3.next = 29;
+          if (!(sensor.customData.sensorId == _msg2.cId)) {
+            _context3.next = 30;
             break;
           }
 
@@ -494,12 +512,12 @@ socket.on(socketChannel, function _callee3(data) {
           _iteratorNormalCompletion2 = true;
           _didIteratorError2 = false;
           _iteratorError2 = undefined;
-          _context3.prev = 13;
+          _context3.prev = 14;
 
           for (_iterator2 = window.vectorLayerFeature[Symbol.iterator](); !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
             feature = _step2.value;
             // console.log(feature)
-            if (feature.customData.sensorId == _msg.cId) sensor.setStyle(sensorStyle(sensorFeature = feature, sensorValue = _msg.value.toFixed(2)));
+            if (feature.customData.sensorId == _msg2.cId) sensor.setStyle(sensorStyle(sensorFeature = feature, sensorValue = _msg2.value.toFixed(2)));
           } // sensor.setStyle([new Style({
           //   text: new Text({
           //     scale: 1,
@@ -510,50 +528,50 @@ socket.on(socketChannel, function _callee3(data) {
           // })])
 
 
-          _context3.next = 21;
+          _context3.next = 22;
           break;
 
-        case 17:
-          _context3.prev = 17;
-          _context3.t0 = _context3["catch"](13);
+        case 18:
+          _context3.prev = 18;
+          _context3.t0 = _context3["catch"](14);
           _didIteratorError2 = true;
           _iteratorError2 = _context3.t0;
 
-        case 21:
-          _context3.prev = 21;
+        case 22:
           _context3.prev = 22;
+          _context3.prev = 23;
 
           if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
             _iterator2.return();
           }
 
-        case 24:
-          _context3.prev = 24;
+        case 25:
+          _context3.prev = 25;
 
           if (!_didIteratorError2) {
-            _context3.next = 27;
+            _context3.next = 28;
             break;
           }
 
           throw _iteratorError2;
 
-        case 27:
-          return _context3.finish(24);
-
         case 28:
-          return _context3.finish(21);
+          return _context3.finish(25);
 
         case 29:
+          return _context3.finish(22);
+
+        case 30:
           _i++;
-          _context3.next = 7;
+          _context3.next = 8;
           break;
 
-        case 32:
+        case 33:
         case "end":
           return _context3.stop();
       }
     }
-  }, null, null, [[13, 17, 21, 29], [22,, 24, 28]]);
+  }, null, null, [[14, 18, 22, 30], [23,, 25, 29]]);
 }); // END Connect sensor to MQTT
 // ============================
 
@@ -561,6 +579,10 @@ var updateCurrentValueOnMap = function updateCurrentValueOnMap(id, value) {
   var date = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
   // console.log("updateCurrentValueOnMap", id, value)
   var type = $("#map .sensor-item[sensor='" + id + "']").attr("type");
+  var element = $("#map .sensor-item[sensor='" + id + "']");
+  var liveElement = $("#map .sensor-item[sensor='" + id + "'] span.pulse");
+  element.removeClass("sensor-offline");
+  liveElement.removeClass("not-live");
 
   var symbol = function symbol(type) {
     if (type == 'temperature') return '°C';else if (type == 'voltage') return ' V';else return '';

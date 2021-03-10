@@ -21,7 +21,7 @@ var checkOnlineStatus = function checkOnlineStatus() {
         case 0:
           _context.prev = 0;
           _context.next = 3;
-          return regeneratorRuntime.awrap(fetch("/sound/alert.wav"));
+          return regeneratorRuntime.awrap(fetch("www.google.ro"));
 
         case 3:
           online = _context.sent;
@@ -1057,7 +1057,7 @@ socket.on(socketChannel, function _callee(data) {
     while (1) {
       switch (_context5.prev = _context5.next) {
         case 0:
-          // Temperature - OLD @depracated
+          // Temperature - OLD @depracated - check what sensors work this way before delete
           // ======================================================
           currentValueBox.each(function (index, item) {
             // get sensor id for each current value box 
@@ -1083,7 +1083,7 @@ socket.on(socketChannel, function _callee(data) {
             msg = JSON.parse(data.message);
 
             if (parseInt(msg.value)) {
-              // add class no power to cId
+              // add no power class - {"cId":"sensorId","value":1}
               if (!$(".live-card-" + msg.cId).hasClass('no-power')) {
                 $(".live-card-" + msg.cId + "[battery='1']").removeClass("alert-active").removeClass("alarm-active").addClass("no-power");
                 currentPower = $(".battery-info h3").html().split('/');
@@ -1091,6 +1091,7 @@ socket.on(socketChannel, function _callee(data) {
                 $(".battery-info h3").html(currentPower[0] + ' / ' + currentPower[1]);
               }
             } else {
+              // remove no power class - {"cId":"sensorId","value":0}
               if ($(".live-card-" + msg.cId).hasClass('no-power')) {
                 _currentPower = $(".battery-info h3").html().split('/');
                 _currentPower[0] = Math.max(parseInt(_currentPower[0]) - 1, 0);
@@ -1236,7 +1237,8 @@ var mainLoader = function mainLoader() {
 
           sensorDataRaw = [];
           sensorsWithBattery = [];
-          sensorCounter = 0;
+          sensorCounter = 0; // console.log(sensorMetaRaw)
+
           _iteratorNormalCompletion = true;
           _didIteratorError = false;
           _iteratorError = undefined;
@@ -1258,7 +1260,8 @@ var mainLoader = function mainLoader() {
           sensorDataRaw.push({
             sensorMeta: sensor,
             sensorData: sensorData
-          }); // --------------------------------------------------
+          }); // console.log(sensorDataRaw.length)
+          // --------------------------------------------------
           // Add Conveyor Class + Append Conveyor Layout Map
           // --------------------------------------------------
 
@@ -1301,7 +1304,7 @@ var mainLoader = function mainLoader() {
           // Sensors w/ battery functionality
           // --------------------------------------------------
 
-          if (sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.battery == 1) sensorsWithBattery.push(sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.sensorId); // console.log(sensorMetaRaw)
+          if (sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.battery == 1) sensorsWithBattery.push(sensorDataRaw[sensorDataRaw.length - 1].sensorMeta.sensorId);
 
           if (sensorCounter == 0) {
             // Add info box - location
@@ -1319,10 +1322,18 @@ var mainLoader = function mainLoader() {
                 var alert = 0,
                     alarm = 0,
                     power = 0;
-                sensorDataRaw.forEach(function (item) {
-                  if (item.sensorMeta.alerts == 1) alert++;
-                  if (item.sensorMeta.alerts == 2) alarm++;
-                  if ([3, 4].includes(item.sensorMeta.alerts)) power++;
+                sensorMetaRaw.forEach(function (item) {
+                  if (item.alerts == 1) {
+                    alert++;
+                  }
+
+                  if (item.alerts == 2) {
+                    alarm++;
+                  }
+
+                  if ([3, 4].includes(item.alerts)) {
+                    power++;
+                  }
                 });
                 appendInfoBox({
                   title: 'Warning alert',
@@ -1336,7 +1347,6 @@ var mainLoader = function mainLoader() {
                   icon: '<i class="fas fa-exclamation-triangle"></i>',
                   class: ''
                 }); // Display battery info box only if there are sensors with this functionality
-                // console.log("sensorsWithBattery:",sensorsWithBattery)
 
                 if (sensorsWithBattery.length) appendInfoBox({
                   title: 'On battery',

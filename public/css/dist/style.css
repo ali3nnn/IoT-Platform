@@ -3867,7 +3867,7 @@ article[class*=live].no-power .currentValue {
   color: var(--gray);
 }
 article[class*=live].no-power div.card-body:after {
-  content: "No power";
+  content: "On battery";
   background: var(--gray);
   color: #ffffff;
 }
@@ -5098,12 +5098,18 @@ div#map > div.custom-map > .sensor-item.no-power:after, div#map > div.custom-map
   /* z-index: 0; */
   border-radius: 13px;
   bottom: unset;
+  width: 80px;
+  left: 50%;
+  transform: translate(-50%);
+  -webkit-transform: translate(-50%);
+  -moz-transform: translate(-50%);
+  -ms-transform: translate(-50%);
 }
 div#map > div.custom-map > .sensor-item.no-power {
   background: var(--offline);
 }
 div#map > div.custom-map > .sensor-item.no-power:after {
-  content: "No power";
+  content: "On battery";
   background: var(--offline);
 }
 div#map > div.custom-map > .sensor-item.no-power:before {
