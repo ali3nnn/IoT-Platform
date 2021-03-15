@@ -15,6 +15,11 @@ export function sendMessage(topic, msg) {
     socket.emit(topic, msg)
 }
 
+export function _sendMessage(socket, topic, msg) {
+    // send a status message to get the gate status
+    socket.emit(topic, msg)
+}
+
 export async function delay(ms) {
     // return await for better async stack trace support in case of errors.
     return await new Promise(resolve => setTimeout(resolve, ms));
@@ -809,6 +814,10 @@ export function getRandomColor() {
         color += letters[Math.floor(Math.random() * 16)];
     }
     return color;
+}
+
+export function clearLocation(sensorId) {
+    fetch(`/api/v3/save-position?x=NULL&y=NULL&sensor=${sensorId}`)
 }
 
 export const monthNames = ["","January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];

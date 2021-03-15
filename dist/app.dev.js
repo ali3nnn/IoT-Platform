@@ -843,7 +843,12 @@ app.get('/api/v3/get-sensor-data', function (req, res) {
     var todayQueryDoor = _todayRaw.toISOString().split("T")[0] + ' 00:00:00';
     influxQuery = "SELECT value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQueryDoor + "' and time<now() order by time desc;"; // influxQuery = "SELECT value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQuery + "' and time<now() order by time desc;"
   } else {
-    influxQuery = "SELECT mean(value) as value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQueryGeneral + "' and time<now() group by time(5m) order by time desc;";
+    // Here select average interval for temperature graphs:
+    // let avgInterval = '5m'
+    // let avgInterval = '10m'
+    var avgInterval = '30m'; // let avgInterval = '1h'
+
+    influxQuery = "SELECT mean(value) as value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQueryGeneral + "' and time<now() group by time(" + avgInterval + ") order by time desc;";
   } // // /*it was uncommented*/ console.log(influxQuery)
 
 
@@ -3503,6 +3508,15 @@ app.get('/api/get-zones', function (req, res) {
   } else {
     res.status(401).send("You are not logged in!");
   }
+});
+app.get('/api/v3/clear-location', function (req, res) {
+  var querySql = "UPDATE sensors SET x=NULL, y=NULL WHERE sensorId='".concat(req.query.sensorId, "'");
+  console.log(req.query, querySql);
+  mysqlReader(querySql).then(function (_) {
+    res.status(200);
+  }).catch(function (_) {
+    res.status(404);
+  });
 }); // Route active for settings page - edit zone form
 
 app.post('/api/edit-zone', authDashboard, function _callee23(req, res) {
@@ -3624,7 +3638,9 @@ app.post('/api/edit-zone', authDashboard, function _callee23(req, res) {
                               error: err
                             });else {
                               mysqlReader("UPDATE locations SET map='" + newpath + "' where zoneId=" + fields.zoneid + "").then(function (result) {
-                                res.redirect("/settings");
+                                mysqlReader("UPDATE sensors SET x=NULL, y=NULL WHERE zoneId=" + fields.zoneid + "").then(function (_) {
+                                  res.redirect("/settings");
+                                });
                               }).catch(function (err) {
                                 res.status(200).send({
                                   error: err
@@ -3635,10 +3651,12 @@ app.post('/api/edit-zone', authDashboard, function _callee23(req, res) {
                         } else {
                           var hasImageSetted = false;
 
-                          if (hasImageSetted) {// // /*it was uncommented*/ console.log("Map has the same image")
+                          if (hasImageSetted) {// console.log("Map has the same image")
                           } else {
                             mysqlReader("UPDATE locations SET map='custom' where zoneId=" + fields.zoneid + "").then(function (result) {
-                              res.redirect("/settings");
+                              mysqlReader("UPDATE sensors SET x=NULL, y=NULL WHERE zoneId=" + fields.zoneid + "").then(function (_) {
+                                res.redirect("/settings");
+                              });
                             }).catch(function (err) {
                               res.status(200).send({
                                 error: err
@@ -3648,7 +3666,9 @@ app.post('/api/edit-zone', authDashboard, function _callee23(req, res) {
                         }
                       } else if (fields.map == 'ol') {
                         mysqlReader("UPDATE locations SET map='ol' where zoneId=" + fields.zoneid + "").then(function (result) {
-                          res.redirect("/settings");
+                          mysqlReader("UPDATE sensors SET x=NULL, y=NULL WHERE zoneId=" + fields.zoneid + "").then(function (_) {
+                            res.redirect("/settings");
+                          });
                         }).catch(function (err) {
                           res.status(400).send({
                             error: err

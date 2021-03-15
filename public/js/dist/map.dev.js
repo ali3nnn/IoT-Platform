@@ -2,6 +2,8 @@
 
 var _jquery = require("jquery");
 
+require("ol");
+
 var _extent = require("ol/extent");
 
 var _Feature = _interopRequireDefault(require("ol/Feature"));
@@ -26,7 +28,13 @@ var _Vector = _interopRequireDefault(require("ol/source/Vector"));
 
 var _interaction = require("ol/interaction");
 
+var _proj = require("ol/proj");
+
+var _coordinate = require("ol/coordinate");
+
 var _utils = require("./utils.js");
+
+var _expressions = require("ol/style/expressions");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -44,6 +52,15 @@ function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) ||
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
+// End imports
+// const { map } = require("jscharting")
+// const {
+//   response
+// } = require("express")
+// const {
+//   set
+// } = require("ol/transform");
+// Global vars
 var map, sensorStyle, sensorValue, sensorFeature; // Utils
 
 function getSensorName() {
@@ -120,7 +137,7 @@ function showNotification(message) {
 
 
 var searchObj = (0, _utils.searchToObj)(window.location.search);
-var splash = "<div class='splash-inner'>\n\n<div class='ol-option'>\n  <h4>World map</h4>\n  <button type=\"button\" class='map-picker map-picker-ol' disabled>I want this map</button>\n  <div class='ol-map'>\n    <img src='../images/ol.jpeg' />\n    <background></background>\n  </div>\n</div>\n<div class='path-option'>\n    <h4>Custom Map</h4>\n    <button type=\"button\" class='map-picker map-picker-custom'>I want my custom map</button>\n    <div class='path-map'>\n      <img src='../images/custom.jpeg' />\n      <background></background>\n    </div>\n</div>\n\n</div>"; // let imageUploader = (id, href) => `<div class='uploadOutter'><div class="uploadWrapper">
+var splash = "<div class='splash-inner'>\n\n<div class='ol-option'>\n  <h4>World map</h4>\n  <button type=\"button\" class='map-picker map-picker-ol'>I want this map</button>\n  <div class='ol-map'>\n    <img src='../images/ol.jpeg' />\n    <background></background>\n  </div>\n</div>\n<div class='path-option'>\n    <h4>Custom Map</h4>\n    <button type=\"button\" class='map-picker map-picker-custom'>I want my custom map</button>\n    <div class='path-map'>\n      <img src='../images/custom.jpeg' />\n      <background></background>\n    </div>\n</div>\n\n</div>"; // let imageUploader = (id, href) => `<div class='uploadOutter'><div class="uploadWrapper">
 // <form id="imageUploadForm" enctype="multipart/form-data" class="imageUploadForm" action="/api/v2/upload-image" method="post">
 //   <span class="helpText" id="helpText">Upload an image</span>
 //   <input id="file" name="map" type="file" class="uploadButton" />
@@ -192,7 +209,7 @@ if ((!mapOption || mapOption == 'NULL') && searchObj.id) {
   });
 } else if (mapOption == 'ol') {
   // show ol
-  map = createMap(); // vectorLayer.style = new ol.style.Style({
+  window.map = createMap(); // vectorLayer.style = new ol.style.Style({
   //   text: new ol.style.Text({
   //     scale: 1,
   //     text: "redrawn",
@@ -423,9 +440,18 @@ if ($("#map .custom-map")) {
   // updateCurrentValueOnMap(msg.cId, parseFloat(msg.value).toFixed(1))
 } // ============================
 // END Display unassigned sensors
-// Connect sensor to MQTT
+// Send trigger to get current value for all sensors (for this users)
 // ============================
 
+
+userData_raw.forEach(function (item) {
+  (0, _utils.sendMessage)('socketChannel', {
+    topic: 'anysensor/in',
+    message: "{\"action\":\"get_value\",\"cId\":\"".concat(item.sensorId, "\"}")
+  });
+}); // ============================
+// Connect sensor to MQTT
+// ============================
 
 var socketChannel = 'socketChannel';
 socket.on(socketChannel, function _callee3(data) {
@@ -479,7 +505,7 @@ socket.on(socketChannel, function _callee3(data) {
           // OL MAP REFRESH
 
 
-          if (!(mapOption == 'ol' && data.topic == 'dataPub')) {
+          if (!(mapOption == 'ol' && ['dataPub', 'anysensor/out'].includes(data.topic))) {
             _context3.next = 33;
             break;
           }
@@ -487,7 +513,7 @@ socket.on(socketChannel, function _callee3(data) {
           _msg2 = JSON.parse(data.message); // console.log(msg)
           // console.log(vectorLayerFeature)
 
-          layers = map.map.getLayers(); // window.layers = layers
+          layers = window.map.map.getLayers(); // window.layers = layers
           // console.log(layers)
           // array_[1].style_[0].text_.text_
 
@@ -700,7 +726,7 @@ if (typeof sensorId !== 'undefined') {
     });
   }().then(function (json) {
     // console.log("then1")
-    console.log(json);
+    // console.log(json)
     json.result.forEach(function (sensor) {
       // console.log(sensorId, sensor)
       if (sensorId.includes(sensor.sensorId)) {
@@ -892,6 +918,7 @@ function getCenterOfMap() {
 function createMap() {
   var coordinates = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
   var sensorValuesJson = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+  // console.log(userData_raw)
   var result = {};
   window.vectorLayerFeature = []; // var features = new Array();
   // for (var i = 0; i < coordinates.length; ++i) {
@@ -923,15 +950,24 @@ function createMap() {
     code: 'xkcd-image',
     units: 'pixels',
     extent: extent
-  });
-  var mapLayer = new ol.layer.Image({
-    source: new ol.source.ImageStatic({
-      attributions: '© <a href="www.github.com/ali3nnn">Made by Alex Barbu</a>',
-      url: '/images/custom-maps/1605774980151_descarcare3.jpeg',
-      projection: projection,
-      imageExtent: extent
-    })
-  }); // Example simple pin
+  }); // Earth Map
+  // ---------------
+
+  var mapLayer = new ol.layer.Tile({
+    source: new ol.source.OSM()
+  }); // ---------------
+  // Uncomment this for image map
+  // ---------------
+  // let mapLayer = new ol.layer.Image({
+  //   source: new ol.source.ImageStatic({
+  //     attributions: '© <a href="www.github.com/ali3nnn">Made by Alex Barbu</a>',
+  //     url: '/images/custom-maps/1605774980151_descarcare3.jpeg',
+  //     projection: projection,
+  //     imageExtent: extent,
+  //   })
+  // })
+  // ---------------
+  // Example simple pin
   // let iconFeature = new Feature({
   //   geometry: new Point([10, 500]),
   //   name: 'Null Island',
@@ -957,8 +993,10 @@ function createMap() {
   // Get sensor to feature
 
   var features = new Array();
-  var undefinedX = 0,
-      undefinedY = 0;
+  var undefinedX = 45;
+  var undefinedY = 26;
+  var sensorsListToAppend = [];
+  console.log("sensors", sensors);
   var _iteratorNormalCompletion3 = true;
   var _didIteratorError3 = false;
   var _iteratorError3 = undefined;
@@ -967,30 +1005,21 @@ function createMap() {
     for (var _iterator3 = sensors[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
       var sensor = _step3.value;
 
-      // console.log(sensor.x, sensor.y)
-      if (sensor.x == 0 && sensor.y == 0) {
+      if (!sensor.x || !sensor.y || sensor.x == 'null' || sensor.y == 'null') {
         // [ ] TODO: check when sensor is not defined
-        var feature = new ol.Feature(new ol.geom.Point([undefinedX, undefinedY]));
+        // let feature = new ol.Feature(new ol.geom.Point([undefinedX, undefinedY]))
+        // feature['customData'] = { ...sensor, last: null }
+        // features.push(feature)
+        // undefinedY += 5
+        sensorsListToAppend.push(sensor); // continue
+      } else {
+        var feature = new ol.Feature(new ol.geom.Point([sensor.x, sensor.y]));
         feature['customData'] = _objectSpread({}, sensor, {
           last: null
         });
         features.push(feature);
-        undefinedX += 50;
-
-        if (undefinedX > 500) {
-          undefinedX = 0;
-          undefinedY += 100;
-        }
-      } else {
-        var _feature = new ol.Feature(new ol.geom.Point([sensor.x, sensor.y]));
-
-        _feature['customData'] = _objectSpread({}, sensor, {
-          last: null
-        });
-        features.push(_feature);
       }
-    } // End get sensor to feature
-
+    }
   } catch (err) {
     _didIteratorError3 = true;
     _iteratorError3 = err;
@@ -1005,6 +1034,8 @@ function createMap() {
       }
     }
   }
+
+  console.log("features", features); // End get sensor to feature
 
   var source = new _Vector.default({
     // features: [iconFeature],
@@ -1036,56 +1067,76 @@ function createMap() {
   //   source: new ol.source.OSM()
   // });
   // End real map
+  // POP up
+
+  var container = document.getElementById('popup');
+  var content = document.getElementById('popup-content');
+  var closer = document.getElementById('popup-closer');
+  var overlay = new _Overlay.default({
+    element: container,
+    autoPan: true,
+    autoPanAnimation: {
+      duration: 250
+    }
+  });
+
+  closer.onclick = function () {
+    overlay.setPosition(undefined);
+    closer.blur();
+    return false;
+  }; // END POP up
+
 
   var map = new ol.Map({
     // layers: [mapLayer, clusters],
     // layers: [raster, clusters],
     layers: [mapLayer],
     target: 'map',
+    overlays: [overlay],
     view: new ol.View({
-      projection: projection,
-      center: (0, _extent.getCenter)(extent),
-      zoom: 2,
-      maxZoom: 8 // center: ol.proj.fromLonLat(getCenterOfMap()),
+      // projection: projection, // uncomment this for image map
+      // center: getCenter(extent),
+      center: ol.proj.fromLonLat([25.82, 44]),
+      zoom: 6 // maxZoom: 20,
+      // center: ol.proj.fromLonLat(getCenterOfMap()),
       // zoom: getZoomOfMap()
 
     })
-  });
-  result["map"] = map;
-  map.addLayer(vectorLayer); // Interactions
+  }); // SEARCH BOX
+  // popup
+  // let popup = new ol.Overlay.Popup();
+  // map.addOverlay(popup);
+  //Instantiate with some options and add the Control
 
-  var modify = new _interaction.Modify({
-    source: source,
-    style: new _style.Style({
-      image: new _style.Circle({
-        radius: 10,
-        fill: new _style.Fill({
-          color: (0, _utils.getRandomColor)()
-        })
-      })
-    })
+  var geocoder = new Geocoder('nominatim', {
+    provider: 'osm',
+    lang: 'en',
+    placeholder: 'Search for ...',
+    limit: 5,
+    debug: false,
+    autoComplete: true,
+    keepOpen: true
   });
-  map.addInteraction(modify); // Hover over points and do actions
+  map.addControl(geocoder); //Listen when an address is chosen
 
-  modify.on('modifyend', function (event) {
-    var sensors = event.features.array_;
+  geocoder.on('addresschosen', function (evt) {
+    console.info(evt);
+    window.setTimeout(function () {
+      popup.show(evt.coordinate, evt.address.formatted);
+    }, 3000);
+  }); // END SEARCH BOX
+  // CLICK HANDLER
+
+  var sensorsToAppend = function sensorsToAppend(list) {
+    var resultEl = '';
     var _iteratorNormalCompletion4 = true;
     var _didIteratorError4 = false;
     var _iteratorError4 = undefined;
 
     try {
-      var _loop = function _loop() {
+      for (var _iterator4 = list[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
         var sensor = _step4.value;
-        var sensorId = sensor.customData.sensorId;
-        var x = sensor.geometryChangeKey_.target.flatCoordinates[0];
-        var y = sensor.geometryChangeKey_.target.flatCoordinates[1];
-        fetch("/api/v3/save-position?x=" + x + "&y=" + y + "&sensor=" + sensorId).then(function (result) {
-          console.log(sensorId, 'modified');
-        }); // console.log(sensor)
-      };
-
-      for (var _iterator4 = sensors[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-        _loop();
+        resultEl += "<div sensorId=\"".concat(sensor.sensorId, "\">").concat(sensor.sensorName, "</div>");
       }
     } catch (err) {
       _didIteratorError4 = true;
@@ -1098,6 +1149,84 @@ function createMap() {
       } finally {
         if (_didIteratorError4) {
           throw _iteratorError4;
+        }
+      }
+    }
+
+    return resultEl;
+  };
+
+  map.on('singleclick', function (evt) {
+    if (sensorsListToAppend.length) {
+      var coordinate = evt.coordinate;
+      var hdms = (0, _coordinate.toStringHDMS)((0, _proj.toLonLat)(coordinate)); // hdms - normal coordinates with degree, minutes, seconds
+
+      content.innerHTML = "\n        <!--<p>You have ".concat(sensorsListToAppend.length, " sensors with no location!</p>-->\n        <p>Click on a sensor</p>\n        <!--<code>").concat(coordinate, "</code>-->\n        <div class=\"unset-sensors\" coordinates=\"").concat(coordinate, "\">\n          ").concat(sensorsToAppend(sensorsListToAppend), "\n        </div>\n      ");
+      overlay.setPosition(coordinate);
+    } else {
+      console.log("All sensors are attached");
+    }
+  }); // END CLICK HANDLER
+
+  result["map"] = map;
+  map.addLayer(vectorLayer); // Interactions
+
+  var modify = new _interaction.Modify({
+    source: source,
+    style: new _style.Style({
+      // image: new RegularShape({
+      //   fill: new Fill({color: 'transparent'}),
+      //   stroke: new Stroke({color: 'black', width: 2}),
+      //   points: 4,
+      //   radius: 10,
+      //   angle: Math.PI / 4,
+      // }),
+      image: new _style.Circle({
+        radius: 40,
+        fill: new _style.Fill({
+          color: '#ffc1072b' // color: getRandomColor()
+
+        }),
+        stroke: new _style.Stroke({
+          color: '#ffc107cf',
+          width: 2
+        })
+      })
+    })
+  });
+  map.addInteraction(modify); // Hover over points and do actions
+
+  modify.on('modifyend', function (event) {
+    var sensors = event.features.array_;
+    var _iteratorNormalCompletion5 = true;
+    var _didIteratorError5 = false;
+    var _iteratorError5 = undefined;
+
+    try {
+      var _loop = function _loop() {
+        var sensor = _step5.value;
+        var sensorId = sensor.customData.sensorId;
+        var x = sensor.geometryChangeKey_.target.flatCoordinates[0];
+        var y = sensor.geometryChangeKey_.target.flatCoordinates[1];
+        fetch("/api/v3/save-position?x=" + x + "&y=" + y + "&sensor=" + sensorId).then(function (result) {
+          console.log(sensorId, 'modified');
+        }); // console.log(sensor)
+      };
+
+      for (var _iterator5 = sensors[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+        _loop();
+      }
+    } catch (err) {
+      _didIteratorError5 = true;
+      _iteratorError5 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion5 && _iterator5.return != null) {
+          _iterator5.return();
+        }
+      } finally {
+        if (_didIteratorError5) {
+          throw _iteratorError5;
         }
       }
     }
@@ -1176,4 +1305,32 @@ var goToDashboard = function goToDashboard() {
 
 $(".switch-context").on('click', function () {
   goToDashboard();
-});
+}); // POPUP CLICK HANDLER FOR ITEMS
+
+$(".ol-popup").on('click', function (event) {
+  var sensorId = event.target.attributes.sensorId.value;
+  var coordinates = event.originalEvent.path[1].attributes.coordinates.value.split(','); // let featuresToAppend = []
+  // let feature = new ol.Feature(new ol.geom.Point(toLonLat(coordinates)))
+  // console.log(window.map)
+  // window.map.source.addFeature(feature)
+
+  fetch("/api/v3/save-position?x=".concat(coordinates[0], "&y=").concat(coordinates[1], "&sensor=").concat(sensorId)).then(function (result) {
+    if (result.status == 200) {
+      location.reload();
+    }
+  });
+}); // END POPUP
+// test
+// let markers = new OpenLayers.Layer.Markers("Markers");
+// markers.id = "Markers";
+// window.map.addLayer(markers);
+// window.map.events.register("click", window.map, function (e) {
+//   //var position = this.events.getMousePosition(e);
+//   var position = map.getLonLatFromPixel(e.xy);
+//   var size = new OpenLayers.Size(21, 25);
+//   var offset = new OpenLayers.Pixel(-(size.w / 2), -size.h);
+//   var icon = new OpenLayers.Icon('images/mark.png', size, offset);
+//   var markerslayer = map.getLayer('Markers');
+//   markerslayer.addMarker(new OpenLayers.Marker(position, icon));
+// });
+// end test

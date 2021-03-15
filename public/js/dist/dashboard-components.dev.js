@@ -18,11 +18,11 @@ var currentValueView = function currentValueView(alertClass2, sensor) {
     return sensor.sensorMeta.min ? 'value="' + sensor.sensorMeta.min + '"' : 'placeholder="Set min alert"';
   }() + " class=\"input input-min\">\n                <p class='label-input'>Max: </p>\n                <input type=\"number\" name=\"maxAlert\" " + function () {
     return sensor.sensorMeta.max ? 'value="' + sensor.sensorMeta.max + '"' : 'placeholder="Set max alert"';
-  }() + " class=\"input input-max\">\n                <p class='label-input'>Lat: </p>\n                <input type=\"number\" name=\"xLat\" " + function () {
+  }() + " class=\"input input-max\">\n\n            <button id=\"clearLocation\" type=\"button\" onclick=\"fetch('/api/v3/clear-location?sensorId=".concat(sensor.sensorMeta.sensorId, "')\">Clear location</button>\n\n                <!-- <p class='label-input'>Lat: </p>\n                <input type=\"number\" name=\"xLat\" ") + function () {
     return sensor.sensorMeta.x ? 'value="' + sensor.sensorMeta.x + '"' : 'placeholder="Set x position"';
-  }() + " class=\"input input-lat\">\n                <p class='label-input'>Long: </p>\n                <input type=\"number\" name=\"yLong\" " + function () {
+  }() + " class=\"input input-lat\">\n    \n                <p class='label-input'>Long: </p>\n                <input type=\"number\" name=\"yLong\" " + function () {
     return sensor.sensorMeta.y ? 'value="' + sensor.sensorMeta.y + '"' : 'placeholder="Set y position"';
-  }() + " class=\"input input-long\">\n\n            </div>\n        </div>\n    </div>\n</article>\n";
+  }() + " class=\"input input-long\"> -->\n\n            </div>\n        </div>\n    </div>\n</article>\n";
 };
 
 exports.currentValueView = currentValueView;

@@ -870,7 +870,12 @@ app.get('/api/v3/get-sensor-data', (req, res) => {
         influxQuery = "SELECT value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQueryDoor + "' and time<now() order by time desc;"
         // influxQuery = "SELECT value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQuery + "' and time<now() order by time desc;"
     } else {
-        influxQuery = "SELECT mean(value) as value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQueryGeneral + "' and time<now() group by time(5m) order by time desc;"
+        // Here select average interval for temperature graphs:
+        // let avgInterval = '5m'
+        // let avgInterval = '10m'
+        let avgInterval = '30m'
+        // let avgInterval = '1h'
+        influxQuery = "SELECT mean(value) as value FROM sensors where sensorId='" + req.query.id + "' and time>='" + todayQueryGeneral + "' and time<now() group by time("+avgInterval+") order by time desc;"
     }
 
     // // /*it was uncommented*/ console.log(influxQuery)
@@ -3510,6 +3515,17 @@ app.get('/api/get-zones', (req, res) => {
 
 })
 
+app.get('/api/v3/clear-location', (req,res)=>{
+    let querySql = `UPDATE sensors SET x=NULL, y=NULL WHERE sensorId='${req.query.sensorId}'`
+    console.log(req.query, querySql)
+    mysqlReader(querySql).then(_=>{
+        res.status(200)
+    }).catch(_=>{
+        res.status(404)
+    })
+
+})
+
 // Route active for settings page - edit zone form
 app.post('/api/edit-zone', authDashboard, async (req, res) => {
 
@@ -3598,7 +3614,9 @@ app.post('/api/edit-zone', authDashboard, async (req, res) => {
                             res.status(404).send({ error: err })
                         else {
                             mysqlReader("UPDATE locations SET map='" + newpath + "' where zoneId=" + fields.zoneid + "").then((result) => {
-                                res.redirect("/settings")
+                                mysqlReader("UPDATE sensors SET x=NULL, y=NULL WHERE zoneId=" + fields.zoneid + "").then(_=>{
+                                    res.redirect("/settings")
+                                })
                             }).catch((err) => {
                                 res.status(200).send({ error: err });
                             })
@@ -3607,10 +3625,12 @@ app.post('/api/edit-zone', authDashboard, async (req, res) => {
                 } else {
                     let hasImageSetted = false
                     if (hasImageSetted) {
-                        // // /*it was uncommented*/ console.log("Map has the same image")
+                        // console.log("Map has the same image")
                     } else {
                         mysqlReader("UPDATE locations SET map='custom' where zoneId=" + fields.zoneid + "").then((result) => {
-                            res.redirect("/settings")
+                            mysqlReader("UPDATE sensors SET x=NULL, y=NULL WHERE zoneId=" + fields.zoneid + "").then(_=>{
+                                res.redirect("/settings")
+                            })
                         }).catch((err) => {
                             res.status(200).send({ error: err });
                         })
@@ -3621,7 +3641,9 @@ app.post('/api/edit-zone', authDashboard, async (req, res) => {
 
             } else if (fields.map == 'ol') {
                 mysqlReader("UPDATE locations SET map='ol' where zoneId=" + fields.zoneid + "").then((result) => {
-                    res.redirect("/settings")
+                    mysqlReader("UPDATE sensors SET x=NULL, y=NULL WHERE zoneId=" + fields.zoneid + "").then(_=>{
+                        res.redirect("/settings")
+                    })
                 }).catch((err) => {
                     res.status(400).send({ error: err });
                 })

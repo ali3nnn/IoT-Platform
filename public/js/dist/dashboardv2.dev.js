@@ -13,6 +13,10 @@ var _ = require('lodash');
 
 window.lodash = _;
 
+function clearLocation(sensorId) {
+  fetch("/api/v3/save-position?x=NULL&y=NULL&sensor=".concat(sensorId));
+}
+
 var checkOnlineStatus = function checkOnlineStatus() {
   var online;
   return regeneratorRuntime.async(function checkOnlineStatus$(_context) {

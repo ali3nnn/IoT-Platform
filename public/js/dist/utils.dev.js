@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.sendMessage = sendMessage;
+exports._sendMessage = _sendMessage;
 exports.delay = delay;
 exports.displayTimeoutAndVanish = displayTimeoutAndVanish;
 exports.liveWeight = liveWeight;
@@ -27,6 +28,7 @@ exports.getDaysInMonth = getDaysInMonth;
 exports.getKeyByValue = getKeyByValue;
 exports.arrayToJson = arrayToJson;
 exports.getRandomColor = getRandomColor;
+exports.clearLocation = clearLocation;
 exports.imageExists = imageExists;
 exports.monthNames = exports.getConveyorStatus = exports.insertStatus = exports.monthChanger = exports.timeoutAsync = exports._ = void 0;
 
@@ -59,6 +61,11 @@ var timeoutAsync = function timeoutAsync(ms, f) {
 exports.timeoutAsync = timeoutAsync;
 
 function sendMessage(topic, msg) {
+  // send a status message to get the gate status
+  socket.emit(topic, msg);
+}
+
+function _sendMessage(socket, topic, msg) {
   // send a status message to get the gate status
   socket.emit(topic, msg);
 }
@@ -856,6 +863,10 @@ function getRandomColor() {
   }
 
   return color;
+}
+
+function clearLocation(sensorId) {
+  fetch("/api/v3/save-position?x=NULL&y=NULL&sensor=".concat(sensorId));
 }
 
 var monthNames = ["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];

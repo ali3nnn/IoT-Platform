@@ -25,10 +25,13 @@
     {{> navbar-general}}
 
     {{!-- The map --}}
-    <div id="map" class="map">
-      
+    <div id="map" class="map"></div>
+
+    <div id="popup" class="ol-popup">
+      <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+      <div id="popup-content"></div>
     </div>
-    
+
     <script>
 
       //function insertAfter(newNode, referenceNode) {
@@ -51,9 +54,9 @@
     </script>
     {{!-- </div> --}}
 
-    <notification></notification>
+  <notification></notification>
 
-    <div class='switch-context'><i class="fas fa-layer-group" aria-hidden="true"></i></div>
+  <div class='switch-context'><i class="fas fa-layer-group" aria-hidden="true"></i></div>
 
   </div>
 

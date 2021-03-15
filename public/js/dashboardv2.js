@@ -13,8 +13,13 @@ import {
     getKeyByValue,
     timeoutAsync,
     sendMessage,
-    monthNames
+    monthNames,
+    // clearLocation
 } from './utils.js'
+
+function clearLocation(sensorId) {
+    fetch(`/api/v3/save-position?x=NULL&y=NULL&sensor=${sensorId}`)
+}
 
 import {
     conveyor,

@@ -52,14 +52,18 @@ export let currentValueView = (alertClass2, sensor) => `
                 <input type="number" name="maxAlert" ` + (() => {
         return sensor.sensorMeta.max ? 'value="' + sensor.sensorMeta.max + '"' : 'placeholder="Set max alert"'
     })() + ` class="input input-max">
-                <p class='label-input'>Lat: </p>
+
+            <button id="clearLocation" type="button" onclick="fetch('/api/v3/clear-location?sensorId=${sensor.sensorMeta.sensorId}')">Clear location</button>
+
+                <!-- <p class='label-input'>Lat: </p>
                 <input type="number" name="xLat" ` + (() => {
         return sensor.sensorMeta.x ? 'value="' + sensor.sensorMeta.x + '"' : 'placeholder="Set x position"'
     })() + ` class="input input-lat">
+    
                 <p class='label-input'>Long: </p>
                 <input type="number" name="yLong" ` + (() => {
         return sensor.sensorMeta.y ? 'value="' + sensor.sensorMeta.y + '"' : 'placeholder="Set y position"'
-    })() + ` class="input input-long">
+    })() + ` class="input input-long"> -->
 
             </div>
         </div>

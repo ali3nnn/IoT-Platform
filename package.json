@@ -58,6 +58,7 @@
     "mysql": "^2.18.1",
     "mysupercreativeanduniqueapp": "^1.9.0",
     "ol": "^6.4.3",
+    "ol-geocoder": "^4.1.2",
     "paho-mqtt": "^1.1.0",
     "password-checker": "^0.2.4",
     "pm2": "^4.5.0",

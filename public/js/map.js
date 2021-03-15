@@ -3,7 +3,7 @@
 
 // Imports
 import { post } from 'jquery';
-
+import 'ol';
 import { getCenter } from 'ol/extent';
 import Feature from 'ol/Feature';
 import Map from 'ol/Map';
@@ -16,13 +16,16 @@ import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer';
 import GeoJSON from 'ol/format/GeoJSON';
 import VectorSource from 'ol/source/Vector';
 import { Draw, Modify, Snap } from 'ol/interaction';
+import { toLonLat } from 'ol/proj';
+import { toStringHDMS } from 'ol/coordinate';
 
 
 import {
   getDistinctValuesFromObject,
   getValuesFromObject,
   // timeoutAsync,
-  // sendMessage,
+  sendMessage,
+  _sendMessage,
   // delay,
   // displayTimeoutAndVanish,
   // liveWeight,
@@ -34,8 +37,10 @@ import {
   getLocationObj,
   searchToObj,
   timeoutAsync,
-  getRandomColor
+  getRandomColor,
+  clearLocation
 } from './utils.js'
+import { colorToGlsl } from 'ol/style/expressions';
 // End imports
 
 // const { map } = require("jscharting")
@@ -183,7 +188,7 @@ let splash = `<div class='splash-inner'>
 
 <div class='ol-option'>
   <h4>World map</h4>
-  <button type="button" class='map-picker map-picker-ol' disabled>I want this map</button>
+  <button type="button" class='map-picker map-picker-ol'>I want this map</button>
   <div class='ol-map'>
     <img src='../images/ol.jpeg' />
     <background></background>
@@ -281,8 +286,9 @@ if ((!mapOption || mapOption == 'NULL') && searchObj.id) {
   })
 
 } else if (mapOption == 'ol') {
+
   // show ol
-  map = createMap()
+  window.map = createMap()
 
   // vectorLayer.style = new ol.style.Style({
   //   text: new ol.style.Text({
@@ -568,9 +574,20 @@ if ($("#map .custom-map")) {
 // ============================
 // END Display unassigned sensors
 
+// Send trigger to get current value for all sensors (for this users)
+// ============================
+userData_raw.forEach(item => {
+  sendMessage('socketChannel', {
+    topic: 'anysensor/in',
+    message: `{"action":"get_value","cId":"${item.sensorId}"}`
+  })
+})
+// ============================
+
 // Connect sensor to MQTT
 // ============================
 var socketChannel = 'socketChannel'
+
 socket.on(socketChannel, async (data) => {
 
   // OLD WAY - @depracated
@@ -619,13 +636,13 @@ socket.on(socketChannel, async (data) => {
   // TODO: live changing alarm,alert
 
   // OL MAP REFRESH
-  if (mapOption == 'ol' && data.topic == 'dataPub') {
+  if (mapOption == 'ol' && ['dataPub', 'anysensor/out'].includes(data.topic)) {
 
     let msg = JSON.parse(data.message)
     // console.log(msg)
     // console.log(vectorLayerFeature)
 
-    let layers = map.map.getLayers()
+    let layers = window.map.map.getLayers()
     // window.layers = layers
     // console.log(layers)
     // array_[1].style_[0].text_.text_
@@ -746,7 +763,7 @@ if (typeof sensorId !== 'undefined') {
     return await getSensorLocation();
   })().then((json) => {
     // console.log("then1")
-    console.log(json)
+    // console.log(json)
     json.result.forEach(sensor => {
       // console.log(sensorId, sensor)
       if (sensorId.includes(sensor.sensorId)) {
@@ -825,7 +842,6 @@ if (typeof sensorId !== 'undefined') {
 
     })
 }
-
 
 // function appendCoordToHTML(sensorId, coord) {
 //   var bodyEl = $("body")
@@ -933,7 +949,10 @@ function getCenterOfMap() {
 
 function createMap(coordinates = '', sensorValuesJson = '') {
 
+  // console.log(userData_raw)
+
   let result = {}
+
   window.vectorLayerFeature = []
 
   // var features = new Array();
@@ -953,6 +972,7 @@ function createMap(coordinates = '', sensorValuesJson = '') {
   // Sensors of this zone
   let search = window.location.search.substring(1);
   search = JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"') + '"}')
+
   let sensors = userData_raw.filter((item) => {
     if (search.id == item.zoneId) {
       return true
@@ -972,14 +992,24 @@ function createMap(coordinates = '', sensorValuesJson = '') {
     extent: extent,
   });
 
-  let mapLayer = new ol.layer.Image({
-    source: new ol.source.ImageStatic({
-      attributions: '© <a href="www.github.com/ali3nnn">Made by Alex Barbu</a>',
-      url: '/images/custom-maps/1605774980151_descarcare3.jpeg',
-      projection: projection,
-      imageExtent: extent,
-    })
+  // Earth Map
+  // ---------------
+  let mapLayer = new ol.layer.Tile({
+    source: new ol.source.OSM()
   })
+  // ---------------
+
+  // Uncomment this for image map
+  // ---------------
+  // let mapLayer = new ol.layer.Image({
+  //   source: new ol.source.ImageStatic({
+  //     attributions: '© <a href="www.github.com/ali3nnn">Made by Alex Barbu</a>',
+  //     url: '/images/custom-maps/1605774980151_descarcare3.jpeg',
+  //     projection: projection,
+  //     imageExtent: extent,
+  //   })
+  // })
+  // ---------------
 
   // Example simple pin
   // let iconFeature = new Feature({
@@ -1008,24 +1038,26 @@ function createMap(coordinates = '', sensorValuesJson = '') {
 
   // Get sensor to feature
   let features = new Array()
-  let undefinedX = 0, undefinedY = 0
+  let undefinedX = 45
+  let undefinedY = 26
+  let sensorsListToAppend = []
+  console.log("sensors", sensors)
+
   for (const sensor of sensors) {
-    // console.log(sensor.x, sensor.y)
-    if (sensor.x == 0 && sensor.y == 0) { // [ ] TODO: check when sensor is not defined
-      let feature = new ol.Feature(new ol.geom.Point([undefinedX, undefinedY]))
-      feature['customData'] = { ...sensor, last: null }
-      features.push(feature)
-      undefinedX += 50
-      if (undefinedX > 500) {
-        undefinedX = 0
-        undefinedY += 100
-      }
+    if (!sensor.x || !sensor.y || sensor.x == 'null' || sensor.y == 'null') { // [ ] TODO: check when sensor is not defined
+      // let feature = new ol.Feature(new ol.geom.Point([undefinedX, undefinedY]))
+      // feature['customData'] = { ...sensor, last: null }
+      // features.push(feature)
+      // undefinedY += 5
+      sensorsListToAppend.push(sensor)
+      // continue
     } else {
       let feature = new ol.Feature(new ol.geom.Point([sensor.x, sensor.y]))
       feature['customData'] = { ...sensor, last: null }
       features.push(feature)
     }
   }
+  console.log("features", features)
   // End get sensor to feature
 
   var source = new VectorSource({
@@ -1065,20 +1097,97 @@ function createMap(coordinates = '', sensorValuesJson = '') {
   // });
   // End real map
 
+  // POP up
+  let container = document.getElementById('popup');
+  let content = document.getElementById('popup-content');
+  let closer = document.getElementById('popup-closer');
+
+  let overlay = new Overlay({
+    element: container,
+    autoPan: true,
+    autoPanAnimation: {
+      duration: 250,
+    },
+  });
+
+  closer.onclick = function () {
+    overlay.setPosition(undefined);
+    closer.blur();
+    return false;
+  };
+  // END POP up
+
   let map = new ol.Map({
     // layers: [mapLayer, clusters],
     // layers: [raster, clusters],
     layers: [mapLayer],
     target: 'map',
+    overlays: [overlay],
     view: new ol.View({
-      projection: projection,
-      center: getCenter(extent),
-      zoom: 2,
-      maxZoom: 8,
+      // projection: projection, // uncomment this for image map
+      // center: getCenter(extent),
+      center: ol.proj.fromLonLat([25.82, 44]),
+      zoom: 6,
+      // maxZoom: 20,
       // center: ol.proj.fromLonLat(getCenterOfMap()),
       // zoom: getZoomOfMap()
     })
   });
+
+  // SEARCH BOX
+  // popup
+  // let popup = new ol.Overlay.Popup();
+  // map.addOverlay(popup);
+
+  //Instantiate with some options and add the Control
+  let geocoder = new Geocoder('nominatim', {
+    provider: 'osm',
+    lang: 'en',
+    placeholder: 'Search for ...',
+    limit: 5,
+    debug: false,
+    autoComplete: true,
+    keepOpen: true
+  });
+  map.addControl(geocoder);
+
+  //Listen when an address is chosen
+  geocoder.on('addresschosen', function (evt) {
+    console.info(evt);
+    window.setTimeout(function () {
+      popup.show(evt.coordinate, evt.address.formatted);
+    }, 3000);
+  });
+  // END SEARCH BOX
+
+  // CLICK HANDLER
+  let sensorsToAppend = (list) => {
+    let resultEl = ''
+    for (let sensor of list) {
+      resultEl += `<div sensorId="${sensor.sensorId}">${sensor.sensorName}</div>`
+    }
+    return resultEl
+  }
+
+  map.on('singleclick', function (evt) {
+    if (sensorsListToAppend.length) {
+      let coordinate = evt.coordinate;
+      let hdms = toStringHDMS(toLonLat(coordinate)); // hdms - normal coordinates with degree, minutes, seconds
+      content.innerHTML = `
+        <!--<p>You have ${sensorsListToAppend.length} sensors with no location!</p>-->
+        <p>Click on a sensor</p>
+        <!--<code>${coordinate}</code>-->
+        <div class="unset-sensors" coordinates="${coordinate}">
+          ${sensorsToAppend(sensorsListToAppend)}
+        </div>
+      `;
+      overlay.setPosition(coordinate);
+    } else {
+      console.log("All sensors are attached")
+    }
+
+  });
+  // END CLICK HANDLER
 
   result["map"] = map
 
@@ -1088,14 +1197,24 @@ function createMap(coordinates = '', sensorValuesJson = '') {
   var modify = new Modify({
     source: source,
     style: new Style({
+      // image: new RegularShape({
+      //   fill: new Fill({color: 'transparent'}),
+      //   stroke: new Stroke({color: 'black', width: 2}),
+      //   points: 4,
+      //   radius: 10,
+      //   angle: Math.PI / 4,
+      // }),
       image: new Circle({
-        radius: 10,
+        radius: 40,
         fill: new Fill({
-          color: getRandomColor()
-        })
+          color: '#ffc1072b'
+          // color: getRandomColor()
+        }),
+        stroke: new Stroke({ color: '#ffc107cf', width: 2 }),
       }),
     })
   });
+
   map.addInteraction(modify);
 
   // Hover over points and do actions
@@ -1198,3 +1317,37 @@ const goToDashboard = () => {
 $(".switch-context").on('click', () => {
   goToDashboard()
 })
+
+// POPUP CLICK HANDLER FOR ITEMS
+$(".ol-popup").on('click', event => {
+  let sensorId = event.target.attributes.sensorId.value
+  let coordinates = event.originalEvent.path[1].attributes.coordinates.value.split(',')
+
+  // let featuresToAppend = []
+  // let feature = new ol.Feature(new ol.geom.Point(toLonLat(coordinates)))
+  // console.log(window.map)
+  // window.map.source.addFeature(feature)
+
+  fetch(`/api/v3/save-position?x=${coordinates[0]}&y=${coordinates[1]}&sensor=${sensorId}`).then(result => {
+    if (result.status == 200) {
+      location.reload()
+    }
+  })
+})
+// END POPUP
+
+// test
+// let markers = new OpenLayers.Layer.Markers("Markers");
+// markers.id = "Markers";
+// window.map.addLayer(markers);
+
+// window.map.events.register("click", window.map, function (e) {
+//   //var position = this.events.getMousePosition(e);
+//   var position = map.getLonLatFromPixel(e.xy);
+//   var size = new OpenLayers.Size(21, 25);
+//   var offset = new OpenLayers.Pixel(-(size.w / 2), -size.h);
+//   var icon = new OpenLayers.Icon('images/mark.png', size, offset);
+//   var markerslayer = map.getLayer('Markers');
+//   markerslayer.addMarker(new OpenLayers.Marker(position, icon));
+// });
+// end test
