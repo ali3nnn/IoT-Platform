@@ -866,7 +866,11 @@ function getRandomColor() {
 }
 
 function clearLocation(sensorId) {
-  fetch("/api/v3/save-position?x=NULL&y=NULL&sensor=".concat(sensorId));
+  fetch("/api/v3/save-position?x=NULL&y=NULL&sensor=".concat(sensorId)).then(function (_) {
+    return alert("Location cleared");
+  }).catch(function (error) {
+    return console.error(error);
+  });
 }
 
 var monthNames = ["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];

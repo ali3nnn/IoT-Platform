@@ -960,9 +960,9 @@ function updateCurrentValue(sensorid, value) {
 
 function saveSensorSettings(sensorid) {
   var min = $(".live-card-" + sensorid + " .settings-wrapper .input-min").val();
-  var max = $(".live-card-" + sensorid + " .settings-wrapper .input-max").val();
-  var xLat = $(".live-card-" + sensorid + " .settings-wrapper .input-lat").val();
-  var yLong = $(".live-card-" + sensorid + " .settings-wrapper .input-long").val();
+  var max = $(".live-card-" + sensorid + " .settings-wrapper .input-max").val(); // const xLat = $(".live-card-" + sensorid + " .settings-wrapper .input-lat").val()
+  // const yLong = $(".live-card-" + sensorid + " .settings-wrapper .input-long").val()
+
   var openTimer = $(".live-card-" + sensorid + " .settings-wrapper .input-open").val();
   var closedTimer = $(".live-card-" + sensorid + " .settings-wrapper .input-closed").val();
 
@@ -974,11 +974,9 @@ function saveSensorSettings(sensorid) {
     return openTimer ? '&openTimer=' + openTimer : '';
   }() + function () {
     return closedTimer ? '&closedTimer=' + closedTimer : '';
-  }() + function () {
-    return xLat ? '&xlat=' + xLat : '';
-  }() + function () {
-    return yLong ? '&ylong=' + yLong : '';
-  }();
+  }(); // (() => { return xLat ? '&xlat=' + xLat : '' })() +
+  // (() => { return yLong ? '&ylong=' + yLong : '' })()
+
 
   url = url.replace(' ', ''); // console.log(url)
 
@@ -986,30 +984,35 @@ function saveSensorSettings(sensorid) {
     url: url,
     type: 'GET'
   }).done(function (msg) {
-    alert("Sensor " + sensorid + " updated!"); // Min alert
+    if ('errno' in msg) {
+      alert("Sensor " + sensorid + " update failed!");
+      console.warn(msg);
+    } else {
+      alert("Sensor " + sensorid + " updated!"); // Min alert
 
-    if (min) {
-      $(".live-card-" + sensorid + " .minAlertGauge").prop("value", min);
-      $(".live-card-" + sensorid + " .minAlertGauge").html("min: " + min); // $(".live-card-" + sensorid + " input[name='minAlert']").prop("value", '')
-      // $(".live-card-" + sensorid + " input[name='minAlert']").prop("placeholder", "Updated at " + min)
-    } // Max alert
-
-
-    if (max) {
-      $(".live-card-" + sensorid + " .maxAlertGauge").prop("value", max);
-      $(".live-card-" + sensorid + " .maxAlertGauge").html("max: " + max); // $(".live-card-" + sensorid + " input[name='maxAlert']").prop("value", '')
-      // $(".live-card-" + sensorid + " input[name='maxAlert']").prop("placeholder", "Updated at " + max)
-    } // xLat
+      if (min) {
+        $(".live-card-" + sensorid + " .minAlertGauge").prop("value", min);
+        $(".live-card-" + sensorid + " .minAlertGauge").html("min: " + min); // $(".live-card-" + sensorid + " input[name='minAlert']").prop("value", '')
+        // $(".live-card-" + sensorid + " input[name='minAlert']").prop("placeholder", "Updated at " + min)
+      } // Max alert
 
 
-    if (xLat) {} // $(".live-card-" + sensorid + " input[name='xLat']").prop("value", '')
-    // $(".live-card-" + sensorid + " input[name='xLat']").prop("placeholder", "Updated at " + xLat)
-    // yLong
+      if (max) {
+        $(".live-card-" + sensorid + " .maxAlertGauge").prop("value", max);
+        $(".live-card-" + sensorid + " .maxAlertGauge").html("max: " + max); // $(".live-card-" + sensorid + " input[name='maxAlert']").prop("value", '')
+        // $(".live-card-" + sensorid + " input[name='maxAlert']").prop("placeholder", "Updated at " + max)
+      }
+    } // // xLat
+    // if (xLat) {
+    //     // $(".live-card-" + sensorid + " input[name='xLat']").prop("value", '')
+    //     // $(".live-card-" + sensorid + " input[name='xLat']").prop("placeholder", "Updated at " + xLat)
+    // }
+    // // yLong
+    // if (yLong) {
+    //     // $(".live-card-" + sensorid + " input[name='yLong']").prop("value", '')
+    //     // $(".live-card-" + sensorid + " input[name='yLong']").prop("placeholder", "Updated at " + yLong)
+    // }
 
-
-    if (yLong) {// $(".live-card-" + sensorid + " input[name='yLong']").prop("value", '')
-      // $(".live-card-" + sensorid + " input[name='yLong']").prop("placeholder", "Updated at " + yLong)
-    }
   });
 } // ======================================================
 // Send keep alive each minute

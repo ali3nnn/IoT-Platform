@@ -1007,8 +1007,8 @@ function saveSensorSettings(sensorid) {
 
     const min = $(".live-card-" + sensorid + " .settings-wrapper .input-min").val()
     const max = $(".live-card-" + sensorid + " .settings-wrapper .input-max").val()
-    const xLat = $(".live-card-" + sensorid + " .settings-wrapper .input-lat").val()
-    const yLong = $(".live-card-" + sensorid + " .settings-wrapper .input-long").val()
+    // const xLat = $(".live-card-" + sensorid + " .settings-wrapper .input-lat").val()
+    // const yLong = $(".live-card-" + sensorid + " .settings-wrapper .input-long").val()
     const openTimer = $(".live-card-" + sensorid + " .settings-wrapper .input-open").val()
     const closedTimer = $(".live-card-" + sensorid + " .settings-wrapper .input-closed").val()
 
@@ -1016,9 +1016,9 @@ function saveSensorSettings(sensorid) {
         (() => { return min ? '&min=' + min : '' })() +
         (() => { return max ? '&max=' + max : '' })() +
         (() => { return openTimer ? '&openTimer=' + openTimer : '' })() +
-        (() => { return closedTimer ? '&closedTimer=' + closedTimer : '' })() +
-        (() => { return xLat ? '&xlat=' + xLat : '' })() +
-        (() => { return yLong ? '&ylong=' + yLong : '' })()
+        (() => { return closedTimer ? '&closedTimer=' + closedTimer : '' })()
+    // (() => { return xLat ? '&xlat=' + xLat : '' })() +
+    // (() => { return yLong ? '&ylong=' + yLong : '' })()
 
     url = url.replace(' ', '')
     // console.log(url)
@@ -1028,35 +1028,39 @@ function saveSensorSettings(sensorid) {
         type: 'GET'
     }).done((msg) => {
 
-        alert("Sensor " + sensorid + " updated!")
+        if ('errno' in msg) {
+            alert("Sensor " + sensorid + " update failed!")
+            console.warn(msg)
+        } else {
+            alert("Sensor " + sensorid + " updated!")
+            // Min alert
+            if (min) {
+                $(".live-card-" + sensorid + " .minAlertGauge").prop("value", min)
+                $(".live-card-" + sensorid + " .minAlertGauge").html("min: " + min)
+                // $(".live-card-" + sensorid + " input[name='minAlert']").prop("value", '')
+                // $(".live-card-" + sensorid + " input[name='minAlert']").prop("placeholder", "Updated at " + min)
+            }
 
-        // Min alert
-        if (min) {
-            $(".live-card-" + sensorid + " .minAlertGauge").prop("value", min)
-            $(".live-card-" + sensorid + " .minAlertGauge").html("min: " + min)
-            // $(".live-card-" + sensorid + " input[name='minAlert']").prop("value", '')
-            // $(".live-card-" + sensorid + " input[name='minAlert']").prop("placeholder", "Updated at " + min)
+            // Max alert
+            if (max) {
+                $(".live-card-" + sensorid + " .maxAlertGauge").prop("value", max)
+                $(".live-card-" + sensorid + " .maxAlertGauge").html("max: " + max)
+                // $(".live-card-" + sensorid + " input[name='maxAlert']").prop("value", '')
+                // $(".live-card-" + sensorid + " input[name='maxAlert']").prop("placeholder", "Updated at " + max)
+            }
         }
 
-        // Max alert
-        if (max) {
-            $(".live-card-" + sensorid + " .maxAlertGauge").prop("value", max)
-            $(".live-card-" + sensorid + " .maxAlertGauge").html("max: " + max)
-            // $(".live-card-" + sensorid + " input[name='maxAlert']").prop("value", '')
-            // $(".live-card-" + sensorid + " input[name='maxAlert']").prop("placeholder", "Updated at " + max)
-        }
+        // // xLat
+        // if (xLat) {
+        //     // $(".live-card-" + sensorid + " input[name='xLat']").prop("value", '')
+        //     // $(".live-card-" + sensorid + " input[name='xLat']").prop("placeholder", "Updated at " + xLat)
+        // }
 
-        // xLat
-        if (xLat) {
-            // $(".live-card-" + sensorid + " input[name='xLat']").prop("value", '')
-            // $(".live-card-" + sensorid + " input[name='xLat']").prop("placeholder", "Updated at " + xLat)
-        }
-
-        // yLong
-        if (yLong) {
-            // $(".live-card-" + sensorid + " input[name='yLong']").prop("value", '')
-            // $(".live-card-" + sensorid + " input[name='yLong']").prop("placeholder", "Updated at " + yLong)
-        }
+        // // yLong
+        // if (yLong) {
+        //     // $(".live-card-" + sensorid + " input[name='yLong']").prop("value", '')
+        //     // $(".live-card-" + sensorid + " input[name='yLong']").prop("placeholder", "Updated at " + yLong)
+        // }
 
     });
 }
@@ -1371,13 +1375,13 @@ let mainLoader = async () => {
                     icon: '<i class="fas fa-compass"></i>',
                     class: ''
                 })
- 
+
                 let alert = 0, alarm = 0, power = 0
 
                 sensorMetaRaw.forEach(item => {
-                    if (item.alerts == 1)               { alert++ }
-                    if (item.alerts == 2)               { alarm++ }
-                    if ([3, 4].includes(item.alerts))   { power++ }
+                    if (item.alerts == 1) { alert++ }
+                    if (item.alerts == 2) { alarm++ }
+                    if ([3, 4].includes(item.alerts)) { power++ }
                 })
 
                 appendInfoBox({

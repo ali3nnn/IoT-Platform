@@ -818,6 +818,8 @@ export function getRandomColor() {
 
 export function clearLocation(sensorId) {
     fetch(`/api/v3/save-position?x=NULL&y=NULL&sensor=${sensorId}`)
+        .then(_=>alert("Location cleared"))
+        .catch(error=>console.error(error))
 }
 
 export const monthNames = ["","January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];

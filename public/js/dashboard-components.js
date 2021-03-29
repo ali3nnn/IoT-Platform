@@ -1,5 +1,6 @@
 const humanizeDuration = require("humanize-duration");
-import { imageExists } from './utils.js'
+import { imageExists, clearLocation } from './utils.js'
+window.clearLocation = clearLocation
 
 export let currentValueView = (alertClass2, sensor) => `
 <article class="card height-control ` + alertClass2 + ` live-card-` + sensor.sensorMeta.sensorId + `" sensorId="` + sensor.sensorMeta.sensorId + `" sensortype="` + sensor.sensorMeta.sensorType + `" battery="` + sensor.sensorMeta.battery + `">
@@ -30,9 +31,11 @@ export let currentValueView = (alertClass2, sensor) => `
     </div>
 
     <div class='card-alerts-settings alert-` + sensor.sensorMeta.sensorId + `'>
-        <span class='card-settings-button-alert tooltip_test'>
-            <i class="fas fa-bell"></i>
-            <span class="tooltiptext">New feature is coming!</span>
+        <!--  -->
+        <span class='card-settings-button-alert tooltip_test ${(['null', 'NULL', '', false].includes(sensor.sensorMeta.x) || ['null', 'NULL', '', false].includes(sensor.sensorMeta.y)) ? 'dash-button-disabled' : ''}' onclick="clearLocation('${sensor.sensorMeta.sensorId}')">
+            <span class='remove-line-45'></span>
+            <i class="fas fa-map-marker-alt"></i>
+            <span class="tooltiptext">Clear location</span>
         </span>
         <span class='card-settings-button-update tooltip_test'>
             <i class="fas fa-save"></i>
@@ -52,8 +55,6 @@ export let currentValueView = (alertClass2, sensor) => `
                 <input type="number" name="maxAlert" ` + (() => {
         return sensor.sensorMeta.max ? 'value="' + sensor.sensorMeta.max + '"' : 'placeholder="Set max alert"'
     })() + ` class="input input-max">
-
-            <button id="clearLocation" type="button" onclick="fetch('/api/v3/clear-location?sensorId=${sensor.sensorMeta.sensorId}')">Clear location</button>
 
                 <!-- <p class='label-input'>Lat: </p>
                 <input type="number" name="xLat" ` + (() => {
@@ -257,30 +258,30 @@ export let conveyor = (sensor, sensorData) => `
         <div class="card-body-inner">
             <div class="state-button">
                 <div class="grid-inner">
-                    <div status="`+ sensor.sensorMeta.status + `" safety="`+ sensor.sensorMeta.safety + `" class="state-btn-inner ` + (function () {
-                        if (sensor.sensorMeta.status == 1 && sensor.sensorMeta.safety == 0)
-                            return 'active'  
-                        return ''
-                    })() + `">
-                        <input type="checkbox" class="cb-value" `+(function(){
-                            if (sensor.sensorMeta.safety == 1)
-                                return 'disabled'  
-                            return ''
-                        })()+`/>
+                    <div status="`+ sensor.sensorMeta.status + `" safety="` + sensor.sensorMeta.safety + `" class="state-btn-inner ` + (function () {
+        if (sensor.sensorMeta.status == 1 && sensor.sensorMeta.safety == 0)
+            return 'active'
+        return ''
+    })() + `">
+                        <input type="checkbox" class="cb-value" `+ (function () {
+        if (sensor.sensorMeta.safety == 1)
+            return 'disabled'
+        return ''
+    })() + `/>
                         <span class="round-btn"></span>
                     </div>
                     <span class="conveyor-info-title">Status</span>
-                    <span class="conveyor-info-message">`+(function(){
-                        if (sensor.sensorMeta.status == 1) {
-                            if(sensor.sensorMeta.safety == 0)
-                                return 'RUN'
-                        } else {
-                            if(sensor.sensorMeta.safety == 1) {
-                                return 'E-STOP'
-                            }
-                            return 'STOP'
-                        }
-                    })()+`</span>
+                    <span class="conveyor-info-message">`+ (function () {
+        if (sensor.sensorMeta.status == 1) {
+            if (sensor.sensorMeta.safety == 0)
+                return 'RUN'
+        } else {
+            if (sensor.sensorMeta.safety == 1) {
+                return 'E-STOP'
+            }
+            return 'STOP'
+        }
+    })() + `</span>
                 </div>
             </div>
             <div class="last-status">
@@ -293,16 +294,16 @@ export let conveyor = (sensor, sensorData) => `
             if (sensor.sensorMeta.statusTime) {
                 let h = sensor.sensorMeta.statusTime.split("T")[1].split(":")[0]
                 let m = sensor.sensorMeta.statusTime.split("T")[1].split(":")[1]
-                let time = sensor.sensorMeta.statusTime.split('T')[1].slice(0,5)
+                let time = sensor.sensorMeta.statusTime.split('T')[1].slice(0, 5)
                 let day = sensor.sensorMeta.statusTime.split("T")[0].slice(5).split('-')[1]
                 let month = sensor.sensorMeta.statusTime.split("T")[0].slice(5).split('-')[0]
                 let today = new Date()
-                const monthNames = ["","January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-                today = today.toLocaleDateString().slice(0,2)
+                const monthNames = ["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                today = today.toLocaleDateString().slice(0, 2)
                 // console.log(today, day)
-                if(today==day) 
+                if (today == day)
                     return time
-                return time + " " + day + " " + " " + monthNames[parseInt(month)].slice(0,3)
+                return time + " " + day + " " + " " + monthNames[parseInt(month)].slice(0, 3)
             }
 
         })() + `</span>
@@ -429,17 +430,17 @@ export let conveyorLayout = (sensor) => `
 <div class='conveyor-layout'>
     <div class='conveyor-layout-inner'>
     <!-- TIGANEALA -->
-        `+(function(){
-            if(username.toLowerCase() == 'pharmafarm') {
-                // add an image
-                return '<img src="/images/custom-maps/pharmafarm.jpg"/>'
-            } else {
-                if(imageExists("/images/custom-maps/"+username.toLowerCase()+".jpg")) {
-                    return '<img src="/images/custom-maps/'+username.toLowerCase()+'.jpg"/>'
-                }
+        `+ (function () {
+        if (username.toLowerCase() == 'pharmafarm') {
+            // add an image
+            return '<img src="/images/custom-maps/pharmafarm.jpg"/>'
+        } else {
+            if (imageExists("/images/custom-maps/" + username.toLowerCase() + ".jpg")) {
+                return '<img src="/images/custom-maps/' + username.toLowerCase() + '.jpg"/>'
             }
-            return ''
-        })()+`
+        }
+        return ''
+    })() + `
     <!-- END TIGANEALA -->
     </div>
     `+ newItemsConveyorLayout() + `
@@ -488,32 +489,32 @@ export let conveyorItem = (sensor, draggable, info = { name }) => `
   <!-- tooltip -->
   <span class="tooltiptext">
     <name>Nume: `+ info.name + `</name>
-    `+ (sensor.status ? '<br><state>Status: '+states_dict[sensor.status]+'</state>' : '') + `
-    `+ (function(){
+    `+ (sensor.status ? '<br><state>Status: ' + states_dict[sensor.status] + '</state>' : '') + `
+    `+ (function () {
 
-        if(sensor.statusTime) {
+        if (sensor.statusTime) {
             let h = sensor.statusTime.split("T")[1].split(":")[0]
             let m = sensor.statusTime.split("T")[1].split(":")[1]
-            let time = sensor.statusTime.split('T')[1].slice(0,5)
+            let time = sensor.statusTime.split('T')[1].slice(0, 5)
             let day = sensor.statusTime.split("T")[0].slice(5).split('-')[1]
             let month = sensor.statusTime.split("T")[0].slice(5).split('-')[0]
             let today = new Date()
             // console.log(sensor.sensorType, sensor.statusTime, today)
             const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            today = today.toLocaleDateString().slice(0,2)
-            if(today==day) 
-                return '<br><date>De la: '+time+'</date>'
-            return '<br><date>De la: '+time + "<br>" + day + " " + " " + monthNames[parseInt(month)].slice(0,3)+'</date>'
+            today = today.toLocaleDateString().slice(0, 2)
+            if (today == day)
+                return '<br><date>De la: ' + time + '</date>'
+            return '<br><date>De la: ' + time + "<br>" + day + " " + " " + monthNames[parseInt(month)].slice(0, 3) + '</date>'
         } else {
             return '<br><date></date>'
         }
 
     })() + `
     `+
-    (function(){
-        if(sensor.usageTotal) {
+    (function () {
+        if (sensor.usageTotal) {
             let usage
-            if(sensor.sensorType != 'gate') {
+            if (sensor.sensorType != 'gate') {
                 usage = humanizeDuration(sensor.usageTotal * 1000, {
                     language: "en",
                     spacer: "",
@@ -529,12 +530,12 @@ export let conveyorItem = (sensor, draggable, info = { name }) => `
             } else {
                 usage = sensor.usageTotal
             }
-            return '<br><usage>Folosire: '+usage+'</usage>'
+            return '<br><usage>Folosire: ' + usage + '</usage>'
         } else {
             return '<br><usage></usage>'
         }
     })()
-    +`
+    + `
   </span>
   <!-- end tooltip -->
 

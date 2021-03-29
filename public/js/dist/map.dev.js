@@ -24,13 +24,15 @@ var _layer = require("ol/layer");
 
 var _GeoJSON = _interopRequireDefault(require("ol/format/GeoJSON"));
 
-var _Vector = _interopRequireDefault(require("ol/source/Vector"));
+var _source = require("ol/source");
 
 var _interaction = require("ol/interaction");
 
 var _proj = require("ol/proj");
 
 var _coordinate = require("ol/coordinate");
+
+var _olGeocoder = _interopRequireDefault(require("ol-geocoder"));
 
 var _utils = require("./utils.js");
 
@@ -74,12 +76,13 @@ function getSensorValue() {
   var sensorValue = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
   var unitMeasure = '';
   var type = sensorFeature.customData.sensorType;
-  if (type == 'door') unitMeasure = '';else if (type == 'temperature') unitMeasure = '℃';else if (type == 'voltage') unitMeasure = 'V';
+  if (type == 'door') unitMeasure = '';else if (type == 'temperature') unitMeasure = ''; //'℃'
+  else if (type == 'voltage') unitMeasure = 'V';
 
   if (sensorValue) {
-    return sensorValue + ' ' + unitMeasure;
+    return sensorValue + '' + unitMeasure;
   } else {
-    return '';
+    return '-';
   } // value = props.customData.last
   // return value || "20.3°C"
 
@@ -95,30 +98,52 @@ function getSensorIcon() {
 sensorStyle = function sensorStyle() {
   var sensorFeature = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
   var sensorValue = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-  return [new _style.Style({
-    // image: new Icon({
-    //   img: canvas,
-    //   imgSize: [canvas.width, canvas.height]
-    // }),
-    text: new _style.Text({
-      scale: 1,
-      text: getSensorIcon(sensorFeature = sensorFeature),
-      font: 'normal 26px FontAwesome',
-      offsetY: -5
-    })
-  }), new _style.Style({
-    text: new _style.Text({
-      scale: 1,
-      text: getSensorName(sensorFeature = sensorFeature),
-      font: 'normal 16px Calibri',
-      offsetY: 23
-    })
-  }), new _style.Style({
+  var isAlarm = false;
+
+  if (Number.isFinite(parseInt(sensorFeature.customData.min, 10))) {
+    if (parseInt(sensorFeature.customData.min, 10) > sensorValue) isAlarm = true;else if (parseInt(sensorFeature.customData.max, 10) < sensorValue) isAlarm = true;
+  } // console.log(sensorFeature.customData.sensorId, isAlarm)
+  // console.log(sensorFeature.customData.sensorId, isAlarm, parseInt(sensorFeature.customData.min, 10), sensorValue, parseInt(sensorFeature.customData.max, 10))
+
+
+  var backgroundLabel = !isAlarm ? new _style.Style({
+    image: new _style.Icon({
+      anchor: [0.5, 120],
+      anchorXUnits: 'fraction',
+      anchorYUnits: 'pixels',
+      src: 'images/label_v6.png',
+      scale: 0.4
+    }) // text: new Text({
+    //   scale: 1,
+    //   text: getSensorValue(sensorFeature = sensorFeature, sensorValue = sensorValue),
+    //   font: 'bold 16px Verdana',
+    //   offsetX: -10
+    // })
+
+  }) : new _style.Style({
+    image: new _style.Icon({
+      anchor: [0.5, 120],
+      anchorXUnits: 'fraction',
+      anchorYUnits: 'pixels',
+      src: 'images/label_v6_alarm.png',
+      scale: 0.4
+    }) // text: new Text({
+    //   scale: 1,
+    //   text: getSensorValue(sensorFeature = sensorFeature, sensorValue = sensorValue),
+    //   font: 'bold 16px Verdana',
+    //   offsetX: -10
+    // })
+
+  }); // return backgroundLabel
+
+  return [// IMAGE
+  backgroundLabel, // VALUE
+  new _style.Style({
     text: new _style.Text({
       scale: 1,
       text: getSensorValue(sensorFeature = sensorFeature, sensorValue = sensorValue),
-      font: 'normal 16px Calibri',
-      offsetY: 40
+      font: 'bold 16px Verdana',
+      offsetX: -10
     })
   })];
 }; // detect map container
@@ -239,7 +264,7 @@ if ((!mapOption || mapOption == 'NULL') && searchObj.id) {
   var src = mapOption.split('./public')[1];
   $("#map").append("<div class='custom-map dragscroll'> <img class='custom-image' src='" + src + "' /> </div>"); // [ ] TODO: to implement scroll by dragging: http://qnimate.com/javascript-scroll-by-dragging/
 } else {
-  $("div#map").append("<span>choose an option</span>");
+  $("div#map").append("<span class='no-message'>choose an option</span>");
 }
 
 $(".dragscroll img").on('mouseover', function (el) {
@@ -444,11 +469,14 @@ if ($("#map .custom-map")) {
 // ============================
 
 
-userData_raw.forEach(function (item) {
-  (0, _utils.sendMessage)('socketChannel', {
-    topic: 'anysensor/in',
-    message: "{\"action\":\"get_value\",\"cId\":\"".concat(item.sensorId, "\"}")
-  });
+userData_raw.forEach(function (item, index) {
+  setTimeout(function () {
+    (0, _utils.sendMessage)('socketChannel', {
+      topic: 'anysensor/in',
+      message: "{\"action\":\"get_value\",\"cId\":\"".concat(item.sensorId, "\"}")
+    }); // console.log(index, item.sensorId, new Date().getTime())
+  }, 100 * index); // 100*index este pentru a pune un delay de 100ms intre fiecare mesaj trimis 
+  // daca se sterge indexul, toate mesajele vor fi trimise dupa 100ms
 }); // ============================
 // Connect sensor to MQTT
 // ============================
@@ -481,7 +509,7 @@ socket.on(socketChannel, function _callee3(data) {
           }); // NEW TOPIC dataPub - live changing from offline to online
           // dataPub {cId: "DAS001TCORA", value: 23.992979}
 
-          if (data.topic == 'dataPub') {
+          if (['dataPub', 'anysensor/out'].includes(data.topic)) {
             msg = JSON.parse(data.message);
             updateCurrentValueOnMap(msg.cId, parseFloat(msg.value).toFixed(1));
           } // No power - live changing from no power to power
@@ -510,13 +538,9 @@ socket.on(socketChannel, function _callee3(data) {
             break;
           }
 
-          _msg2 = JSON.parse(data.message); // console.log(msg)
-          // console.log(vectorLayerFeature)
-
-          layers = window.map.map.getLayers(); // window.layers = layers
-          // console.log(layers)
-          // array_[1].style_[0].text_.text_
-
+          // Number.isFinite(parseInt(feature.customData.min,10))
+          _msg2 = JSON.parse(data.message);
+          layers = window.map.map.getLayers();
           _i = 0, _Object$entries = Object.entries(layers.array_[1].values_.source.uidIndex_);
 
         case 8:
@@ -532,9 +556,6 @@ socket.on(socketChannel, function _callee3(data) {
             break;
           }
 
-          // console.log(msg.cId, msg.value)
-          // console.log(vectorLayerFeature)
-          // sensor.setStyle(sensorStyle(sensorFeature = sensor, sensorValue = msg.value))
           _iteratorNormalCompletion2 = true;
           _didIteratorError2 = false;
           _iteratorError2 = undefined;
@@ -542,8 +563,23 @@ socket.on(socketChannel, function _callee3(data) {
 
           for (_iterator2 = window.vectorLayerFeature[Symbol.iterator](); !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
             feature = _step2.value;
-            // console.log(feature)
-            if (feature.customData.sensorId == _msg2.cId) sensor.setStyle(sensorStyle(sensorFeature = feature, sensorValue = _msg2.value.toFixed(2)));
+
+            if (feature.customData.sensorId == _msg2.cId) {
+              // let alarmChecker = () => {
+              //   // console.log("alarm check:",Number.isFinite(parseInt(feature.customData.min,10)))
+              //   // console.log("alarm max:",parseInt(feature.customData.max,10), msg.value, parseInt(feature.customData.max,10)<msg.value)
+              //   let result = false
+              //   if(Number.isFinite(parseInt(feature.customData.min,10))) {
+              //     if(parseInt(feature.customData.min,10) > msg.value)
+              //       result = true
+              //     else if(parseInt(feature.customData.max,10) < msg.value)
+              //       result = true
+              //   }
+              //   console.log("alarmChecker is",result)
+              //   return result
+              // }
+              sensor.setStyle(sensorStyle(sensorFeature = feature, sensorValue = _msg2.value.toFixed(2)));
+            }
           } // sensor.setStyle([new Style({
           //   text: new Text({
           //     scale: 1,
@@ -913,25 +949,224 @@ function getCenterOfMap() {
 
   console.log("center of map", longAvg, latAvg);
   return [longAvg, latAvg];
-}
+} // This is the main function that render OpenLayers Map
+
 
 function createMap() {
   var coordinates = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
   var sensorValuesJson = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-  // console.log(userData_raw)
-  var result = {};
-  window.vectorLayerFeature = []; // var features = new Array();
-  // for (var i = 0; i < coordinates.length; ++i) {
-  //   // features.push(new ol.Feature(new ol.geom.Point(coordinates[i])));
-  //   appendCoordToHTML(coordinates[i][2], [coordinates[i][0], coordinates[i][1]])
-  //   // console.log(coordinates[i][1], coordinates[i][0])
-  //   var featureObj = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([coordinates[i][1], coordinates[i][0]])))
-  //   // console.log("geom:",featureObj.getGeometry().flatCoordinates)
-  //   features.push(featureObj);
-  // }
-  // new ol.geom.Point(ol.proj.fromLonLat(pos))
 
-  console.log("Map Created"); // Sensors of this zone
+  // SETTINGS FOR DRAGGING
+  // ---------------------
+  var Drag =
+  /*@__PURE__*/
+  function (PointerInteraction) {
+    function Drag() {
+      PointerInteraction.call(this, {
+        handleDownEvent: handleDownEvent,
+        handleDragEvent: handleDragEvent,
+        handleMoveEvent: handleMoveEvent,
+        handleUpEvent: handleUpEvent // handleEvent: handleEvent
+
+      });
+      /**
+       * @type {import("../src/ol/coordinate.js").Coordinate}
+       * @private
+       */
+
+      this.coordinate_ = null;
+      /**
+       * @type {string|undefined}
+       * @private
+       */
+
+      this.cursor_ = 'pointer';
+      /**
+       * @type {Feature}
+       * @private
+       */
+
+      this.feature_ = null;
+      /**
+       * @type {string|undefined}
+       * @private
+       */
+
+      this.previousCursor_ = undefined;
+      /**
+       * @type {bool}
+       * @type {array}
+       * @private
+       */
+
+      this.boolTest = false;
+      this.oldCoordinates = [];
+    }
+
+    if (PointerInteraction) Drag.__proto__ = PointerInteraction;
+    Drag.prototype = Object.create(PointerInteraction && PointerInteraction.prototype);
+    Drag.prototype.constructor = Drag;
+    return Drag;
+  }(_interaction.Pointer);
+
+  function arraysEqual(a, b) {
+    if (a === b) return true;
+    if (a == null || b == null) return false;
+    if (a.length !== b.length) return false;
+
+    for (var i = 0; i < a.length; ++i) {
+      if (a[i] !== b[i]) return false;
+    }
+
+    return true;
+  }
+
+  function savePosition(this_) {
+    if (this_.coordinate_) {
+      // [ ] TODO: This end-point should be secured
+      // console.log(this_)
+      fetch("/api/v3/save-position?x=" + this_.coordinate_[0] + "&y=" + this_.coordinate_[1] + "&sensor=" + this_.feature_.customData.sensorId).then(function (result) {
+        console.log(this_.feature_.customData.sensorId, 'saved');
+        this_.coordinate_ = null;
+        this_.feature_ = null;
+      }).catch(function (error) {
+        console.log(this_);
+        console.error(error);
+        alert("There is a problem with saving the position!");
+      });
+    }
+  }
+
+  function handleDownEvent(evt) {
+    console.log("handleDownEvent", evt.type);
+    var map = evt.map;
+    var feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
+      return feature;
+    });
+
+    if (feature) {
+      // console.log("handleDownEvent",featxure)
+      this.cursor_;
+      this.coordinate_ = evt.coordinate;
+      this.feature_ = feature;
+    }
+
+    return !!feature;
+  }
+  /**
+   * @param {import("../src/ol/MapBrowserEvent.js").default} evt Map browser event.
+   */
+
+
+  function handleDragEvent(evt) {
+    // console.log("handleDragEvent", evt.type)
+    var deltaX = eval(evt.coordinate[0] - this.coordinate_[0]);
+    var deltaY = eval(evt.coordinate[1] - this.coordinate_[1]);
+    var geometry = this.feature_.getGeometry(); // console.log("delta:", deltaX, deltaY)
+    // geometry.computeExtent()
+    // geometry.translate(0, 0);
+    // geometry.translate(deltaX, deltaY);
+
+    geometry.setCoordinates([evt.coordinate[0], evt.coordinate[1]]); // console.log("aici")
+    // console.log(this.feature_)
+    // console.log("handleDragEvent:",geometry.getCoordinates());
+    // geometry.setCoordinates(evt.coordinate[0], evt.coordinate[1]);
+    // console.log("set:",evt.coordinate[0], evt.coordinate[1]);
+    // console.log("after:",geometry.getCoordinates());
+
+    this.coordinate_[0] = evt.coordinate[0];
+    this.coordinate_[1] = evt.coordinate[1]; // geometry.flatCoordinates = geometry.flatCoordinates.split("-").reduce((a,b) => a-)
+    // let oldCoordinates_ = this.oldCoordinates
+    // if(!this.boolTest) {
+    //   this.boolTest = true
+    //   this.intervalCheck = setInterval(function(){
+    //     console.log("handleDragEvent", oldCoordinates_, geometry.flatCoordinates, arraysEqual(oldCoordinates_, geometry.flatCoordinates))
+    //     if(!arraysEqual(oldCoordinates_, geometry.flatCoordinates)) {
+    //       oldCoordinates_ = geometry.flatCoordinates
+    //     } else {
+    //     //   // console.log("nothing changed")
+    //     }
+    //   },300)
+    // }
+  }
+  /**
+   * @param {import("../src/ol/MapBrowserEvent.js").default} evt Event.
+   */
+
+
+  function handleMoveEvent(evt) {
+    // console.log("handleMoveEvent", evt.type)
+    if (this.cursor_) {
+      var map = evt.map;
+      var feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
+        // When hover out feature
+        var featureFlag = false;
+
+        if ('customData' in feature) {
+          var valuesToShow = [];
+          popup.innerHTML = "<span>".concat(feature.customData.sensorName, "</span><br><span>min: ").concat(Number.isFinite(parseInt(feature.customData.min, 10)) ? feature.customData.min : '-', "</span><br><span>max: ").concat(Number.isFinite(parseInt(feature.customData.min, 10)) ? feature.customData.max : '-', "</span>");
+          featureFlag = true;
+          popup.hidden = false; // console.log(popupOverlay, popupOverlay.getPosition(), popupOverlay.getPositioning())
+
+          popupOverlay.setPosition(feature.geometryChangeKey_.target.flatCoordinates);
+        }
+
+        if (!featureFlag) {
+          // popup.innerHTML = '';
+          featureFlag = false;
+          popup.hidden = true;
+        }
+
+        return feature;
+      });
+      var element = evt.map.getTargetElement();
+
+      if (feature) {
+        if (element.style.cursor != this.cursor_) {
+          this.previousCursor_ = element.style.cursor;
+          element.style.cursor = this.cursor_;
+        }
+      } else if (this.previousCursor_ !== undefined) {
+        element.style.cursor = this.previousCursor_;
+        this.previousCursor_ = undefined;
+      } // console.log("handleMoveEvent", !!feature)
+
+    }
+  }
+  /**
+   * @return {boolean} `false` to stop the drag sequence.
+   */
+
+
+  function handleUpEvent(evt) {
+    console.log("handleUpEvent", evt.type);
+    savePosition(this); // this.coordinate_ = null;
+    // this.feature_ = null;
+
+    return false;
+  }
+
+  function handleEvent(evt) {
+    console.log("evt.type:", evt.type);
+
+    if (evt.type == 'pointerdown') {// console.log('down');
+      // handleDownEvent(evt)
+    } else if (evt.type == 'pointerup') {// console.log('up');
+      // handleUpEvent(evt)
+    } else if (evt.type == 'pointerdrag') {// handleMoveEvent(evt)
+    }
+
+    return true;
+  } // ---------------------
+  // END SETTINGS FOR DRAGGING
+  // $("#map").prepend(`<span class='ol-superpopup'>click me</span>`)
+  // console.log(userData_raw)
+
+
+  var result = {};
+  window.vectorLayerFeature = [];
+  console.log("MAP is gonna be created!"); // GET SENSORS FOR THIS ZONE
+  // ---------------------
 
   var search = window.location.search.substring(1);
   search = JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"') + '"}');
@@ -942,25 +1177,22 @@ function createMap() {
       return false;
     }
   }); // console.log(sensors)
-  // end sensors of this zone
-  // Example map layer
-
-  var extent = [0, 0, 720, 550];
-  var projection = new ol.proj.Projection({
-    code: 'xkcd-image',
-    units: 'pixels',
-    extent: extent
-  }); // Earth Map
-  // ---------------
-
-  var mapLayer = new ol.layer.Tile({
-    source: new ol.source.OSM()
-  }); // ---------------
+  // ---------------------
+  // END GET SENSORS FOR THIS ZONE
+  // This is for map layer
+  // ---------------------
+  // let projection = new ol.proj.Projection({
+  //   code: 'xkcd-image',
+  //   units: 'pixels',
+  //   extent: [0, 0, 720, 550],
+  // });
+  // ---------------------
+  // END This is for map layer
   // Uncomment this for image map
   // ---------------
   // let mapLayer = new ol.layer.Image({
   //   source: new ol.source.ImageStatic({
-  //     attributions: '© <a href="www.github.com/ali3nnn">Made by Alex Barbu</a>',
+  //     attributions: '<a href="www.github.com/ali3nnn">Made by AB</a>',
   //     url: '/images/custom-maps/1605774980151_descarcare3.jpeg',
   //     projection: projection,
   //     imageExtent: extent,
@@ -990,13 +1222,13 @@ function createMap() {
   //     })
   //   })
   // });
-  // Get sensor to feature
+  // GET SENSOR TO FEATURE
+  // ---------------------
 
   var features = new Array();
   var undefinedX = 45;
   var undefinedY = 26;
   var sensorsListToAppend = [];
-  console.log("sensors", sensors);
   var _iteratorNormalCompletion3 = true;
   var _didIteratorError3 = false;
   var _iteratorError3 = undefined;
@@ -1005,13 +1237,9 @@ function createMap() {
     for (var _iterator3 = sensors[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
       var sensor = _step3.value;
 
-      if (!sensor.x || !sensor.y || sensor.x == 'null' || sensor.y == 'null') {
+      if (!sensor.x || !sensor.y || ['null', 'NULL', ''].includes(sensor.x) || ['null', 'NULL', ''].includes(sensor.y)) {
         // [ ] TODO: check when sensor is not defined
-        // let feature = new ol.Feature(new ol.geom.Point([undefinedX, undefinedY]))
-        // feature['customData'] = { ...sensor, last: null }
-        // features.push(feature)
-        // undefinedY += 5
-        sensorsListToAppend.push(sensor); // continue
+        sensorsListToAppend.push(sensor);
       } else {
         var feature = new ol.Feature(new ol.geom.Point([sensor.x, sensor.y]));
         feature['customData'] = _objectSpread({}, sensor, {
@@ -1019,7 +1247,12 @@ function createMap() {
         });
         features.push(feature);
       }
-    }
+    } // console.log("features", features)
+    // ---------------------
+    // END GET SENSOR TO FEATURE
+    // VECTOR SOURCE & VECTOR LAYER
+    // ---------------------
+
   } catch (err) {
     _didIteratorError3 = true;
     _iteratorError3 = err;
@@ -1035,39 +1268,30 @@ function createMap() {
     }
   }
 
-  console.log("features", features); // End get sensor to feature
-
-  var source = new _Vector.default({
-    // features: [iconFeature],
+  var source = new _source.Vector({
     features: features
   });
-  result["source"] = source; // var canvas = document.createElement('canvas');
-  // canvas.width = 40;
-  // canvas.height = 50;
-  // var ctx = canvas.getContext('2d');
-  // ctx.fillStyle = 'green';
-  // ctx.fillRect(0, 0, canvas.width, canvas.height);
-  // How sensor appear on map
-  // moved up
-
+  result["source"] = source;
+  var clusterSource = new _source.Cluster({
+    distance: parseInt(50, 10),
+    source: source
+  });
   var vectorLayer = new _layer.Vector({
+    // source: clusterSource,
     source: source,
+    updateWhileInteracting: true,
     style: function style(feature) {
-      // console.log(feature.get('name'))
       if (!vectorLayerFeature.includes(feature)) {
         vectorLayerFeature.push(feature);
       }
 
       return sensorStyle(sensorFeature = feature);
     }
-  }); // End exmaple map layer
-
-  result["vectorLayer"] = vectorLayer; // Real map
-  // let raster = new ol.layer.Tile({
-  //   source: new ol.source.OSM()
-  // });
-  // End real map
-  // POP up
+  });
+  result["vectorLayer"] = vectorLayer; // ---------------------
+  // END VECTOR SOURCE & VECTOR LAYER
+  // POP-UP FOR UNATTACHED SENSORS 
+  // ---------------------
 
   var container = document.getElementById('popup');
   var content = document.getElementById('popup-content');
@@ -1084,12 +1308,35 @@ function createMap() {
     overlay.setPosition(undefined);
     closer.blur();
     return false;
-  }; // END POP up
+  }; // ---------------------
+  // END POP-UP FOR UNATTACHED SENSORS 
+  // Earth Map
+  // ---------------
 
+
+  var mapLayer = new ol.layer.Tile({
+    source: new ol.source.OSM({
+      // attributions: '<a href="https://www.github.com/ali3nnn">Made by Alex Barbu</a>',
+      attributions: '<a href="https://www.dasstec.ro">Made by DasstecB2B</a>'
+    })
+  }); // ---------------
+  // var select = new Select({
+  //   // condition: function (arg) {
+  //   //   if(arg.type == 'click')
+  //   //     return true
+  //   //   return false
+  //   // }
+  // });
+  // var translate = new Translate({
+  //   features: select.getFeatures(),
+  // });
+  // CREATE THE MAP
+  // ---------------------
 
   var map = new ol.Map({
-    // layers: [mapLayer, clusters],
-    // layers: [raster, clusters],
+    // layers: [mapLayer, vectorLayer],
+    // interactions: defaultInteractions().extend([new Drag()]),
+    interactions: (0, _interaction.defaults)().extend([new Drag()]),
     layers: [mapLayer],
     target: 'map',
     overlays: [overlay],
@@ -1097,35 +1344,82 @@ function createMap() {
       // projection: projection, // uncomment this for image map
       // center: getCenter(extent),
       center: ol.proj.fromLonLat([25.82, 44]),
+      // [LON,LAT] - for romania
       zoom: 6 // maxZoom: 20,
       // center: ol.proj.fromLonLat(getCenterOfMap()),
       // zoom: getZoomOfMap()
 
     })
-  }); // SEARCH BOX
-  // popup
-  // let popup = new ol.Overlay.Popup();
-  // map.addOverlay(popup);
+  }); // ---------------------
+  // END CREATE THE MAP
+  // FIT THE MAP TO FEAUTRES
+  // ---------------------
+
+  var filteredFeatures = vectorLayer.getSource().getFeatures();
+
+  if (filteredFeatures.length) {
+    var new_source = new ol.source.Vector();
+    new_source.addFeatures(filteredFeatures);
+    map.getView().fit(new_source.getExtent(), map.getSize());
+    var currentZoom = map.getView().getZoom();
+    var modifiedZoom = currentZoom > 20 ? 20 : currentZoom > 15 ? parseInt(currentZoom * 0.95) : parseInt(currentZoom * 1); // minZoom=20 or 95% of currentZoom - because currentZoom is to close 
+    // console.log(currentZoom, modifiedZoom)
+
+    map.getView().setZoom(modifiedZoom);
+  } // ---------------------
+  // END FIT THE MAP TO FEAUTRES
+  // SEARCH BOX
+  // ---------------------
   //Instantiate with some options and add the Control
 
-  var geocoder = new Geocoder('nominatim', {
+
+  var geocoder = new _olGeocoder.default('nominatim', {
     provider: 'osm',
+    // provider : 'osm' (default), 'mapquest', 'photon', 'pelias', 'bing', 'opencage', custom provider instance; Your preferable provider;
+    countrycodes: 'ro',
+    // limit searches to a specific country
     lang: 'en',
-    placeholder: 'Search for ...',
-    limit: 5,
+    placeholder: 'Search location for sensor',
+    limit: 6,
+    // Limit of results
+    autoCompleteMinLength: 2,
+    // The minimum number of characters to trigger search;
+    autoCompleteTimeout: 100,
+    // The mimimum number of ms to wait before triggering search if autoComplete is on and minimum number of characters is satisfied;
+    targetType: 'glass-button',
     debug: false,
     autoComplete: true,
     keepOpen: true
   });
-  map.addControl(geocoder); //Listen when an address is chosen
+  map.addControl(geocoder); // geocoder.getLayer().setVisible(false);
+  //Listen when an address is chosen
 
   geocoder.on('addresschosen', function (evt) {
-    console.info(evt);
+    // Delete layer with pin the Geocoder appends
+    var remove_layer_name = 'geocoder-layer';
+    var layers_to_remove = [];
+    map.getLayers().forEach(function (layer) {
+      var layer_name = layer.getProperties().name;
+
+      if (layer_name && layer_name.match(remove_layer_name)) {
+        layers_to_remove.push(layer);
+      }
+    });
+
+    for (var i = 0; i < layers_to_remove.length; i++) {
+      map.removeLayer(layers_to_remove[i]);
+    } // END Delete layer with pin the Geocoder appends
+
+
     window.setTimeout(function () {
-      popup.show(evt.coordinate, evt.address.formatted);
-    }, 3000);
-  }); // END SEARCH BOX
-  // CLICK HANDLER
+      overlay.setPosition(evt.coordinate);
+      container.classList.remove("ol-arrow");
+      content.innerHTML = "Apasă click acolo unde vrei sa adaugi următorul senzor";
+    }, 1000);
+  }); // ---------------------
+  // END SEARCH BOX
+  // APPEND SENSORS ON POP-UP
+  // ---------------------
 
   var sensorsToAppend = function sensorsToAppend(list) {
     var resultEl = '';
@@ -1154,83 +1448,157 @@ function createMap() {
     }
 
     return resultEl;
-  };
+  }; // ---------------------
+  // END APPEND SENSORS ON POP-UP
+  // POPUP CLICK HANDLER FOR ADDING THE SENSORS
+  // ---------------------------
+  // Creates the pop-up
 
-  map.on('singleclick', function (evt) {
+
+  map.on('click', function (evt) {
     if (sensorsListToAppend.length) {
       var coordinate = evt.coordinate;
       var hdms = (0, _coordinate.toStringHDMS)((0, _proj.toLonLat)(coordinate)); // hdms - normal coordinates with degree, minutes, seconds
 
-      content.innerHTML = "\n        <!--<p>You have ".concat(sensorsListToAppend.length, " sensors with no location!</p>-->\n        <p>Click on a sensor</p>\n        <!--<code>").concat(coordinate, "</code>-->\n        <div class=\"unset-sensors\" coordinates=\"").concat(coordinate, "\">\n          ").concat(sensorsToAppend(sensorsListToAppend), "\n        </div>\n      ");
+      container.classList.add("ol-arrow");
+      content.innerHTML = "\n        <p>Selecteaz\u0103 un senzor:</p>\n        <div class=\"unset-sensors\" coordinates=\"".concat(coordinate, "\">\n          ").concat(sensorsToAppend(sensorsListToAppend), "\n        </div>\n      ");
       overlay.setPosition(coordinate);
     } else {
-      console.log("All sensors are attached");
+      console.warn("TODO: display something to inform that 'All sensors are attached'");
     }
-  }); // END CLICK HANDLER
+  }); // Add the sensors
 
-  result["map"] = map;
-  map.addLayer(vectorLayer); // Interactions
+  $(".ol-popup").on('click', popUpHandler);
+
+  function popUpHandler(event) {
+    try {
+      var sensorId = event.target.attributes.sensorid.value;
+      var sensorObj = userData_raw.filter(function (item) {
+        return item.sensorId === sensorId;
+      })[0];
+      var coordinates = event.originalEvent.path[1].attributes.coordinates.value.split(',');
+      var feature = new ol.Feature(new ol.geom.Point(coordinates));
+      fetch("/api/v3/save-position?x=".concat(coordinates[0], "&y=").concat(coordinates[1], "&sensor=").concat(sensorId)).then(function (result) {
+        if (result.status == 200) {
+          feature['customData'] = _objectSpread({}, sensorObj, {
+            last: null
+          });
+          feature.setStyle(sensorStyle(sensorFeature = feature));
+          source.addFeature(feature);
+          overlay.setPosition();
+          sensorsListToAppend = sensorsListToAppend.filter(function (item) {
+            return item.sensorId !== sensorId;
+          });
+        } else {
+          console.warn("TODO: server respond with", result.status);
+        }
+      }).catch(function (error) {
+        console.error("TODO: error when saving position", error);
+      });
+    } catch (_unused) {
+      console.warn("TODO: click on close throws this warn");
+    }
+  } // ---------------------------
+  // END POPUP
+
+
+  result["map"] = map; // After map is created add the layer that contains the sensors
+
+  map.addLayer(vectorLayer); // WHAT HAPPENS WHEN USER MOVE SENSORS ON MAP
+  // ---------------------
+  // console.log(source)
+  // var modify = new Modify({
+  //   source: source,
+  //   style: new Style({
+  //     image: new Circle({
+  //       radius: 2,
+  //       fill: new Fill({
+  //         color: '#ffc1072b'
+  //         // color: getRandomColor()
+  //       }),
+  //       stroke: new Stroke({ color: '#ffc107cf', width: 2 }),
+  //     }),
+  //   })
+  // });
 
   var modify = new _interaction.Modify({
-    source: source,
-    style: new _style.Style({
-      // image: new RegularShape({
-      //   fill: new Fill({color: 'transparent'}),
-      //   stroke: new Stroke({color: 'black', width: 2}),
-      //   points: 4,
-      //   radius: 10,
-      //   angle: Math.PI / 4,
-      // }),
-      image: new _style.Circle({
-        radius: 40,
-        fill: new _style.Fill({
-          color: '#ffc1072b' // color: getRandomColor()
+    features: new ol.Collection(features) // style: new Style({
+    //   image: new Circle({
+    //     radius: 15,
+    //     fill: new Fill({
+    //       color: 'black'
+    //       // color: getRandomColor()
+    //     }),
+    //     stroke: new Stroke({ color: 'black', width: 2 }),
+    //   }),
+    // })
 
-        }),
-        stroke: new _style.Stroke({
-          color: '#ffc107cf',
-          width: 2
-        })
-      })
-    })
+  }); // map.addInteraction(modify);
+  // console.log(modify)
+  // modify.on('modifystart', function (event) {
+  //   console.log("modify start")
+  // })
+  // modify.on('modifyend', function (event) {
+  //   console.log("modifyend")
+  //   let sensors = event.features.array_
+  //   for (const sensor of sensors) {
+  //     const sensorId = sensor.customData.sensorId
+  //     const x = sensor.geometryChangeKey_.target.flatCoordinates[0]
+  //     const y = sensor.geometryChangeKey_.target.flatCoordinates[1]
+  //     // console.log(sensorId, x, y)
+  //     // console.log('------------')
+  //     // [ ] TODO: This end-point should be secured
+  //     fetch("/api/v3/save-position?x=" + x + "&y=" + y + "&sensor=" + sensorId)
+  //     .then(result => {
+  //     // console.log(sensorId, 'modified')
+  //     })
+  //     .catch(error => {
+  //       console.error(error)
+  //       alert("There is a problem with saving the position!")
+  //     })
+  //     // console.log(sensor)
+  //   }
+  // })
+  // ---------------------
+  // END WHAT HAPPENS WHEN USER MOVE SENSORS ON MAP
+  // CREATE FEATURE HOVER POPUP
+  // -----------------------------
+
+  var popup = document.getElementById('featurePopup');
+  var popupOverlay = new _Overlay.default({
+    element: popup // offset: [9, 9]
+
   });
-  map.addInteraction(modify); // Hover over points and do actions
+  map.addOverlay(popupOverlay); // UNCOMMENT THIS
 
-  modify.on('modifyend', function (event) {
-    var sensors = event.features.array_;
-    var _iteratorNormalCompletion5 = true;
-    var _didIteratorError5 = false;
-    var _iteratorError5 = undefined;
+  map.on('pointermove', function (event) {
+    var featureFlag = false;
+    map.forEachFeatureAtPixel(event.pixel, function (feature, layer) {// features = feature.get('features');
+      // if ('customData' in feature) {
+      //   const valuesToShow = [];
+      //   popup.innerHTML = `<span>${feature.customData.sensorName}</span><br><span>min: ${Number.isFinite(parseInt(feature.customData.min, 10)) ? feature.customData.min : '-'}</span><br><span>max: ${Number.isFinite(parseInt(feature.customData.min, 10)) ? feature.customData.max : '-'}</span>`;
+      //   featureFlag = true
+      //   popup.hidden = false;
+      //   // console.log(popupOverlay, popupOverlay.getPosition(), popupOverlay.getPositioning())
+      //   popupOverlay.setPosition(feature.geometryChangeKey_.target.flatCoordinates);
+      // }
+    }, {
+      layerFilter: function layerFilter(layer) {
+        // return (layer.type === new VectorLayer().type) ? true : false;
+        // console.log(">",layer.type === new VectorLayer().type)
+        return true;
+      } // hitTolerance: 6
 
-    try {
-      var _loop = function _loop() {
-        var sensor = _step5.value;
-        var sensorId = sensor.customData.sensorId;
-        var x = sensor.geometryChangeKey_.target.flatCoordinates[0];
-        var y = sensor.geometryChangeKey_.target.flatCoordinates[1];
-        fetch("/api/v3/save-position?x=" + x + "&y=" + y + "&sensor=" + sensorId).then(function (result) {
-          console.log(sensorId, 'modified');
-        }); // console.log(sensor)
-      };
+    }); // When hover out feature
 
-      for (var _iterator5 = sensors[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-        _loop();
-      }
-    } catch (err) {
-      _didIteratorError5 = true;
-      _iteratorError5 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion5 && _iterator5.return != null) {
-          _iterator5.return();
-        }
-      } finally {
-        if (_didIteratorError5) {
-          throw _iteratorError5;
-        }
-      }
+    if (!featureFlag) {
+      // popup.innerHTML = '';
+      featureFlag = false;
+      popup.hidden = true;
     }
-  }); // 0: 281.03851318359375
+  }); // -----------------------------
+  // END CREATE FEATURE HOVER POPUP
+  // 0: 281.03851318359375
   // 1: 319.3243408203125
   // var draw, snap; // global so we can remove them later
   // var typeSelect = document.getElementById('type');
@@ -1258,7 +1626,7 @@ function createMap() {
   // })
 
   return result;
-} //create map function
+} // END CREATEMAP()
 
 
 function onlyUnique(value, index, self) {
@@ -1305,22 +1673,7 @@ var goToDashboard = function goToDashboard() {
 
 $(".switch-context").on('click', function () {
   goToDashboard();
-}); // POPUP CLICK HANDLER FOR ITEMS
-
-$(".ol-popup").on('click', function (event) {
-  var sensorId = event.target.attributes.sensorId.value;
-  var coordinates = event.originalEvent.path[1].attributes.coordinates.value.split(','); // let featuresToAppend = []
-  // let feature = new ol.Feature(new ol.geom.Point(toLonLat(coordinates)))
-  // console.log(window.map)
-  // window.map.source.addFeature(feature)
-
-  fetch("/api/v3/save-position?x=".concat(coordinates[0], "&y=").concat(coordinates[1], "&sensor=").concat(sensorId)).then(function (result) {
-    if (result.status == 200) {
-      location.reload();
-    }
-  });
-}); // END POPUP
-// test
+}); // test
 // let markers = new OpenLayers.Layer.Markers("Markers");
 // markers.id = "Markers";
 // window.map.addLayer(markers);

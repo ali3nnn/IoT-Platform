@@ -1315,27 +1315,31 @@ app.get('/api/v3/get-sensor-data', function (req, res) {
   }
 });
 app.get('/api/v3/save-settings', function (req, res) {
-  sess = req.session; // if (sess.username) {
+  sess = req.session; // console.log(Number.isFinite(parseInt(req.query.min,10)))
+  // console.log(Number.isFinite(parseInt(req.query.max,10)))
+  // console.log(Number.isFinite(parseInt(req.query.openTimer,10)))
+  // console.log(Number.isFinite(parseInt(req.query.closedTimer,10)))
+  // if (sess.username) {
   // let query = "UPDATE sensors SET " + (() => { return req.query.min ? 'min=' + req.query.min : '' })() + (() => { return req.query.max ? 'max=' + req.query.max : '' })() + (() => { return req.query.xlat ? 'x=\'' + req.query.xlat + '\' ' : '' })() + (() => { return req.query.ylong ? 'y=\'' + req.query.ylong + '\'' : '' })() + " WHERE sensorId=" + req.query.sensorId
 
   var query = "UPDATE sensors SET " + function () {
-    return req.query.min ? 'min=' + req.query.min : 'min=NULL';
+    return Number.isFinite(parseInt(req.query.min, 10)) ? 'min=\'' + req.query.min + '\' ' : 'min=NULL';
   }() + "," + function () {
-    return req.query.max ? ' max=' + req.query.max : ' max=NULL';
+    return Number.isFinite(parseInt(req.query.max, 10)) ? ' max=\'' + req.query.max + '\' ' : ' max=NULL';
   }() + "," + function () {
-    return req.query.openTimer ? 'openTimer=' + req.query.openTimer : 'openTimer=NULL';
+    return Number.isFinite(parseInt(req.query.openTimer, 10)) ? ' openTimer=\'' + req.query.openTimer : 'openTimer=NULL';
   }() + "," + function () {
-    return req.query.closedTimer ? ' closedTimer=' + req.query.closedTimer : ' closedTimer=NULL';
-  }() + "," + function () {
-    return req.query.xlat ? ' x=\'' + req.query.xlat + '\' ' : ' x=NULL';
-  }() + "," + function () {
-    return req.query.ylong ? ' y=\'' + req.query.ylong + '\'' : ' y=NULL';
-  }() + " WHERE sensorId=" + req.query.sensorId + ';'; // // /*it was uncommented*/ console.log(query)
+    return Number.isFinite(parseInt(req.query.closedTimer, 10)) ? ' closedTimer=\'' + req.query.closedTimer : ' closedTimer=NULL';
+  }() + // (() => { return req.query.xlat ? ' x=\'' + req.query.xlat + '\' ' : ' x=NULL' })() + "," +
+  // (() => { return req.query.ylong ? ' y=\'' + req.query.ylong + '\'' : ' y=NULL' })() +
+  " WHERE sensorId=" + req.query.sensorId + ';'; // console.log(query)
 
 
   mysqlReader(query).then(function (res) {
+    console.log(res);
     res.status(200).send("Values updated!");
   }).catch(function (err) {
+    console.log(err);
     res.status(200).send(err);
   }); // } else {
   //     res.status(403).send("You are not authorized!");
@@ -3510,7 +3514,7 @@ app.get('/api/get-zones', function (req, res) {
   }
 });
 app.get('/api/v3/clear-location', function (req, res) {
-  var querySql = "UPDATE sensors SET x=NULL, y=NULL WHERE sensorId='".concat(req.query.sensorId, "'");
+  var querySql = "UPDATE sensors SET x='', y='' WHERE sensorId='".concat(req.query.sensorId, "'");
   console.log(req.query, querySql);
   mysqlReader(querySql).then(function (_) {
     res.status(200);

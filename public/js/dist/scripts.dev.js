@@ -5,8 +5,8 @@ var _moment = require("moment");
 var _utils = require("./utils.js");
 
 console.log("script.js added");
-var href = window.location.pathname;
-console.log(userData_raw); // Window loader
+var href = window.location.pathname; // console.log(userData_raw)
+// Window loader
 // ============================
 
 $(window).on('load', function () {
